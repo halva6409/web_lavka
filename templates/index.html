@@ -538,6 +538,27 @@
 
 </head>
 
+<!-- МОДАЛЬНОЕ ОКНО "РАЗРАБОТКА" -->
+<div class="product-modal" id="developerModal">
+  <div class="product-modal-content">
+    <button
+      class="product-modal-close"
+      onclick="closeDeveloperModal()"
+    >
+      <span></span>
+      <span></span>
+    </button>
+    <div class="product-modal-body">
+      <h2 class="product-modal-title">
+        Разработка
+      </h2>
+      <p class="product-modal-description">Сайт разработан: halvas</p>
+      <p class="product-modal-description">Контакты:</p>
+      <p class="product-modal-description">+7 (906) 311-59-24</p>
+      <p class="product-modal-description">r.xvalov@yandex.ru</p>
+    </div>
+  </div>
+</div>
 
 <body>
 
@@ -655,7 +676,7 @@
       {% if session.get('user_id') %}
 
       
-      <a href="/o_nas"
+      <a href="/o-nas"
         class="kicker-line-marg-news"
       >О нас</a>
 
@@ -2325,8 +2346,58 @@
 
       updateTarget();
     })();
+
+    
+
+  function openDeveloperModal(event) {
+    event.stopPropagation();
+    const modal = document.getElementById("developerModal");
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeDeveloperModal() {
+    const modal = document.getElementById("developerModal");
+    modal.classList.remove("active");
+    document.body.style.overflow = "";
+  }
+
+  document.getElementById("developerModal").addEventListener("click", function(event) {
+    if (event.target === this) {
+      closeDeveloperModal();
+    }
+  });
+
+
   </script>
 
 
+  <footer class="footer">
+    <div class="footer-content">
+      <p class="footer-title">© 2026 Теннисная Лавка</p> 
+    </div>
+    <div class="footer-columns">
+      <div class="footer-column">
+        <a class="footer-title-">Как с нами связаться?</a>
+        <a class="footer-contact" >- По номеру телефона: +7 (777) 777-77-77</a>
+        <a class="footer-contact" >- По почте: tennisnaya_lavka@gmail.com</a>
+        <a class="footer-content-left">- По всем коммерческим предложениям обращаться на почту выше</a>
+      </div>
+      <div class="footer-column">
+        <a class="footer-title-">Покупателям</a>
+        <a href="#catalog" class="footer-content-middle">- Каталог</a>
+        <a href="/favorites" class="footer-content-middle">- Избранное</a>
+        <a href="/zakazy" class="footer-content-middle">- Мои заказы</a>
+        <a href="javascript:void(0)" class="footer-content-middle" onclick="openAccountModal(event)">- Личный кабинет</a>
+      </div>
+      <div class="footer-column">
+        <a class="footer-title-">О компании</a>
+        <a href="/o-nas" class="footer-content-right">- О нас</a>
+        <a href="#" class="footer-content-right" onclick="openDeveloperModal(event); return false;">- Разработка</a>
+      </div>
+    </div>
+  </footer>
+
 </body>
+
 
