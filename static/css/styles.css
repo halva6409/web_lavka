@@ -206,6 +206,7 @@ body.scrolled .topbar {
   border: 2px solid rgba(255, 255, 255, 0.35);
   display: block;
   cursor: pointer;
+  margin-left: 20px;
 }
 
 .avatar:hover {
@@ -639,10 +640,10 @@ body.scrolled .topbar {
 /* FOOTER */
 
 .footer-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  align-items: left;
-  gap: 30px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .footer {
   display: flex;
@@ -663,8 +664,9 @@ body.scrolled .topbar {
   gap: 40px;
 }
 .footer-column{
-  display: grid;
+  display: flex;
   flex-direction:column;
+
 }
 .footer-title {
   font-size: 25px;
@@ -673,11 +675,13 @@ body.scrolled .topbar {
   text-align: center;
   white-space: nowrap;
 }
-.footer-title- {
-  font-size: 18px;
+.footer-title {
+  width: 100%;
+  margin: 0 0 30px 0;
+  font-size: 25px;
   font-weight: 800;
-  text-align: left;
-  margin-bottom: 2vh;
+  text-align: center;
+  white-space: nowrap;
 }
 .footer-contact {
   font-size: 13px;
@@ -701,13 +705,14 @@ body.scrolled .topbar {
   line-height: 1.5;  
   margin-left: 10px;
 }
-.footer-content-right{
+.footer-content-right {
   font-size: 13px;
   font-weight: 800;
   color: #ffffff;
   text-align: left;
-  line-height: 0;  
+  line-height: 1.2;
   margin-left: 10px;
+  margin-bottom: 2px;
 }
 
 /* =========================================================
@@ -1102,13 +1107,12 @@ body.scrolled .topbar {
    ========================================================= */
 .product-modal-body {
   padding: 26px;
-  padding: 26px;
   min-width: 0;
   box-sizing: border-box;
 }
 
 .product-modal-title {
-  margin: 0 0 10px;
+  padding-bottom: 5%;
   font-size: 32px;
   line-height: 1.05;
   font-weight: 800;
@@ -1168,8 +1172,8 @@ body.scrolled .topbar {
 }
 
 .account-modal-avatar {
-  width: 90px;
-  height: 90px;
+  width: 1100px;
+  height: 1100px;
   margin: 0 auto 22px;
   border-radius: 50%;
   overflow: hidden;
@@ -1178,8 +1182,8 @@ body.scrolled .topbar {
 }
 
 .account-modal-avatar img {
-  width: 80%;
-  height: 100%;
+  width: 1000px;
+  height: 1000px;
   display: block;
   object-fit: cover;
 }
@@ -1256,7 +1260,7 @@ body.scrolled .topbar {
    АККАУНТ ИСПОЛЬЗУЕТ ТОТ ЖЕ РАЗМЕР,
    ЧТО И ОКНО ТОВАРА
    ========================================================= */
-#accountModal .product-modal-content {
+/*#accountModal .product-modal-content {
   width: min(680px, 100%);
 }
 /* =========================================================
