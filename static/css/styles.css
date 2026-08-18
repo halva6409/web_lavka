@@ -61,6 +61,7 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+
 /* =========================================================
   ЧТО ТО С КАРТОЧКАМИ И МАДОЛЬНЫМ ОКНОМ КАТАЛОГА
    ========================================================= */
@@ -176,8 +177,8 @@ body.scrolled .topbar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 36px;
-  padding: 0 16px;
+  height: 40px;
+  padding: 0 20px;
   background: var(--accent);
   color:#ffffff;
   border-radius: 999px;
@@ -206,7 +207,7 @@ body.scrolled .topbar {
   border: 2px solid rgba(255, 255, 255, 0.35);
   display: block;
   cursor: pointer;
-  margin-left: 20px;
+  margin-left: 10px;
 }
 
 .avatar:hover {
@@ -501,6 +502,7 @@ body.scrolled .topbar {
   top: var(--small-top);
   left: var(--small-left);
   margin: 0px;
+  font-family: "Fira Sans Extra Condensed", sans-serif;
   font-size: var(--small-size);
   font-weight: 400;
   letter-spacing: var(--small-spacing);
@@ -514,8 +516,9 @@ body.scrolled .topbar {
   top: var(--big-top);
   left: var(--big-left);
   margin: 0px;
+  font-family: "Fira Sans Extra Condensed", sans-serif;
   font-size: var(--big-size);
-  font-weight: 667;
+  font-weight: 800;
   letter-spacing: var(--big-spacing);
   line-height: 0.82;
   margin-bottom: 1px;
@@ -565,12 +568,12 @@ body.scrolled .topbar {
   justify-content: center;
   display: flex;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
   color: #ffffff6a;
 }
 
 .kicker-line-marg-news{
-  margin: 15vh 0 3vh;
+  margin: 12vh 0 3vh;
   align-items: center;
   justify-content: center;
   display: flex;
@@ -660,17 +663,20 @@ body.scrolled .topbar {
 }
 .footer-columns {
   display: grid;
+  align-items: top;
   grid-template-columns: repeat(3, 1fr);
   gap: 40px;
 }
 .footer-column{
   display: flex;
+  align-items: center;
   flex-direction:column;
 
 }
-.footer-title {
-  font-size: 25px;
-  font-weight: 800;
+.footer-title- {
+  font-size: 20px;
+  padding-bottom: 20px;
+  font-weight: 650;
   margin-left: 0px auto 0 auto;
   text-align: center;
   white-space: nowrap;
@@ -693,25 +699,22 @@ body.scrolled .topbar {
 .footer-content-left{
   font-size: 13px;
   font-weight: 800;
-  text-align: left;
-  line-height: 1.5;  
-  margin-left: 10px;
+  text-align: center;
+  line-height: 1.5; 
 }
 .footer-content-middle{
   font-size: 13px;
   font-weight: 800;
-  text-align: left;
+  text-align: center;
   color: #ffffff;
   line-height: 1.5;  
-  margin-left: 10px;
 }
 .footer-content-right {
   font-size: 13px;
   font-weight: 800;
   color: #ffffff;
-  text-align: left;
+  text-align: center;
   line-height: 1.2;
-  margin-left: 10px;
   margin-bottom: 2px;
 }
 
@@ -1035,6 +1038,7 @@ body.scrolled .topbar {
 .product-modal {
   position: fixed;
   inset: 0;
+  overscroll-behavior: contain;
   z-index: 3000;
   white-space: nowrap;
   display: flex;
@@ -1078,7 +1082,7 @@ body.scrolled .topbar {
   transition:
     transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   box-sizing: border-box;
-
+  overscroll-behavior: contain;
   min-width: 0;
 }
 
@@ -1098,10 +1102,161 @@ body.scrolled .topbar {
   display: flex;
   align-items: center;
   justify-content: center;
+  object-fit: contain;
   background: #111;
   overflow: hidden;
-  object-fit: contain;
+  border-radius: 14px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
+  
 }
+.product-modal-content {
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* старый Edge / IE */
+}
+
+.product-modal-content::-webkit-scrollbar {
+  display: none;              /* Chrome / Safari / Edge */
+}
+.gallery-track {
+  display: flex;
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.gallery-track::-webkit-scrollbar {
+  display: none;
+}
+.gallery-slide {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: center;
+  overflow: hidden;
+}
+  .gallery-slide img {
+
+      width: 100%;
+
+      height: 100%;
+
+      display: block;
+
+      object-fit: contain;
+
+      background: #111;
+
+      pointer-events: none;
+
+      -webkit-user-drag: none;
+
+      user-select: none;
+    }
+.gallery-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: 20;
+  cursor: pointer;
+  background: transparent;
+}
+
+.gallery-zone-left {
+  left: 0;
+}
+
+.gallery-zone-right {
+  right: 0;
+}
+.gallery-zone-left:hover {
+
+  background:
+    linear-gradient(
+      to right,
+      rgba(0,0,0,0.10),
+      transparent
+    );
+}
+
+.gallery-zone-right:hover {
+  background:
+    linear-gradient(
+      to left,
+      rgba(0,0,0,0.10),
+      transparent
+    );
+}
+.gallery-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.gallery-dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition:
+    width 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+.gallery-dot:hover {
+  transform: scale(1.2);
+  background: rgba(255, 255, 255, 0.75);
+}
+.gallery-dot.active {
+  width: 18px;
+  border-radius: 999px;
+  background: #ffffff;
+}
+.gallery-slide img.gallery-changing {
+
+  animation:
+    galleryFade 0.25s ease;
+}
+
+
+@keyframes galleryFade {
+  0% {
+    opacity: 0.35;
+    transform: scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.gallery-dots.single {
+  display: none;
+}
+
+
 /* =========================================================
    ИНФОРМАЦИЯ ТОВАРА
    ========================================================= */
@@ -1171,20 +1326,29 @@ body.scrolled .topbar {
   font-weight: 700;
 }
 
+/* =========================================================
+   АВАТАР В ОКНЕ АККАУНТА
+   ========================================================= */
+
 .account-modal-avatar {
-  width: 1100px;
-  height: 1100px;
+  width:150px;
+  height: 150px;
+
   margin: 0 auto 22px;
+
   border-radius: 50%;
   overflow: hidden;
+
   background: #111;
   border: 1px solid #303030;
+
+  flex-shrink: 0;
 }
 
 .account-modal-avatar img {
-  width: 1000px;
-  height: 1000px;
   display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -1193,7 +1357,7 @@ body.scrolled .topbar {
    ========================================================= */
 
 .account-modal-title {
-  margin: 0 0 220px;
+  margin-bottom: 30px;
   text-align: center;
 }
 
@@ -1203,7 +1367,7 @@ body.scrolled .topbar {
    ========================================================= */
 
 .account-modal-subtitle {
-  margin: 0 0 26px;
+  margin: 0 0 2px;
   text-align: center;
   color: #a0a0a0;
 }
@@ -1214,6 +1378,7 @@ body.scrolled .topbar {
 .account-modal-actions {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 10px;
 }
 
@@ -1262,7 +1427,7 @@ body.scrolled .topbar {
    ========================================================= */
 /*#accountModal .product-modal-content {
   width: min(680px, 100%);
-}
+}*/
 /* =========================================================
    АНИМИРОВАННЫЙ ФОН ВСЕГО САЙТА
    ========================================================= */
@@ -1368,7 +1533,7 @@ body{background:transparent}
 /* =========================================================
    АККАУНТ — ВЫВЕРЕННЫЕ ОТСТУПЫ
    ========================================================= */
-#accountModal .product-modal-content{
+/*#accountModal .product-modal-content{
   overflow:hidden;
 }
 #accountModal .product-modal-body{
@@ -1399,12 +1564,7 @@ body{background:transparent}
   min-height:50px;
   margin:0;
   padding:13px 20px;
-}
-
-
-
-
-
+}*/
 
 
 /*#########################################################################################################################################################
@@ -1415,704 +1575,5 @@ body{background:transparent}
 #########################################################################################################################################################
 #########################################################################################################################################################*/
 
-
-
-
-
-
-
-@media(max-width:700px){
-  .modal-close,
-  .account-modal-close{
-    top:14px;
-    right:14px;
-    width:38px;
-    height:38px;
-  }
-
-  .modal-close span,
-  .account-modal-close span{
-    top:17px;
-    height:4px;
-  }
-
-  .modal-close span:nth-child(1),
-  .account-modal-close span:nth-child(1){
-    top:10px;
-  }
-
-  .modal-close span:nth-child(3),
-  .account-modal-close span:nth-child(3){
-    left:18px;
-    top:24px;
-  }
-
-  #accountModal .product-modal-body{
-    padding:34px 24px 28px;
-  }
-
-  #accountModal .account-modal-avatar{
-    width:80px;
-    height:80px;
-    margin-bottom:24px;
-  }
-
-  #accountModal .account-modal-subtitle{
-    margin-bottom:26px;
-  }
-
-  #accountModal .account-modal-actions{
-    gap:10px;
-  }
-
-  #accountModal .account-modal-button{
-    width:100%;
-  }
-}
-
-/* =========================================================
-   МОБИЛЬНАЯ ШАПКА КАТАЛОГА
-   ========================================================= */
-
-@media (max-width: 600px) {
-
-  .panel-head {
-    display: grid;
-
-    grid-template-columns: 1fr auto;
-    grid-template-rows: auto auto;
-
-    column-gap: 10px;
-    row-gap: 12px;
-
-    min-height: auto;
-
-    margin-bottom: 16px;
-  }
-
-
-  /* =========================
-     КАТАЛОГ
-     ========================= */
-
-  .panel-head h2 {
-    grid-column: 1;
-    grid-row: 1;
-
-    align-self: center;
-
-    margin: 0;
-
-    font-size: 20px;
-  }
-
-
-  /* =========================
-     ОБНОВИТЬ
-     ========================= */
-
-  .refresh-btn {
-    grid-column: 2;
-    grid-row: 1;
-
-    align-self: center;
-
-    margin: 0;
-
-    padding: 7px 10px;
-
-    font-size: 12px;
-
-    border-radius: 7px;
-  }
-
-
-  /* =========================
-     ПОИСК
-     ========================= */
-
-  .search_ {
-    position: static;
-
-    grid-column: 1 / -1;
-    grid-row: 2;
-
-    transform: none;
-
-    width: 100%;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    margin: 0;
-  }
-
-
-  /* =========================
-     ПОЛЕ
-     ========================= */
-
-  .search-wrapper {
-    flex: 1;
-
-    min-width: 0;
-  }
-
-/*
-  .search-input {
-    width: 100%;
-
-    height: 38px;
-
-    padding:
-      0 4px 0 14px;
-
-    font-size: 16px;
-
-    border-radius: 11px;
-  }
-
-
-  /* =========================
-     КРЕСТИК
-     ========================= */
-
-  .clear-btn10 {
-    right: 4px;
-
-    width: 32px;
-    height: 32px;
-
-    font-size: 23px;
-  }
-
-
-  /* =========================
-     НАЙТИ
-     ========================= */
-
-  .search-btn {
-    flex: 0 0 auto;
-
-    height: 40px;
-
-    margin: 0;
-
-    padding: 0 14px;
-
-    font-size: 15px;
-
-    border-radius: 11px;
-  }
-}
-
-
-/* =========================================================
-   ОЧЕНЬ УЗКИЙ ЭКРАН
-   ========================================================= */
-
-@media (max-width: 380px) {
-
-  .panel-head {
-    column-gap: 7px;
-    row-gap: 10px;
-  }
-
-
-  .panel-head h2 {
-    font-size: 19px;
-  }
-
-
-  .refresh-btn {
-    padding: 6px 8px;
-    height: 41px;
-    font-size: 14px;
-  }
-  
-  .search-btn {
-    height: 41px;
-
-    padding: 6px 8px;
-
-    font-size: 14px;}
-
-  .search_ {
-    gap: 6px;
-  }
-
-
-  .search-input {
-    height: 41px;
-
-    font-size: 15px;
-
-    padding-left: 12px;
-  }
-
-
-}
-
-@media (max-width: 380px) {
-  .search-form {
-    gap: 6px;
-  }
-  .search-input {
-    font-size: 15px;
-  }
-
-  .search-btn {
-    padding: 0 13px;
-    height: 3px;
-    font-size: 14px;
-  }
-  
-
-}
-@media (max-width: 600px) {
-  
-}
-
-@media (max-width: 700px) {
-
-  #accountModal .product-modal-content {
-    width: 100%;
-  }
-
-
-  #accountModal .product-modal-body {
-    padding: 20px;
-  }
-
-
-  .account-modal-avatar {
-    width: 80px;
-    height: 80px;
-
-    margin-bottom: 20px;
-  }
-  /* =========================================================
-   MOBILE — ОТСТУП ПОД БОЛЬШИМ ЛОГО
-   ========================================================= */
-
-  .hero {
-      padding-top: 170px;
-  }
-
-  .hero-content {
-      padding-top: 110px;
-  }
-
-}
-
-@media (max-width: 600px) {
-  .tennis-logo {
-    height: 180px;
-  }
-}
-
-@media (max-width: 380px) {
-  .tennis-logo {
-    height: 160px;
-  }
-}
-@media (max-width: 700px) {
-
-  .product-modal-close {
-    top: 14px;
-    right: 14px;
-
-    width: 38px;
-    height: 38px;
-  }
-
-  .product-modal-close span {
-    height: 4px;
-  }
-}
-@media (max-width: 600px) {
-  .tennis-logo {
-    height: 180px;
-  }
-}
-
-@media (max-width: 380px) {
-  .tennis-logo {
-    height: 160px;
-  }
-}
-
-@media (max-width: 600px) {
-  .topbar {
-    height: 58px;
-    padding: 0 12px;
-  }
-
-  .auth-buttons {
-    gap: 6px;
-    margin-left: auto;
-  }
-
-  .btn-login {
-    font-size: 13px;
-  }
-
-  .cta {
-    padding: 0 11px;
-    font-size: 12px;
-  }
-
-  .avatar {
-    width: 34px;
-    height: 34px;
-    flex-basis: 34px;
-  }
-
-  .hero {
-    min-height: 535px;
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-
-  .hero-content {
-    padding-top: 275px;
-    max-width: 520px;
-  }
-
-  .hero-content h1 {
-    font-size: clamp(27px, 8vw, 34px);
-    line-height: 1.06;
-  }
-
-  .hero-content .subtitle {
-    font-size: 13px;
-    line-height: 1.45;
-    max-width: 390px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .kicker {
-    font-size: 12px;
-    margin-top: 25px;
-  }
-
-  main {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  .panel {
-    padding: 12px;
-    border-radius: 30px;
-    width: 99%;
-    max-width: none;
-    min-width: none;
-  }
-
-  .panel-head {
-    margin-bottom: 14px;
-  }
-
-  .panel-head h2 {
-    font-size: 20px;
-  }
-
-  .refresh-btn {
-    padding: 7px 10px;
-    font-size: 12px;
-  }
-
-  .products-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-
-  .card {
-    border-radius: 12px;
-  }
-
-  .card-body {
-    padding: 10px;
-  }
-
-  .chip {
-    font-size: 10px;
-  }
-
-  
-
-  .card-row {
-    align-items: flex-end;
-  }
-
-  .price {
-    font-size: 15px;
-  }
-
-  .stock {
-    font-size: 10px;
-  }
-
-  .product-modal {
-    padding: 6px;
-  }
-
-  .product-modal-content {
-    max-height: calc(100dvh - 12px);
-    border-radius: 16px;
-  }
-
-  .product-modal-gallery,
-  .gallery-track,
-  .gallery-slide {
-    height: min(54dvh, 470px);
-    min-height: 250px;
-  }
-
-  .gallery-dots {
-    bottom: 9px;
-  }
-
-  .product-modal-body {
-    padding: 16px;
-  }
-
-  .product-modal-title {
-    font-size: 24px;
-  }
-
-  .product-modal-description {
-    font-size: 13px;
-  }
-
-  .product-modal-colors {
-    font-size: 13px;
-    margin-bottom: 16px;
-  }
-
-  .product-modal-close {
-    top: 9px;
-    right: 9px;
-    width: 36px;
-    height: 36px;
-    border: 10px solid #000000;
-  }
-}
-
-@media (max-width: 380px) {
-  .btn-login {
-    font-size: 12px;
-  }
-
-  .cta {
-    padding: 0 9px;
-    font-size: 11px;
-  }
-
-  .hero-content {
-    padding-top: 220px;
-  }
-
-  .products-grid {
-    gap: 8px;
-  }
-
-  .card-body {
-    padding: 9px;
-  }
-
-  .card-title {
-    margin: 0 0 7px;
-
-    font-size: 14px;
-    line-height: 1.15;
-
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-
-    overflow: hidden;
-  }
-
-  .price {
-    font-size: 14px;
-  }
-
-  .stock {
-    font-size: 9px;
-  }
-}
-
-@media (max-width: 340px) {
-  .topbar {
-    padding: 0 8px;
-  }
-
-  .auth-buttons {
-    gap: 4px;
-  }
-
-  .btn-login {
-    font-size: 11px;
-  }
-
-  .cta {
-    padding: 0 7px;
-    font-size: 10px;
-  }
-
-  .avatar {
-    width: 32px;
-    height: 32px;
-    flex-basis: 32px;
-  }
-
-  .products-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tennis-logo,
-  .tennis-logo-small,
-  .tennis-logo-big {
-    transition: none !important;
-  }
-
-  html {
-    scroll-behavior: auto;
-  }
-}
-
-@media (max-width: 900px) {
-  .topbar {
-    height: 60px;
-    padding: 0 18px;
-  }
-
-  .auth-buttons {
-    gap: 8px;
-  }
-
-  .btn-login {
-    font-size: 14px;
-    min-height: 36px;
-  }
-
-  .cta {
-    height: 36px;
-    padding: 0 14px;
-    font-size: 13px;
-  }
-
-  .avatar {
-    width: 36px;
-    height: 36px;
-    flex-basis: 36px;
-  }
-
-  .hero {
-    min-height: 590px;
-    padding: 0 18px 45px;
-  }
-
-  .hero-content {
-    padding-top: 245px;
-    margin-bottom: 35px;
-  }
-
-  .hero-content h1 {
-    font-size: clamp(30px, 5.5vw, 40px);
-  }
-
-  .hero-content .subtitle {
-    font-size: 14px;
-  }
-
-  .kicker {
-    margin: 28px 0 14px;
-    font-size: 13px;
-  }
-
-  main {
-    padding: 0 16px 45px;
-  }
-
-  
-
-  .products-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .card {
-    border-radius: 13px;
-  }
-
-  .card-body {
-    padding: 12px;
-  }
-
-
-  .price {
-    font-size: 16px;
-  }
-
-  .stock {
-    font-size: 11px;
-  }
-
-  .product-modal {
-    padding: 10px;
-    align-items: center;
-    
-  }
-
-  .product-modal-content {
-    width: 100%;
-    max-width: 680px;
-    max-height: 94dvh;
-    border-radius: 18px;
-  }
-
-  .product-modal-gallery,
-  .gallery-track,
-  .gallery-slide {
-    height: min(56dvh, 520px);
-    min-height: 280px;
-  }
-
-  .product-modal-body {
-    padding: 20px;
-  }
-
-  .product-modal-title {
-    font-size: 27px;
-  }
-
-  .product-modal-description {
-    font-size: 14px;
-    line-height: 1.5;
-  }
-
-  .product-modal-info {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .product-modal-price {
-    font-size: 23px;
-  }
-}
 
 

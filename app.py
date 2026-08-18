@@ -55,14 +55,12 @@ def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         user_id = session.get("user_id")
-        if not user_id:
-            return redirect(url_for("login"))        # не залогинен — на страницу входа
 
         us = User.query.filter_by(id=user_id).first()
-
-        if not us or not us.is_admin:
+        if not us:
+            return redirect(url_for("register"))        # не залогинен — на страницу входа
+        elif not us or not us.is_admin:
             return abort(403)
-
         return f(*args, **kwargs)
     return decorated
 
@@ -106,9 +104,8 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    colors = db.Column(db.Text, nullable=True)
+    colors = db.Column(db.JSON)
     price = db.Column(db.Float, nullable=False)
-    #image_url = db.Column(db.String(200))
     category = db.Column(db.String(50))
     kolvo = db.Column(db.Integer)
     is_active = db.Column(db.Integer, default=0)
@@ -131,7 +128,7 @@ def index():
     fovorites = []
 
     user_id = session.get("user_id","")
-    user = User.query.get(user_id) if user_id else None
+    user = db.session.get(User, user_id) if user_id else None
 
     search = request.args.get("search", "").strip()
     query = Product.query.filter_by(is_active=1)
@@ -217,25 +214,21 @@ def admin_():
 def admin_add():
     title = request.form.get("title") 
     description = request.form.get("description")
-    colors = request.form.get("colors") 
     price = float(request.form.get("price"))
     category = request.form.get("category") 
-    kolvo = int(request.form.get("kolvo"))
+    kolvo = int(request.form.get("kolvo", ""))
+
+    req_colors = request.form.get("colors") 
+    colors = req_colors.split()
 
     images = request.files.getlist("images")
-
-    print(len(images))
-
     ready_list_img = []
-
     for i in range(len(images)):
         if images[i] and images[i].filename:
             filename = secure_filename(images[i].filename)
             images[i].save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
             images_url = f"uploads/{filename}"
             ready_list_img.append(images_url)
-
-    print(ready_list_img)
 
     product = Product(
         title=title,
@@ -272,6 +265,7 @@ def edit_product(product_id):
         product.price = request.form.get("price")
         product.category = request.form.get("category")
         product.kolvo = request.form.get("kolvo")
+        product.is_active = request.form.get("is_active")
 
         db.session.commit()
         return redirect(url_for("admin_"))
@@ -304,12 +298,13 @@ def logout():
 def favorite():
     favorite_products = []
     user_id = session.get("user_id","")
-    user = User.query.get(user_id) if user_id else None
+    user = db.session.get(User, user_id) if user_id else None
     if not user:
         return redirect(url_for("login"))
     if user and user.favorites:
         favorite_products = Product.query.filter(Product.id.in_(user.favorites)).all()
     return render_template("favor.html", user=user, favorite_products=favorite_products)
+
 #########################################################################################################################################################
 
 @app.post("/api/favorite/toggle")
@@ -324,7 +319,7 @@ def toggle_favorite():
         }), 400
     product_id = int(product_id)
     user_id = session.get("user_id")
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return jsonify({
             "success": False,
@@ -354,8 +349,20 @@ def toggle_favorite():
 
 #########################################################################################################################################################
 
+@app.post('/admin/toggle-active/<int:product_id>')
+@admin_required
+def toggle_product_active(product_id):
 
+    product = Product.query.get_or_404(product_id)
 
+    product.is_active = 0 if product.is_active else 1
+
+    db.session.commit()
+
+    return {
+        "success": True,
+        "is_active": product.is_active
+    }
 
 
 #########################################################################################################################################################

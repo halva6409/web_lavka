@@ -82,459 +82,6 @@
     name="theme-color"
     content="#07111f"
   >
-  <!-- =====================================================
-       CSS ГАЛЕРЕИ
-       ===================================================== -->
-
-  <style>
-
-    /* =====================================================
-       ГАЛЕРЕЯ
-       ===================================================== */
-
-    .product-modal-gallery {
-
-      position: relative;
-
-      width: 100%;
-
-      background: #111;
-
-      overflow: hidden;
-
-      border-radius: 14px;
-
-      user-select: none;
-
-      -webkit-user-select: none;
-
-      touch-action: pan-y;
-    }
-
-
-    /* =====================================================
-       КОНТЕЙНЕР СЛАЙДОВ
-       ===================================================== */
-
-    .gallery-track {
-
-      display: flex;
-
-      width: 100%;
-
-      height: 500px;
-
-      overflow: hidden;
-
-      scroll-behavior: smooth;
-
-      scroll-snap-type: x mandatory;
-
-      scrollbar-width: none;
-    }
-
-
-    .gallery-track::-webkit-scrollbar {
-
-      display: none;
-    }
-
-
-    /* =====================================================
-       ОДИН СЛАЙД
-       ===================================================== */
-
-    .gallery-slide {
-
-      position: relative;
-
-      flex: 0 0 100%;
-
-      width: 100%;
-
-      height: 500px;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      scroll-snap-align: center;
-
-      overflow: hidden;
-    }
-
-
-    /* =====================================================
-       ФОТО
-       ===================================================== */
-
-    .gallery-slide img {
-
-      width: 100%;
-
-      height: 100%;
-
-      display: block;
-
-      object-fit: contain;
-
-      background: #111;
-
-      pointer-events: none;
-
-      -webkit-user-drag: none;
-
-      user-select: none;
-    }
-
-
-    /* =====================================================
-       ЗОНЫ КЛИКА
-       ===================================================== */
-
-    .gallery-zone {
-
-      position: absolute;
-
-      top: 0;
-
-      bottom: 0;
-
-      width: 50%;
-
-      z-index: 20;
-
-      cursor: pointer;
-
-      background: transparent;
-    }
-
-
-    .gallery-zone-left {
-
-      left: 0;
-    }
-
-
-    .gallery-zone-right {
-
-      right: 0;
-    }
-
-
-    .gallery-zone-left:hover {
-
-      background:
-        linear-gradient(
-          to right,
-          rgba(0,0,0,0.10),
-          transparent
-        );
-    }
-
-
-    .gallery-zone-right:hover {
-
-      background:
-        linear-gradient(
-          to left,
-          rgba(0,0,0,0.10),
-          transparent
-        );
-    }
-
-
-    /* =====================================================
-       ТОЧКИ
-       ===================================================== */
-
-    .gallery-dots {
-
-      position: absolute;
-
-      left: 50%;
-
-      bottom: 14px;
-
-      transform: translateX(-50%);
-
-      z-index: 30;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      gap: 7px;
-
-      padding: 7px 10px;
-
-      border-radius: 999px;
-
-      background: rgba(0, 0, 0, 0.45);
-
-      backdrop-filter: blur(8px);
-
-      -webkit-backdrop-filter: blur(8px);
-    }
-
-
-    .gallery-dot {
-
-      width: 7px;
-
-      height: 7px;
-
-      padding: 0;
-
-      border: none;
-
-      border-radius: 50%;
-
-      background: rgba(255, 255, 255, 0.45);
-
-      cursor: pointer;
-
-      transition:
-        width 0.2s ease,
-        background 0.2s ease,
-        transform 0.2s ease;
-    }
-
-
-    .gallery-dot:hover {
-
-      transform: scale(1.2);
-
-      background: rgba(255, 255, 255, 0.75);
-    }
-
-
-    .gallery-dot.active {
-
-      width: 18px;
-
-      border-radius: 999px;
-
-      background: #ffffff;
-    }
-
-
-    /* =====================================================
-       АНИМАЦИЯ ФОТО
-       ===================================================== */
-
-    .gallery-slide img.gallery-changing {
-
-      animation:
-        galleryFade 0.25s ease;
-    }
-
-
-    @keyframes galleryFade {
-
-      0% {
-
-        opacity: 0.35;
-
-        transform: scale(0.985);
-      }
-
-      100% {
-
-        opacity: 1;
-
-        transform: scale(1);
-      }
-
-    }
-
-
-    /* =====================================================
-       МОБИЛЬНАЯ ГАЛЕРЕЯ
-       ===================================================== */
-
-    @media (max-width: 700px) {
-
-      .product-modal-gallery {
-
-        border-radius: 12px;
-      }
-
-
-      .gallery-track {
-
-        height: 55vh;
-
-        min-height: 280px;
-
-        max-height: 500px;
-      }
-
-
-      .gallery-slide {
-
-        height: 55vh;
-
-        min-height: 280px;
-
-        max-height: 500px;
-      }
-
-
-      .gallery-dots {
-
-        bottom: 10px;
-
-        gap: 6px;
-
-        padding: 6px 9px;
-      }
-
-
-      .gallery-dot {
-
-        width: 6px;
-
-        height: 6px;
-      }
-
-
-      .gallery-dot.active {
-
-        width: 16px;
-      }
-
-    }
-
-
-    /* =====================================================
-       ЕСЛИ ОДНА ФОТОГРАФИЯ
-       ===================================================== */
-
-    .gallery-dots.single {
-
-      display: none;
-    }
-
-
-    /* =====================================================
-       АККАУНТ
-       
-       Используем ту же основу, что и товарное окно.
-       Поэтому дизайн полностью наследуется от
-       product-modal.
-       ===================================================== */
-
-    .account-modal-avatar {
-
-      width: 90px;
-
-      height: 90px;
-
-      margin: 0 auto 20px;
-
-      border-radius: 50%;
-
-      overflow: hidden;
-
-      background: #111;
-    }
-
-
-    .account-modal-avatar img {
-
-      width: 100%;
-
-      height: 100%;
-
-      object-fit: cover;
-
-      display: block;
-    }
-
-
-    .account-modal-title {
-
-      margin: 0 0 8px;
-
-      text-align: center;
-    }
-
-
-    .account-modal-subtitle {
-
-      margin: 0 0 24px;
-
-      text-align: center;
-
-      opacity: 0.7;
-    }
-
-
-    .account-modal-actions {
-
-      display: flex;
-
-      flex-direction: column;
-
-      gap: 10px;
-    }
-
-
-    .account-modal-button {
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      width: 100%;
-
-      min-height: 48px;
-
-      padding: 12px 18px;
-
-      border-radius: 12px;
-
-      text-decoration: none;
-
-      font-weight: 700;
-
-      transition:
-        transform 0.2s ease,
-        opacity 0.2s ease;
-    }
-
-
-    .account-modal-button:hover {
-
-      transform: translateY(-1px);
-
-      opacity: 0.9;
-    }
-
-
-    .account-modal-button-main {
-
-      background: #fff;
-
-      color: #000;
-    }
-
-
-    .account-modal-button-danger {
-
-      background: #ff3b30;
-
-      color: #fff;
-    }
-
-  </style>
 
 </head>
 
@@ -570,8 +117,10 @@
   duration: 500,
   lockTime: 550
 };
-
-
+function isModalOpen() {
+  return document.querySelector(".product-modal.active") !== null;
+}
+const SNAP_ZONE = 150;
   /* =========================================================
      ОБЩЕЕ СОСТОЯНИЕ
      ========================================================= */
@@ -717,6 +266,12 @@
   window.addEventListener(
   "wheel",
   (event) => {
+
+    // Если открыто модальное окно —
+    // snap страницы не работает.
+    if (isModalOpen()) {
+      return;
+    }
 
     // На сенсорных устройствах wheel не используем
     if (window.matchMedia("(pointer: coarse)").matches) {
@@ -1254,7 +809,7 @@
 
       
 
-      <h2 class="product-modal-title account-modal-title">
+      <h2 class="account-modal-title">
         {{user.name}}
       </h2>
 
@@ -1264,10 +819,11 @@
 
       <div class="account-modal-actions">
 
-        <a href="/news" class="account-modal-button account-modal-button-main">Наши новости</a>
-        <a href="/chat" class="account-modal-button account-modal-button-main">Связаться с нами</a>
+        <a href="/news" class="account-modal-button account-modal-button-main">Наши новости 📰</a>
+        <a href="/orders" class="account-modal-button account-modal-button-main">Мои заказы 🚚</a>
+        <a href="/chat" class="account-modal-button account-modal-button-main">Чат 📱</a>
         <a href="/profile-id" class="account-modal-button account-modal-button-main">Данные аккаунта</a>
-        
+
         <a
           href="/logout"
           class="account-modal-button account-modal-button-danger"
@@ -1521,7 +1077,7 @@
         "galleryDots"
       );
 
-
+    
     /* =====================================================
        АККАУНТ
        ===================================================== */
@@ -2416,7 +1972,7 @@
       }
 
       function animate() {
-        progress += (targetProgress - progress) * 0.15;
+        progress += (targetProgress - progress) * 0.1;
 
         if (Math.abs(targetProgress - progress) < 0.0008) {
           progress = targetProgress;
@@ -2657,9 +2213,11 @@
     <div class="footer-columns">
       <div class="footer-column">
         <a class="footer-title-">Как с нами связаться?</a>
+        <a class="footer-contact" >- Наш канал: ...</a>
+
         <a class="footer-contact" >- По номеру телефона: +7 (777) 777-77-77</a>
         <a class="footer-contact" >- По почте: tennisnaya_lavka@gmail.com</a>
-        <a class="footer-content-left">- По всем коммерческим предложениям обращаться на почту выше</a>
+        <a class="footer-content-left">- По всем вопросам и предложениям обращаться на почту выше</a>
       </div>
       <div class="footer-column">
         <a class="footer-title-">Покупателям</a>

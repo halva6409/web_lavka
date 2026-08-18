@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Редактирование товара</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+
+            background: #0f0f0f;
+            color: #fff;
+
+            font-family: Arial, sans-serif;
+        }
+
+
+
+
+        .edit-container {
+            width: 100%;
+            max-width: 700px;
+
+            margin: 0 auto;
+        }
+
+        .edit-title {
+            margin: 0 0 30px;
+
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: #d9e2ef;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+
+            padding: 14px 16px;
+
+            border: 1px solid #292929;
+            border-radius: 10px;
+
+            background: #181818;
+            color: #fff;
+
+            font-size: 16px;
+            outline: none;
+
+            transition:
+                border-color 0.2s ease,
+                background 0.2s ease;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            border-color: #535353;
+            background: #585858;
+        }
+
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+
+            margin-top: 10px;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            min-height: 48px;
+
+            padding: 12px 22px;
+
+            border: none;
+            border-radius: 10px;
+
+            font-size: 16px;
+            font-weight: 700;
+
+            text-decoration: none;
+            cursor: pointer;
+
+            transition:
+                transform 0.2s ease,
+                opacity 0.2s ease;
+        }
+
+
+        .button:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .button-save {
+            background: #ffffffc6;
+            color: #000;
+        }
+
+        .button-cancel {
+            background: #ff3b30;
+            color: #fff;
+        }
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 25px 15px;
+            }
+
+            .edit-title {
+                font-size: 26px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .button {
+                width: 100%;
+            }
+        }
+        /* =========================================================
+        IOS TOGGLE
+        ========================================================= */
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            width: 100%;
+            min-height: 50px;
+        }
+
+
+        /* Текст */
+
+        .toggle-label {
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+
+        /* Контейнер переключателя */
+
+        .toggleWrapper {
+            position: relative;
+
+            width: 55px;
+            height: 32px;
+
+            flex-shrink: 0;
+        }
+
+
+        /* Настоящий checkbox скрываем */
+
+        .toggleWrapper input.mobileToggle {
+            opacity: 0;
+            position: absolute;
+
+            width: 1px;
+            height: 1px;
+        }
+
+
+        /* Сам переключатель */
+
+        .toggleWrapper input.mobileToggle + label {
+            position: relative;
+
+            display: inline-block;
+
+            width: 50px;
+            height: 30px;
+
+            cursor: pointer;
+
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+
+            border: 1px solid #e4e4e4;
+            border-radius: 60px;
+
+            background: #e5e5ea;
+
+            transition:
+                background 0.2s ease;
+        }
+
+
+        /* Белый круг */
+
+        .toggleWrapper input.mobileToggle + label::after {
+            content: "";
+
+            position: absolute;
+
+            display: block;
+
+            width: 28px;
+            height: 28px;
+
+            top: 0;
+            left: 0;
+
+            border-radius: 50%;
+
+            background: #fff;
+
+            box-shadow:
+                0 0 0 1px rgba(0, 0, 0, 0.1),
+                0 4px 9px rgba(0, 0, 0, 0.13),
+                0 3px 3px rgba(0, 0, 0, 0.05);
+
+            transition:
+                left 0.35s cubic-bezier(.54, 1.60, .5, 1);
+        }
+
+
+        /* =========================================================
+        ВКЛЮЧЕНО
+        ========================================================= */
+
+        .toggleWrapper input.mobileToggle:checked + label {
+            background: #34c759;
+        }
+
+
+        /* Перемещение кружка */
+
+        .toggleWrapper input.mobileToggle:checked + label::after {
+            left: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="edit-container">
+
+    <h1 class="edit-title">
+        Редактирование товара
+    </h1>
+
+    <form
+        class="edit-form"
+        method="POST"
+        action="{{ url_for('edit_product', product_id=product.id) }}"
+    >
+
+        <!-- НАЗВАНИЕ -->
+
+        <div class="form-group">
+
+                    <label
+                        class="form-label"
+                        for="title"
+                    >
+                        Название
+                    </label>
+
+                    <input
+                        id="title"
+                        class="form-input"
+                        type="text"
+                        name="title"
+                        value="{{ product.title or '' }}"
+                        required
+                    >
+
+                </div>
+
+                <div class="toggle-row">
+
+            <span class="toggle-label">
+                Опубликован
+            </span>
+
+            <div class="toggleWrapper">
+
+                <input
+                    type="checkbox"
+                    name="is_active"
+                    class="mobileToggle"
+                    id="is_active"
+                    value="1"
+                    {% if product.is_active %}checked{% endif %}
+                >
+
+                <label for="is_active"></label>
+
+            </div>
+
+        </div>
+        <!-- ОПИСАНИЕ -->
+
+        <div class="form-group">
+
+            <label
+                class="form-label"
+                for="description"
+            >
+                Описание
+            </label>
+
+            <textarea
+                id="description"
+                class="form-textarea"
+                name="description"
+            >{{ product.description or '' }}</textarea>
+
+        </div>
+
+
+        <!-- ЦВЕТ -->
+
+        <div class="form-group">
+
+            <label
+                class="form-label"
+                for="colors"
+            >
+                Цвет
+            </label>
+
+            <input
+                id="colors"
+                class="form-input"
+                type="text"
+                name="colors"
+                value="{{ product.colors or '' }}"
+            >
+
+        </div>
+
+
+        <!-- ЦЕНА + КОЛИЧЕСТВО -->
+
+        <div class="form-row">
+
+            <div class="form-group">
+
+                <label
+                    class="form-label"
+                    for="price"
+                >
+                    Цена, ₽
+                </label>
+
+                <input
+                    id="price"
+                    class="form-input"
+                    type="number"
+                    name="price"
+                    value="{{ product.price or 0 }}"
+                    min="0"
+                    step="1"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label
+                    class="form-label"
+                    for="kolvo"
+                >
+                    Количество
+                </label>
+
+                <input
+                    id="kolvo"
+                    class="form-input"
+                    type="number"
+                    name="kolvo"
+                    value="{{ product.kolvo or 0 }}"
+                    min="0"
+                    step="1"
+                    required
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- КАТЕГОРИЯ -->
+
+        <div class="form-group">
+
+            <label
+                class="form-label"
+                for="category"
+            >
+                Категория
+            </label>
+
+            <input
+                id="category"
+                class="form-input"
+                type="text"
+                name="category"
+                value="{{ product.category or '' }}"
+            >
+
+        </div>
+
+
+        <!-- КНОПКИ -->
+
+        <div class="buttons">
+
+            <button
+                type="submit"
+                class="button button-save"
+            >
+                Сохранить изменения
+            </button>
+
+            <a
+                href="{{ url_for('admin_') }}"
+                class="button button-cancel"
+            >
+                Отмена
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+</body>
+
+</html>

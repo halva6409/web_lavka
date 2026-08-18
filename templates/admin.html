@@ -114,26 +114,47 @@
             justify-content: space-between;
             gap: 20px;
 
+            width: 100%;
+            height: 120px;
+            min-height: 150px;
+            max-height: 120px;
+
             padding: 18px;
 
             background: #111;
             border: 1px solid #292929;
             border-radius: 12px;
+
+            overflow: hidden;
         }
 
         .product-info {
             min-width: 0;
+            min-height: 0;
+
+            flex: 1;
+            overflow: hidden;
         }
 
         .product-title {
             margin: 0 0 6px;
+
             font-size: 18px;
             font-weight: 800;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .product-description {
             margin: 0 0 8px;
+
             color: #888;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .product-price {
@@ -148,22 +169,142 @@
 
         .product-actions {
             display: flex;
+            padding: auto;
+            align-items: center;
             gap: 8px;
             flex-shrink: 0;
         }
 
         .edit-button {
+            height: 38px;
+            font-size: 14px;
             background: #333;
         }
 
         .delete-button {
+            height: 38px;
+            font-size: 14px;
             background: #ff3b30;
         }
 
         .empty {
             color: #888;
         }
+        /* =========================================================
+   IOS TOGGLE
+   ========================================================= */
 
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toggle-label {
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+
+        /* Контейнер */
+
+        .toggleWrapper {
+            position: relative;
+
+            width: 50px;
+            height: 30px;
+
+            flex-shrink: 0;
+        }
+
+
+        /* Скрываем настоящий checkbox */
+
+        .toggleWrapper .mobileToggle {
+            position: absolute;
+
+            width: 1px;
+            height: 1px;
+
+            opacity: 0;
+        }
+
+
+        /* Корпус переключателя */
+
+        .toggleWrapper .mobileToggle + label {
+            position: absolute;
+
+            inset: 0;
+
+            display: block;
+
+            width: 50px;
+            height: 30px;
+
+            border-radius: 30px;
+
+            background: #e5e5ea;
+            border: 1px solid #d1d1d6;
+
+            cursor: pointer;
+
+            transition:
+                background 0.2s ease;
+        }
+
+
+        /* Белый круг */
+
+        .toggleWrapper .mobileToggle + label::after {
+            content: "";
+
+            position: absolute;
+
+            width: 26px;
+            height: 26px;
+
+            top: 1px;
+            left: 1px;
+
+            border-radius: 50%;
+
+            background: white;
+
+            box-shadow:
+                0 2px 5px rgba(0, 0, 0, 0.25);
+
+            transition:
+                transform 0.25s cubic-bezier(.54, 1.60, .5, 1);
+        }
+
+
+        /* ВКЛ */
+
+        .toggleWrapper .mobileToggle:checked + label {
+            background: #34c759;
+            border-color: #34c759;
+        }
+
+
+        /* Перемещение круга */
+
+        .toggleWrapper .mobileToggle:checked + label::after {
+            transform: translateX(20px);
+        }
+
+
+        /* Нажатие */
+
+        .toggleWrapper .mobileToggle + label:active::after {
+            transform: scale(0.92);
+        }
+
+        .toggleWrapper .mobileToggle:checked + label:active::after {
+            transform: translateX(20px) scale(0.92);
+        }
         @media (max-width: 700px) {
 
             body {
@@ -191,7 +332,40 @@
         }
     </style>
 </head>
+<script>
+async function toggleProduct(checkbox, productId) {
 
+    const oldState = !checkbox.checked;
+
+    try {
+
+        const response = await fetch(
+            `/admin/toggle-active/${productId}`,
+            {
+                method: "POST"
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error("Ошибка изменения статуса");
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        // Если Flask не ответил —
+        // возвращаем переключатель в старое состояние
+        checkbox.checked = oldState;
+    }
+}
+</script>
 
 <body>
 
@@ -330,7 +504,27 @@
                         <div class="product-actions">
 
                             <!-- Изменить -->
+                            <div class="toggle-row">
 
+                                <span class="toggle-label">
+                                    Опубликован
+                                </span>
+
+                                <div class="toggleWrapper">
+
+                                    <input
+                                        type="checkbox"
+                                        class="mobileToggle"
+                                        id="is_active_{{ product.id }}"
+                                        {% if product.is_active %}checked{% endif %}
+                                        onchange="toggleProduct(this, {{ product.id }})"
+                                    >
+
+                                    <label for="is_active_{{ product.id }}"></label>
+
+                                </div>
+
+                            </div>
                             <a
                                 class="button edit-button"
                                 href="{{ url_for('edit_product', product_id=product.id) }}"
