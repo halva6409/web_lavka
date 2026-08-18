@@ -1,13 +1,20 @@
+/* =========================================================
+   ОСНОВНЫЕ ПЕРЕМЕННЫЕ
+   ========================================================= */
+
 :root {
-  --bg: #f8f4ea;
-  --surface: #fffaf0;
-  --ink: #17212b;
-  --muted: #5f6b76;
-  --accent: #e6582d;
-  --accent-2: #1f8f7a;
-  --line: #e7dcc7;
-  --shadow: 0 18px 40px rgba(23, 33, 43, 0.12);
+  --bg: #000000;
+  --surface: #121212;
+  --ink: #ffffff;
+  --muted: #86868b;
+  --accent: #ff3b30;
+  --line: #262626;
 }
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
 
 * {
   box-sizing: border-box;
@@ -19,208 +26,1360 @@ body {
   padding: 0;
 }
 
-body {
-  min-height: 100vh;
-  font-family: "Manrope", sans-serif;
-  color: var(--ink);
-  background:
-    radial-gradient(circle at 10% 20%, #ffe5c3 0, rgba(255, 229, 195, 0) 35%),
-    radial-gradient(circle at 90% 15%, #d9f1eb 0, rgba(217, 241, 235, 0) 32%),
-    var(--bg);
-  position: relative;
+html {
+  scroll-behavior: smooth;
 }
+
+body {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+
+  color: var(--ink);
+  background: var(--bg);
+
+  min-height: 100vh;
+}
+
+
+/* =========================================================
+   ФОНОВЫЙ GRAIN
+   ========================================================= */
 
 .grain {
-  pointer-events: none;
   position: fixed;
+
   inset: 0;
-  opacity: 0.2;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='%2317212b' fill-opacity='0.06'%3E%3Ccircle cx='10' cy='10' r='1'/%3E%3Ccircle cx='30' cy='70' r='1'/%3E%3Ccircle cx='78' cy='20' r='1'/%3E%3Ccircle cx='120' cy='42' r='1'/%3E%3Ccircle cx='59' cy='100' r='1'/%3E%3Ccircle cx='100' cy='122' r='1'/%3E%3C/g%3E%3C/svg%3E");
+
+  pointer-events: none;
+
+  z-index: 2000;
+
+  opacity: 0.025;
+
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
 }
 
-.hero {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px 20px 42px;
-}
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
 
 .topbar {
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 72px;
+
+  z-index: 1000;
+
   display: flex;
-  justify-content: space-between;
+
   align-items: center;
-  margin-bottom: 56px;
+
+  justify-content: flex-end;
+
+  padding: 0 42px;
+
+  background: rgba(15, 15, 15, 0.55);
+
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
-.brand {
-  font-family: "Fraunces", serif;
-  font-weight: 700;
-  font-size: clamp(1.3rem, 2vw, 1.9rem);
+
+/* После прокрутки */
+
+body.scrolled .topbar {
+  background: rgba(10, 10, 10, 0.84);
+
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.28);
 }
+
+
+/* =========================================================
+   AUTH
+   ========================================================= */
+
+.auth-buttons {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+
+.btn-login {
+  color: #ffffff;
+
+  text-decoration: none;
+
+  font-weight: 700;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.btn-login:hover {
+  opacity: 0.7;
+}
+
 
 .cta {
-  text-decoration: none;
-  color: #fff;
-  background: linear-gradient(120deg, var(--accent), #f2864f);
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background: var(--accent);
+
+  color: #ffffff;
+
+  padding: 10px 20px;
+
   border-radius: 999px;
-  padding: 12px 18px;
+
+  text-decoration: none;
+
   font-weight: 700;
-  transition: transform 180ms ease;
+
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
 }
+
 
 .cta:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+
+  filter: brightness(1.08);
 }
 
-.hero-content h1 {
-  max-width: 850px;
-  margin: 8px 0 14px;
-  font-family: "Fraunces", serif;
-  font-size: clamp(2rem, 6vw, 4.25rem);
-  line-height: 1.04;
+
+/* =========================================================
+   AVATAR
+   ========================================================= */
+
+.avatar {
+  width: 40px;
+  height: 40px;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+
+  border: 2px solid rgba(255, 255, 255, 0.35);
+
+  display: block;
 }
 
-.kicker {
-  color: var(--accent-2);
+
+/* =========================================================
+   ДИНАМИЧЕСКИЙ ЛОГОТИП
+   ========================================================= */
+
+.tennis-logo {
+  position: fixed;
+
+  top: 200px;
+
+  left: 50%;
+
+  z-index: 1100;
+
+  width: max-content;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  transform: translate(-50%, 0);
+
+  pointer-events: none;
+
+  white-space: nowrap;
+
+  transition:
+    top 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    left 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+/* =========================================================
+   ТЕННИСНАЯ
+   ========================================================= */
+
+.tennis-logo-small {
+  font-family:
+    "Fira Sans Extra Condensed",
+    sans-serif;
+
+  font-size: clamp(24px, 3vw, 42px);
+
+  font-weight: 700;
+
+  letter-spacing: 0.22em;
+
+  line-height: 1;
+
+  color: #ffffff;
+
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.78rem;
-  font-weight: 800;
+
+  margin-left: 0.22em;
+
+  transition:
+    font-size 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    letter-spacing 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    margin 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+/* =========================================================
+   ЛАВКА
+   ========================================================= */
+
+.tennis-logo-big {
+  font-family:
+    "Fira Sans Extra Condensed",
+    sans-serif;
+
+  /*
+     Ограничиваем размер,
+     чтобы на больших экранах
+     логотип не становился огромным.
+  */
+
+  font-size: clamp(110px, 16vw, 230px);
+
+  font-weight: 900;
+
+  letter-spacing: -0.055em;
+
+  line-height: 0.82;
+
+  color: #ffffff;
+
+  text-transform: uppercase;
+
+  white-space: nowrap;
+
+  margin-top: 14px;
+
+  transition:
+    font-size 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    letter-spacing 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    margin 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    line-height 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+/* ВК — красные */
+
+.tennis-logo-big span {
+  color: #ed1c24;
+}
+
+
+/* =========================================================
+   ЛОГОТИП ПОСЛЕ ПРОКРУТКИ
+   ========================================================= */
+
+body.scrolled .tennis-logo {
+  top: 36px;
+
+  left: 42px;
+
+  transform: translateY(-50%);
+
+  flex-direction: row;
+
+  align-items: center;
+
+  gap: 6px;
+}
+
+
+body.scrolled .tennis-logo-small {
+  font-size: 10px;
+
+  letter-spacing: 0.10em;
+
+  margin: 0;
+
+  line-height: 1;
+}
+
+
+body.scrolled .tennis-logo-big {
+  font-size: 27px;
+
+  letter-spacing: -0.045em;
+
+  line-height: 0.9;
+
   margin: 0;
 }
 
-.subtitle {
-  max-width: 680px;
-  font-size: clamp(1rem, 2vw, 1.2rem);
-  color: var(--muted);
-  margin-top: 0;
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero {
+  position: relative;
+
+  min-height: 700px;
+
+  max-width: 1200px;
+
+  margin: 0 auto;
+
+  padding: 5% 20px 5%;
 }
+
+
+.hero-content {
+  text-align: center;
+
+  max-width: 800px;
+
+  margin: 0 auto;
+
+  padding-top: 390px;
+
+  margin-bottom: 60px;
+}
+
+
+/* =========================================================
+   HERO TEXT
+   ========================================================= */
+
+.kicker {
+  margin: 50px 0 15px;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  color: #ffffff;
+}
+
+
+.hero-content h1 {
+  margin: 0 0 16px;
+
+  font-size: 40px;
+
+  line-height: 1.08;
+
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
+}
+
+
+.hero-content .subtitle {
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 15px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   MAIN
+   ========================================================= */
 
 main {
   max-width: 1200px;
+
   margin: 0 auto;
-  padding: 0 20px 40px;
+
+  padding: 0 20px 60px;
 }
 
+
+/* =========================================================
+   КАТАЛОГ
+   ========================================================= */
+
 .panel {
+  background: var(--surface);
+
   border: 1px solid var(--line);
-  border-radius: 26px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), var(--surface));
-  box-shadow: var(--shadow);
-  padding: 24px;
+
+  border-radius: 20px;
+
+  padding: 30px;
+
+  min-height: 200px;
 }
+
 
 .panel-head {
   display: flex;
+
   justify-content: space-between;
+
   align-items: center;
-  margin-bottom: 16px;
+
+  margin-bottom: 20px;
 }
+
 
 .panel-head h2 {
   margin: 0;
-  font-size: clamp(1.2rem, 2vw, 1.7rem);
+
+  font-size: 22px;
+
+  font-weight: 800;
 }
 
+
+/* =========================================================
+   КНОПКА ОБНОВЛЕНИЯ
+   ========================================================= */
+
 .refresh-btn {
-  border: 1px solid var(--line);
-  background: #fff;
-  border-radius: 12px;
-  padding: 10px 14px;
+  border: 1px solid #333;
+
+  background: #ffffff;
+
+  color: #000000;
+
+  padding: 7px 12px;
+
+  border-radius: 6px;
+
   cursor: pointer;
-  font-weight: 700;
+
+  font-size: 13px;
 }
+
+
+.refresh-btn:hover {
+  background: #eaeaea;
+}
+
+
+/* =========================================================
+   PRODUCTS GRID
+   ========================================================= */
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(220px, 1fr));
+
+  gap: 18px;
 }
 
+
+/* =========================================================
+   PRODUCT CARD
+   ========================================================= */
+
 .card {
-  border: 1px solid var(--line);
-  border-radius: 18px;
   overflow: hidden;
-  background: #fff;
-  transform: translateY(8px);
-  opacity: 0;
-  animation: rise 350ms ease forwards;
+
+  background: #181818;
+
+  border: 1px solid #292929;
+
+  border-radius: 16px;
+
+  cursor: pointer;
+
+  /*
+     Небольшая анимация при наведении.
+  */
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
+
+
+.card:hover {
+  transform: translateY(-4px);
+
+  border-color: #3a3a3a;
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+
+/* =========================================================
+   ФОТО КАРТОЧКИ
+   ========================================================= */
+@media (max-width: 700px) {
+
+  .product-modal-image {
+
+    max-height: 55vh;
+
+    object-fit: contain;
+
+  }
+}
+
 
 .card-image {
   width: 100%;
-  height: 170px;
+
+  /*
+     Всегда квадрат.
+  */
+
+  aspect-ratio: 1 / 1;
+
   object-fit: cover;
-  background: #f5efe3;
+
+  display: block;
+
+  background: #222;
 }
+
+
+/* =========================================================
+   ТЕЛО КАРТОЧКИ
+   ========================================================= */
 
 .card-body {
-  padding: 14px;
+  padding: 16px;
 }
 
+
+/* =========================================================
+   КАТЕГОРИЯ
+   ========================================================= */
+
 .chip {
-  display: inline-block;
-  margin: 0 0 10px;
-  background: #e8f7f3;
-  color: #136d5d;
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 0.76rem;
+  margin: 0 0 7px;
+
+  color: var(--accent);
+
+  font-size: 12px;
+
   font-weight: 700;
 }
 
+
+/* =========================================================
+   НАЗВАНИЕ
+   ========================================================= */
+
 .card-title {
-  margin: 0 0 8px;
-  font-size: 1.05rem;
+  margin: 0 0 7px;
+
+  font-size: 18px;
+
+  font-weight: 800;
+
+  line-height: 1.15;
 }
 
+
+/* =========================================================
+   КОРОТКОЕ ОПИСАНИЕ
+   ========================================================= */
+
 .card-text {
-  margin: 0 0 12px;
+  margin: 0 0 15px;
+
   color: var(--muted);
-  min-height: 40px;
+
+  font-size: 14px;
+
+  line-height: 1.4;
+
+  /*
+     Максимум две строки.
+     Остальное будет видно
+     внутри окна товара.
+  */
+
+  display: -webkit-box;
+
+  -webkit-box-orient: vertical;
+
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+
+  overflow: hidden;
+
+  min-height: 39px;
 }
+
+
+/* =========================================================
+   ЦЕНА + НАЛИЧИЕ
+   ========================================================= */
 
 .card-row {
   display: flex;
+
   justify-content: space-between;
+
   align-items: center;
+
+  gap: 10px;
 }
 
+
 .price {
-  font-size: 1.2rem;
-  color: var(--accent);
+  font-size: 18px;
+
+  font-weight: 700;
 }
+
 
 .stock {
   color: var(--muted);
-  font-size: 0.9rem;
+
+  font-size: 12px;
+
+  text-align: right;
 }
+
+
+/* =========================================================
+   ЕСЛИ ТОВАРОВ НЕТ
+   ========================================================= */
 
 .empty {
+  margin: 20px 0;
+
   color: var(--muted);
-  padding: 20px 0;
+
+  text-align: center;
 }
 
-@keyframes rise {
-  from {
-    transform: translateY(8px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+
+/* =========================================================
+   МОДАЛЬНОЕ ОКНО ТОВАРА
+   ========================================================= */
+
+.product-modal {
+
+  /*
+     Скрыто по умолчанию.
+  */
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 3000;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  /*
+     Затемнение страницы.
+  */
+
+  background: rgba(0, 0, 0, 0.72);
+
+  /*
+     Размытие заднего фона.
+  */
+
+  backdrop-filter: blur(14px);
+
+  -webkit-backdrop-filter: blur(14px);
+
+  /*
+     Скрываем окно.
+  */
+
+  visibility: hidden;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease;
 }
+
+
+/* =========================================================
+   ОКНО ОТКРЫТО
+   ========================================================= */
+
+.product-modal.active {
+
+  visibility: visible;
+
+  opacity: 1;
+
+  pointer-events: auto;
+}
+
+
+/* =========================================================
+   КОНТЕЙНЕР ТОВАРА
+   ========================================================= */
+
+.product-modal-content {
+
+  position: relative;
+
+  width: min(680px, 100%);
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  background: #181818;
+
+  border: 1px solid #303030;
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.6);
+
+  /*
+     Анимация появления.
+  */
+
+  transform: scale(0.94) translateY(10px);
+
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+.product-modal.active .product-modal-content {
+
+  transform: scale(1) translateY(0);
+}
+
+
+/* =========================================================
+   ФОТО В МОДАЛЬНОМ ОКНЕ
+   ========================================================= */
+
+/* =========================================================
+   ФОТО В ОКНЕ ТОВАРА
+   ========================================================= */
+
+.product-modal-image {
+  width: 100%;
+  max-height: 500px;
+
+  display: block;
+
+  object-fit: contain;
+
+  background: #111;
+
+  border-radius: 14px;
+}
+
+
+/* =========================================================
+   ИНФОРМАЦИЯ ТОВАРА
+   ========================================================= */
+
+.product-modal-body {
+  padding: 26px;
+}
+
+
+.product-modal-title {
+
+  margin: 0 0 16px;
+
+  font-size: 32px;
+
+  line-height: 1.05;
+
+  font-weight: 800;
+
+  letter-spacing: -0.02em;
+}
+
+
+.product-modal-description {
+
+  margin: 0 0 26px;
+
+  color: #a0a0a0;
+
+  font-size: 15px;
+
+  line-height: 1.6;
+
+  /*
+     Сохраняет переносы строк
+     в описании из базы.
+  */
+
+  white-space: pre-wrap;
+}
+
+
+/* =========================================================
+   ЦЕНА / НАЛИЧИЕ В ОКНЕ
+   ========================================================= */
+
+.product-modal-info {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+
+.product-modal-price {
+
+  font-size: 26px;
+
+  font-weight: 800;
+}
+
+
+.product-modal-stock {
+
+  color: #999;
+
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   КНОПКА ЗАКРЫТИЯ
+   ========================================================= */
+
+.product-modal-close {
+
+  position: absolute;
+
+  top: 14px;
+
+  right: 14px;
+
+  z-index: 5;
+
+  width: 40px;
+
+  height: 40px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: rgba(0, 0, 0, 0.65);
+
+  color: #ffffff;
+
+  font-size: 28px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.product-modal-close:hover {
+
+  background: rgba(0, 0, 0, 0.9);
+
+  transform: scale(1.05);
+}
+
+
+/* =========================================================
+   МОБИЛЬНАЯ ВЕРСИЯ
+   ========================================================= */
 
 @media (max-width: 700px) {
+
+  /* -------------------------------------------------------
+     TOP BAR
+     ------------------------------------------------------- */
+
   .topbar {
-    margin-bottom: 38px;
+
+    height: 62px;
+
+    padding: 0 18px;
+
+    overflow: hidden;
   }
+
+
+  /* -------------------------------------------------------
+     БОЛЬШОЙ ЛОГОТИП
+     ------------------------------------------------------- */
+
+  .tennis-logo {
+
+    top: 145px;
+
+    left: 50%;
+
+    transform: translate(-50%, 0);
+  }
+
+
+  .tennis-logo-small {
+
+    font-size: clamp(18px, 5vw, 28px);
+
+    letter-spacing: 0.16em;
+
+    margin-left: 0.16em;
+  }
+
+
+  .tennis-logo-big {
+
+    /*
+       Теперь логотип не раздувается
+       слишком сильно.
+    */
+
+    font-size: clamp(70px, 19vw, 135px);
+
+    letter-spacing: -0.06em;
+
+    margin-top: 10px;
+  }
+
+
+  /* -------------------------------------------------------
+     ЛОГОТИП ПОСЛЕ СКРОЛЛА
+     ------------------------------------------------------- */
+
+  body.scrolled .tennis-logo {
+
+    top: 31px;
+
+    left: 18px;
+
+    width: max-content;
+
+    height: 28px;
+
+    transform: translateY(-50%);
+
+    flex-direction: row;
+
+    align-items: center;
+
+    gap: 5px;
+  }
+
+
+  body.scrolled .tennis-logo-small {
+
+    font-size: 7px;
+
+    letter-spacing: 0.07em;
+
+    margin: 0;
+
+    line-height: 1;
+  }
+
+
+  body.scrolled .tennis-logo-big {
+
+    font-size: 21px;
+
+    letter-spacing: -0.04em;
+
+    line-height: 0.9;
+
+    margin: 0;
+  }
+
+
+  /* -------------------------------------------------------
+     HERO
+     ------------------------------------------------------- */
+
+  .hero {
+
+    min-height: 560px;
+
+    padding-left: 18px;
+
+    padding-right: 18px;
+  }
+
+
+  .hero-content {
+
+    padding-top: 250px;
+
+    margin-bottom: 40px;
+  }
+
+
+  .hero-content h1 {
+
+    font-size: 30px;
+
+    line-height: 1.1;
+  }
+
+
+  .hero-content .subtitle {
+
+    font-size: 14px;
+  }
+
+
+  .kicker {
+
+    font-size: 13px;
+
+    margin: 30px 0 18px;
+  }
+
+
+  /* -------------------------------------------------------
+     AUTH
+     ------------------------------------------------------- */
+
+  .auth-buttons {
+
+    gap: 8px;
+  }
+
+
+  .btn-login {
+
+    font-size: 14px;
+  }
+
+
+  .cta {
+
+    padding: 9px 15px;
+
+    font-size: 13px;
+  }
+
+
+  .avatar {
+
+    width: 36px;
+
+    height: 36px;
+  }
+
+
+  /* -------------------------------------------------------
+     КАТАЛОГ
+     ------------------------------------------------------- */
+
+  main {
+
+    padding-left: 18px;
+
+    padding-right: 18px;
+  }
+
 
   .panel {
-    padding: 16px;
+
+    padding: 20px;
+
+    border-radius: 16px;
   }
 
+
   .products-grid {
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 12px;
+  }
+
+
+  /* -------------------------------------------------------
+     КАРТОЧКИ
+     ------------------------------------------------------- */
+
+  .card {
+
+    border-radius: 14px;
+  }
+
+
+  .card-body {
+
+    padding: 13px;
+  }
+
+
+  .card-title {
+
+    font-size: 16px;
+  }
+
+
+  .card-text {
+
+    font-size: 13px;
+
+    min-height: 36px;
+  }
+
+
+  .price {
+
+    font-size: 16px;
+  }
+
+
+  .stock {
+
+    font-size: 11px;
+  }
+
+
+  /* -------------------------------------------------------
+     МОДАЛЬНОЕ ОКНО
+     ------------------------------------------------------- */
+
+  .product-modal {
+
+    padding: 10px;
+
+    align-items: center;
+  }
+
+
+  .product-modal-content {
+
+    width: 100%;
+
+    max-height: 94vh;
+
+    border-radius: 18px;
+  }
+
+
+  .product-modal-image {
+
+    aspect-ratio: 1 / 1;
+  }
+
+
+  .product-modal-body {
+
+    padding: 20px;
+  }
+
+
+  .product-modal-title {
+
+    font-size: 27px;
+  }
+
+
+  .product-modal-description {
+
+    font-size: 14px;
+
+    line-height: 1.55;
+  }
+
+
+  .product-modal-info {
+
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 8px;
+  }
+
+
+  .product-modal-price {
+
+    font-size: 23px;
+  }
+
+}
+
+
+/* =========================================================
+   ОЧЕНЬ МАЛЕНЬКИЕ ЭКРАНЫ
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+  /* -------------------------------------------------------
+     TOP BAR
+     ------------------------------------------------------- */
+
+  .topbar {
+
+    padding: 0 12px;
+
+    height: 62px;
+  }
+
+
+  /* -------------------------------------------------------
+     БОЛЬШОЙ ЛОГОТИП
+     ------------------------------------------------------- */
+
+  .tennis-logo {
+
+    top: 135px;
+  }
+
+
+  /* -------------------------------------------------------
+     КОМПАКТНЫЙ ЛОГОТИП
+     ------------------------------------------------------- */
+
+  body.scrolled .tennis-logo {
+
+    left: 12px;
+
+    top: 31px;
+
+    height: 26px;
+  }
+
+
+  body.scrolled .tennis-logo-small {
+
+    font-size: 6px;
+  }
+
+
+  body.scrolled .tennis-logo-big {
+
+    font-size: 18px;
+  }
+
+
+  /* -------------------------------------------------------
+     AUTH
+     ------------------------------------------------------- */
+
+  .auth-buttons {
+
+    gap: 6px;
+  }
+
+
+  .btn-login {
+
+    font-size: 13px;
+  }
+
+
+  .cta {
+
+    padding: 8px 12px;
+
+    font-size: 12px;
+  }
+
+
+  /* -------------------------------------------------------
+     HERO
+     ------------------------------------------------------- */
+
+  .hero-content {
+
+    padding-top: 220px;
+  }
+
+
+  .hero-content h1 {
+
+    font-size: 27px;
+  }
+
+
+  /* -------------------------------------------------------
+     КАТАЛОГ
+     ------------------------------------------------------- */
+
+  .products-grid {
+
     grid-template-columns: 1fr;
   }
+
+
+  /* -------------------------------------------------------
+     МОДАЛЬНОЕ ОКНО
+     ------------------------------------------------------- */
+
+  .product-modal-body {
+
+    padding: 18px;
+  }
+
+
+  .product-modal-title {
+
+    font-size: 25px;
+  }
+
 }

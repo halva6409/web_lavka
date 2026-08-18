@@ -1,60 +1,627 @@
 <!doctype html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Лавка у Дома</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
-  </head>
-  <body>
-    <div class="grain"></div>
 
-    <header class="hero">
-      <nav class="topbar">
-        <div class="brand">Лавка у Дома</div>
-        <a class="cta" href="#catalog">Смотреть каталог</a>
-      </nav>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-      <div class="hero-content">
-        <p class="kicker">Свежие товары каждый день</p>
-        <h1>Онлайн-витрина для магазина с автоматическим обновлением</h1>
-        <p class="subtitle">
-          Товары добавляются через Telegram-бота и сразу появляются на сайте.
-        </p>
+  <title>Лавка у Дома</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/styles.css') }}"
+  />
+</head>
+
+
+<body>
+
+  <div class="grain"></div>
+
+
+  <!-- =====================================================
+       ЛОГОТИП
+       ===================================================== -->
+
+  <div class="tennis-logo">
+
+    <div class="tennis-logo-small">
+      ТЕННИСНАЯ
+    </div>
+
+    <div class="tennis-logo-big">
+      ЛА<span>ВК</span>А
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       TOPBAR
+       ===================================================== -->
+
+  <nav class="topbar">
+
+    <div class="auth-buttons">
+
+      {% if session.get('user_id') %}
+
+        <a href="/profile">
+
+          <img
+            src="{{ session.get('avatar_url', '/static/images/default-avatar.png') }}"
+            alt="Профиль"
+            class="avatar"
+          />
+
+        </a>
+
+      {% else %}
+
+        <a
+          href="/login"
+          class="btn-login"
+        >
+          Войти
+        </a>
+
+        <a
+          href="/register"
+          class="cta"
+        >
+          Регистрация
+        </a>
+
+      {% endif %}
+
+    </div>
+
+  </nav>
+
+
+  <!-- =====================================================
+       HERO
+       ===================================================== -->
+
+  <header class="hero">
+
+    <div class="hero-content">
+
+      <p class="kicker">
+        Свежие товары каждый день
+      </p>
+
+      <h1>
+        Онлайн-витрина для магазина
+        с автоматическим обновлением
+      </h1>
+
+      <p class="subtitle">
+        Товары добавляются через Telegram-бота
+        и сразу появляются на сайте.
+      </p>
+
+    </div>
+
+  </header>
+
+
+  <!-- =====================================================
+       КАТАЛОГ
+       ===================================================== -->
+
+  <main>
+
+    <section
+      class="panel"
+      id="catalog"
+    >
+
+      <div class="panel-head">
+
+        <h2>
+          Каталог
+        </h2>
+
+        <button
+          type="button"
+          id="refreshBtn"
+          class="refresh-btn"
+          onclick="location.reload()"
+        >
+          Обновить
+        </button>
+
       </div>
-    </header>
 
-    <main>
-      <section class="panel" id="catalog">
-        <div class="panel-head">
-          <h2>Каталог</h2>
-          <button id="refreshBtn" class="refresh-btn">Обновить</button>
+
+      <!-- =================================================
+           ТОВАРЫ
+           ================================================= -->
+
+      <div class="products-grid">
+
+        {% if products %}
+
+          {% for product in products %}
+
+            <article
+              class="card"
+              onclick="openProduct(this)"
+              
+              data-title="{{ product.title }}"
+              data-description="{{ product.description or '' }}"
+              data-colors="{{ product.colors or '' }}"
+              data-category="{{ product.category or '' }}"
+              data-price="{{ product.price }}"
+              data-kolvo="{{ product.kolvo or 0 }}"
+              data-image="{% if product.image_url %}{{ url_for('static', filename=product.image_url) }}{% endif %}"
+            >
+
+              <!-- ФОТО -->
+
+              {% if product.image_url %}
+
+                <img
+                  class="card-image"
+                  src="{{ url_for('static', filename=product.image_url) }}"
+                  alt="{{ product.title }}"
+                  loading="lazy"
+                />
+
+              {% else %}
+
+                <div class="card-image"></div>
+
+              {% endif %}
+
+
+              <!-- ИНФОРМАЦИЯ -->
+
+              <div class="card-body">
+
+                {% if product.category %}
+
+                  <p class="chip">
+                    {{ product.category }}
+                  </p>
+
+                {% endif %}
+
+
+                <h3 class="card-title">
+                  {{ product.title }}
+                </h3>
+
+
+                <div class="card-row">
+
+                  <strong class="price">
+                    {{ product.price }} ₽
+                  </strong>
+
+
+                  <span class="stock">
+
+                    {% if product.kolvo and product.kolvo > 0 %}
+
+                      В наличии
+
+                    {% else %}
+
+                      Нет в наличии
+
+                    {% endif %}
+
+                  </span>
+
+                </div>
+
+              </div>
+
+            </article>
+
+          {% endfor %}
+
+        {% else %}
+
+          <p class="empty">
+            Пока товаров нет.
+          </p>
+
+        {% endif %}
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =====================================================
+       ОКНО ТОВАРА
+       ===================================================== -->
+
+  <div
+    id="productModal"
+    class="product-modal"
+    onclick="closeProduct(event)"
+  >
+
+    <div
+      class="product-modal-content"
+      onclick="event.stopPropagation()"
+    >
+
+      <!-- КНОПКА ЗАКРЫТИЯ -->
+
+      <button
+        type="button"
+        class="product-modal-close"
+        onclick="closeProduct()"
+        aria-label="Закрыть"
+      >
+        ×
+      </button>
+
+
+      <!-- ФОТО -->
+
+      <img
+        id="modalImage"
+        class="product-modal-image"
+        src=""
+        alt=""
+      />
+
+
+      <!-- ИНФОРМАЦИЯ -->
+
+      <div class="product-modal-body">
+
+        <p
+          id="modalCategory"
+          class="chip"
+        ></p>
+
+
+        <h2
+          id="modalTitle"
+          class="product-modal-title"
+        ></h2>
+
+
+        <p
+          id="modalDescription"
+          class="product-modal-description"
+        ></p>
+
+
+        <p
+          id="modalColors"
+          class="product-modal-colors"
+        ></p>
+
+
+        <div class="product-modal-info">
+
+          <strong
+            id="modalPrice"
+            class="product-modal-price"
+          ></strong>
+
+
+          <span
+            id="modalStock"
+            class="product-modal-stock"
+          ></span>
+
         </div>
-        <div id="productsGrid" class="products-grid"></div>
-      </section>
-    </main>
 
-    <template id="productCardTemplate">
-      <article class="card">
-        <img class="card-image" src="" alt="" loading="lazy" />
-        <div class="card-body">
-          <p class="chip"></p>
-          <h3 class="card-title"></h3>
-          <p class="card-text"></p>
-          <div class="card-row">
-            <strong class="price"></strong>
-            <span class="stock"></span>
-          </div>
-        </div>
-      </article>
-    </template>
+      </div>
 
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-  </body>
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+       ===================================================== -->
+
+  <script>
+
+    /*
+     * =====================================================
+     * ОТКРЫТИЕ ТОВАРА
+     * =====================================================
+     *
+     * Берём данные прямо из карточки.
+     * Поэтому нам НЕ нужен:
+     *
+     *
+     */
+
+
+    function openProduct(card) {
+
+      /* Получаем данные */
+
+      const title =
+        card.dataset.title || "Без названия";
+
+      const description =
+        card.dataset.description || "Описание отсутствует";
+
+      const colors =
+        card.dataset.colors || "";
+
+      const category =
+        card.dataset.category || "";
+
+      const price =
+        card.dataset.price || "0";
+
+      const kolvo =
+        Number(card.dataset.kolvo || 0);
+
+      const imageUrl =
+        card.dataset.image || "";
+
+
+      /* =================================================
+         НАЗВАНИЕ
+         ================================================= */
+
+      document.getElementById("modalTitle").textContent =
+        title;
+
+
+      /* =================================================
+         ОПИСАНИЕ
+         ================================================= */
+
+      document.getElementById("modalDescription").textContent =
+        description;
+
+
+      /* =================================================
+         КАТЕГОРИЯ
+         ================================================= */
+
+      const categoryElement =
+        document.getElementById("modalCategory");
+
+
+      categoryElement.textContent =
+        category;
+
+
+      if (category) {
+
+        categoryElement.style.display =
+          "block";
+
+      } else {
+
+        categoryElement.style.display =
+          "none";
+      }
+
+
+      /* =================================================
+         ЦВЕТ
+         ================================================= */
+
+      const colorsElement =
+        document.getElementById("modalColors");
+
+
+      if (colors) {
+
+        colorsElement.textContent =
+          "Цвет: " + colors;
+
+        colorsElement.style.display =
+          "block";
+
+      } else {
+
+        colorsElement.textContent =
+          "";
+
+        colorsElement.style.display =
+          "none";
+      }
+
+
+      /* =================================================
+         ЦЕНА
+         ================================================= */
+
+      document.getElementById("modalPrice").textContent =
+        price + " ₽";
+
+
+      /* =================================================
+         НАЛИЧИЕ
+         ================================================= */
+
+      const stockElement =
+        document.getElementById("modalStock");
+
+
+      if (kolvo > 0) {
+
+        stockElement.textContent =
+          "В наличии: " + kolvo;
+
+      } else {
+
+        stockElement.textContent =
+          "Нет в наличии";
+      }
+
+
+      /* =================================================
+         ФОТО
+         ================================================= */
+
+      const image =
+        document.getElementById("modalImage");
+
+
+      if (imageUrl) {
+
+        image.src =
+          imageUrl;
+
+        image.alt =
+          title;
+
+        image.style.display =
+          "block";
+
+      } else {
+
+        image.src =
+          "";
+
+        image.alt =
+          "";
+
+        image.style.display =
+          "none";
+      }
+
+
+      /* =================================================
+         ОТКРЫВАЕМ ОКНО
+         ================================================= */
+
+      document
+        .getElementById("productModal")
+        .classList.add("active");
+
+
+      /* Блокируем прокрутку */
+
+      document.body.style.overflow =
+        "hidden";
+    }
+
+
+    /* =====================================================
+       ЗАКРЫТИЕ ОКНА
+       ===================================================== */
+
+    function closeProduct(event) {
+
+      /*
+       * Если кликнули по содержимому окна,
+       * ничего не делаем.
+       */
+
+      if (
+        event &&
+        event.target !== event.currentTarget
+      ) {
+
+        return;
+      }
+
+
+      document
+        .getElementById("productModal")
+        .classList.remove("active");
+
+
+      document.body.style.overflow =
+        "";
+    }
+
+
+    /* =====================================================
+       ESC
+       ===================================================== */
+
+    document.addEventListener(
+      "keydown",
+      function(event) {
+
+        if (event.key === "Escape") {
+
+          closeProduct();
+
+        }
+
+      }
+    );
+
+  </script>
+
+
+  <!-- =====================================================
+       СКРОЛЛ ЛОГОТИПА
+       ===================================================== -->
+
+  <script>
+
+    (() => {
+
+      let ticking = false;
+
+
+      function updateHeader() {
+
+        if (window.scrollY > 60) {
+
+          document.body.classList.add("scrolled");
+
+        } else {
+
+          document.body.classList.remove("scrolled");
+
+        }
+
+        ticking = false;
+      }
+
+
+      window.addEventListener(
+        "scroll",
+        () => {
+
+          if (!ticking) {
+
+            window.requestAnimationFrame(
+              updateHeader
+            );
+
+            ticking = true;
+
+          }
+
+        },
+        { passive: true }
+      );
+
+
+      updateHeader();
+
+    })();
+
+  </script>
+
+
+</body>
+
 </html>

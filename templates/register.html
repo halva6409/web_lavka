@@ -5,20 +5,131 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Регистрация</title>
   <link rel="stylesheet" href="/static/css/styles.css">
+  <style>
+    body {
+      background-color: #0a0a0a; color: #ffffff; font-family: -apple-system, sans-serif;
+      display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0;
+    }
+    .panel {
+      max-width: 520px !important; width: 100%; padding: 48px !important;
+      background: #141414; border-radius: 20px;
+    }
+    h2 { text-align: center; font-size: 32px; margin-bottom: 32px; }
+    
+    /* Обновленный цвет для меток */
+    label { 
+      display: block; margin-bottom: 20px; font-size: 15px; color: #a5b4c9; font-weight: 500;
+      transition: color 0.3s ease;
+    }
+    
+    /* Подсветка метки при фокусе на поле внутри */
+    label:focus-within { color: #ffffff; }
+    
+    .input-wrapper { position: relative; width: 100%; margin-top: 8px; }
+    .form-input {
+      width: 100%; box-sizing: border-box; padding: 14px 36px 14px 16px;
+      background: #1c1c1c; border: 1px solid #333; border-radius: 10px; font-size: 16px; color: #fff;
+      transition: all 0.3s ease;
+    }
+    .form-input:focus { border-color: #ff3b30; background: #222; outline: none; }
+    
+    .form-input.error { border-color: #ff3b30; }
+    .error-message { color: #ff3b30; font-size: 13px; margin-top: 4px; display: none; }
+    
+    .clear-btn {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: transparent !important; border: none !important; font-size: 22px !important;
+      color: #666 !important; cursor: pointer; display: none; z-index: 10;
+    }
+    
+    .toggle-password-btn {
+      background: none; border: none; color: #888; font-size: 13px; 
+      cursor: pointer; padding: 0; margin-top: 8px; display: inline-block;
+    }
+    
+    .cta { font-size: 18px; padding: 16px !important; border-radius: 10px; background: #ff3b30; border: none; color: white; font-weight: bold; cursor: pointer; margin-top: 12px; }
+  </style>
 </head>
 <body>
-  <main class="panel" style="max-width:420px;margin:40px auto;">
+  <main class="panel">
     <h2>Регистрация</h2>
-    {% if error %}
-      <p style="color:#b00020">{{ error }}</p>
-    {% endif %}
-    <form method="post">
-      <label>Имя<br><input name="name" /></label><br><br>
-      <label>Email<br><input name="email" type="email" required /></label><br><br>
-      <label>Пароль<br><input name="password" type="password" required /></label><br><br>
-      <button type="submit" class="cta">Зарегистрироваться</button>
+    {% if error %}<p style="color:#ff3b30; text-align: center;">{{ error }}</p>{% endif %}
+    
+    <form method="post" novalidate onsubmit="return validateForm(event)">
+      <label>Имя
+        <div class="input-wrapper">
+          <input name="name" class="form-input" oninput="toggleClear(this); hideError(this)" />
+          <button type="button" class="clear-btn" onclick="clearInput(this)">×</button>
+          <div class="error-message">Введите ваше имя</div>
+        </div>
+      </label>
+      
+      <div style="display: flex; gap: 16px;">
+        <label style="flex: 1;">Телефон
+          <div class="input-wrapper">
+            <input name="phone" type="tel" id="phone-input" placeholder="+7 (999) 999-99-99" class="form-input" oninput="toggleClear(this); hideError(this)" />
+            <button type="button" class="clear-btn" onclick="clearInput(this)">×</button>
+            <div class="error-message">Введите телефон</div>
+          </div>
+        </label>        
+        <label style="flex: 1;">Email
+          <div class="input-wrapper">
+            <input name="email" type="email" class="form-input" oninput="toggleClear(this); hideError(this)" />
+            <button type="button" class="clear-btn" onclick="clearInput(this)">×</button>
+            <div class="error-message">Введите email</div>
+          </div>
+        </label>
+      </div>
+
+      <label>Пароль
+        <div class="input-wrapper">
+          <input name="password" type="password" id="password-input" class="form-input" oninput="toggleClear(this); hideError(this)" />
+          <button type="button" class="clear-btn" onclick="clearInput(this)">×</button>
+          <div class="error-message">Придумайте пароль</div>
+        </div>
+        <button type="button" class="toggle-password-btn" onclick="togglePassword()">Показать пароль</button>
+      </label>
+      
+      <button type="submit" class="cta" style="width: 100%;">Зарегистрироваться</button>
     </form>
-    <p style="margin-top:12px">Уже есть аккаунт? <a href="/login">Войти</a></p>
+    <p style="margin-top:24px; text-align: center;">Уже есть аккаунт? <a href="/login" style="color:#ff3b30;">Войти</a></p>
   </main>
+
+  <script>
+    function toggleClear(input) { input.nextElementSibling.style.display = input.value.length > 0 ? 'block' : 'none'; }
+    function clearInput(btn) { const input = btn.previousElementSibling; input.value = ''; btn.style.display = 'none'; hideError(input); }
+    function hideError(input) { input.classList.remove('error'); input.parentElement.querySelector('.error-message').style.display = 'none'; }
+
+    function togglePassword() {
+      const passInput = document.getElementById('password-input');
+      const btn = document.querySelector('.toggle-password-btn');
+      if (passInput.type === 'password') {
+        passInput.type = 'text'; btn.textContent = 'Скрыть пароль';
+      } else {
+        passInput.type = 'password'; btn.textContent = 'Показать пароль';
+      }
+    }
+
+    function validateForm(event) {
+      let isValid = true;
+      ['name', 'phone', 'email', 'password'].forEach(fieldName => {
+        const input = event.target.querySelector(`input[name="${fieldName}"]`);
+        if (!input.value) {
+          input.classList.add('error'); input.parentElement.querySelector('.error-message').style.display = 'block';
+          isValid = false;
+        }
+      });
+      if (!isValid) event.preventDefault();
+      return isValid;
+    }
+
+    document.getElementById('phone-input').addEventListener('input', function (e) {
+      let x = e.target.value.replace(/\D/g, '').match(/(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/);
+      if (!x[1]) { e.target.value = ''; toggleClear(e.target); return; }
+      if (x[1] !== '7' && x[1] !== '8') x[1] = '7';
+      e.target.value = '+7' + (x[2] ? ' (' + x[2] : '') + (x[3] ? ') ' + x[3] : '') + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '');
+      toggleClear(e.target);
+    });
+  </script>
 </body>
 </html>

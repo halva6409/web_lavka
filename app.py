@@ -29,7 +29,7 @@ db = SQLAlchemy(app)
 app.secret_key = "KUTS_QWERTY_64"
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 ALLOWED_EXT = {'png','jpg','jpeg','gif'}
-MAX_CONTENT = 8 * 1024 * 1024  # 8 MB, при необходимости поменяй
+MAX_CONTENT = 12 * 1024 * 1024  # 8 MB, при необходимости поменяй
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT
@@ -43,7 +43,7 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT
 
 
 def get_db_connection():
-    conn = sqlite3.connect(sql_db, timeout=10)
+    conn = sqlite3.connect(sql_db, timeout=1)
     conn.row_factory = sqlite3.Row
     
     return conn
@@ -58,12 +58,9 @@ def admin_required(f):
         if not user_id:
             return redirect(url_for("login"))        # не залогинен — на страницу входа
 
-        conn = get_db_connection()
-        row = conn.execute("SELECT is_admin FROM users WHERE id = ?", (user_id,)).fetchone()
-        conn.close()
+        us = User.query.filter_by(id=user_id).first()
 
-        if not row or not row["is_admin"]:
-            # Для HTML-страниц — 403. Для API можно вернуть JSON + статус.
+        if not us or not us.is_admin:
             return abort(403)
 
         return f(*args, **kwargs)
@@ -81,15 +78,17 @@ def admin_required(f):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
-    password_hash = db.Column(db.String(120))
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    is_admin = db.Column(db.Integer, default=0)
+    phone = db.Column(db.String(120), nullable=True)
+    email = db.Column(db.String(120), unique=True, nullable=True)
     created_at = db.Column(db.String(50))
+    is_admin = db.Column(db.Integer, default=0)
+    password_hash = db.Column(db.String(120))
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
+    colors = db.Column(db.Text, nullable=True)
     price = db.Column(db.Float, nullable=False)
     image_url = db.Column(db.String(200))
     category = db.Column(db.String(50))
@@ -106,7 +105,8 @@ class Product(db.Model):
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    products = Product.query.filter_by(is_active=1).order_by(Product.id.desc()).all()
+    return render_template("index.html", products=products)
 
 #########################################################################################################################################################
 
@@ -114,16 +114,18 @@ def index():
 def register():
     if request.method == 'POST':
         us = request.form.get("name", "").strip()
+        phone = request.form.get("phone", "")
         email = request.form.get("email", "").lower().strip()
         pw = request.form.get("password", "")
         
-        if not email or not pw:
-            return render_template('register.html', error='Email и пароль обязательны')
+        if not(email or phone) and not pw:
+            return render_template('register.html', error='Email или телефон, пароль обязательны')
             
         pw_hash = generate_password_hash(pw)
 
         new_user = User(
             name = us,
+            phone = phone,
             email=email,
             password_hash=pw_hash,
             created_at=datetime.now(timezone.utc).isoformat()
@@ -140,51 +142,17 @@ def register():
 
 #########################################################################################################################################################
 
-@app.route('/admin/add', methods=['POST'])
-@admin_required
-def admin_add():
-    title = request.form.get('title', '').strip()
-    desc = request.form.get('description', '').strip()
-    try:
-        price = float(request.form.get('price', 0) or 0)
-    except ValueError:
-        price = 0.0
-    category = request.form.get('category', '').strip()
-    try:
-        kolvo = int(request.form.get('kolvo', 0) or 0)
-    except ValueError:
-        kolvo = 0
-    image = request.files.get('image')
-    image_url = ''
-
-    if image and image.filename:
-        if not allowed_file(image.filename):
-            return "Неподдерживаемый формат файла", 400
-        filename = secure_filename(image.filename)
-        unique_name = f"{uuid.uuid4().hex}_{filename}"
-        save_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        image.save(save_path)
-        image_url = f"/{save_path.replace(os.path.sep,'/')}"
-    conn = get_db_connection()
-    conn.execute(
-        "INSERT INTO products (image_url, title, description, price, category, kolvo, is_active, created_at) VALUES (?,?,?,?,?,?,?,?)",
-        (image_url, title, desc, price, category, kolvo, 1, datetime.now(timezone.utc).isoformat()),
-    )
-    conn.commit()
-    conn.close()
-    return redirect(url_for('index'))
-
-#########################################################################################################################################################
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-
+        phone = request.form.get("phone", "")  
         email = request.form.get('email', '').lower().strip()
         password = request.form.get('password', '')
 
-        user = User.query.filter_by(email=email).first()
+        if phone != '':
+            user = User.query.filter_by(phone=phone).first()
+        else:
+            user = User.query.filter_by(email=email).first()
 
         if not user or not check_password_hash(user.password_hash, password):
             return render_template("login.html", error="Неверный email или пароль", email=email)
@@ -196,97 +164,83 @@ def login():
 
 #########################################################################################################################################################
 
-@app.get("/api/products")
-def get_products():
-    """API для фронтенда: возвращает список активных товаров в JSON.
+@app.route('/admin')
+@admin_required
+def admin_():
+    products = Product.query.order_by(Product.id.desc()).all()
 
-    Пример ответа: [{"id":1,"title":"Хлеб","price":140,...}, ...]
-    """
-    conn = get_db_connection()
-    rows = conn.execute(
-        "SELECT id, title, description, price, image_url, category, kolvo FROM products WHERE is_active = 1 ORDER BY id DESC"
-    ).fetchall()
-    conn.close()
-
-    products = [dict(row) for row in rows]
-    # map DB column 'kolvo' to JSON 'stock' expected by frontend
-    for p in products:
-        p['stock'] = p.get('kolvo', 0)
-    return jsonify(products)
+    return render_template("admin.html", products=products)
 
 #########################################################################################################################################################
 
-@app.post("/api/products/by-bot")
-def add_product_by_bot():
-    """Endpoint для Telegram-бота.
+@app.route('/admin/add', methods=['POST'])
+@admin_required
+def admin_add():
+    title = request.form.get("title") 
+    description = request.form.get("description")
+    colors = request.form.get("colors") 
+    price = float(request.form.get("price"))
+    category = request.form.get("category") 
+    kolvo = int(request.form.get("kolvo"))
 
-    Ожидает заголовок `X-Api-Key` для простого контроля доступа.
-    Тело — JSON с полями: title (строка), price (число),
-    опционально description, image_url, category, stock.
+    image = request.files.get("image")
+    image_url = None
+    if image and image.filename:
+        filename = secure_filename(image.filename)
+        image.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+        image_url = f"uploads/{filename}"
 
-    Пример JSON:
-    {
-      "title": "Хлеб",
-      "price": 140,
-      "description": "Домашний",
-      "image_url": "https://...",
-      "category": "Выпечка",
-      "stock": 30
-    }
-    """
-    api_key = request.headers.get("X-Api-Key", "")
-    if api_key != secret.API_TG_KEY:
-        return jsonify({"error": "Unauthorized"}), 401
+    product = Product(
+        title=title,
+        description=description,
+        colors=colors,
+        price=price,
+        category=category,
+        kolvo=kolvo,
+        image_url=image_url,
+        is_active=1,)
+    
+    db.session.add(product)
+    db.session.commit()
 
-    data = request.get_json(silent=True) or {}
+    return redirect(url_for("admin_"))
 
-    # простая валидация
-    if not data.get("title") or not data.get("price"):
-        return jsonify({"error": "Missing title or price"}), 400
+#########################################################################################################################################################
 
-    try:
-        price = float(data["price"])
-        stock = int(data.get("stock", 0))
-    except (ValueError, TypeError):
-        return jsonify({"error": "price must be a number and stock an integer"}), 400
+@app.route('/admin/edit/<int:product_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_product(product_id):
+    product = Product.query.get_or_404(product_id)
+    if request.method == 'POST':
 
-    conn = get_db_connection()
-    cursor = conn.execute(
-        "INSERT INTO products (title, description, price, image_url, category, kolvo, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (
-            data["title"],
-            data.get("description", ""),
-            price,
-            data.get("image_url", ""),
-            data.get("category", "Без категории"),
-            stock,
-            datetime.now(timezone.utc).isoformat(),
-        ),
+        product.title = request.form.get("title")
+        product.description = request.form.get("description")
+        product.colors = request.form.get("colors")
+        product.price = request.form.get("price")
+        product.category = request.form.get("category")
+        product.kolvo = request.form.get("kolvo")
+
+        db.session.commit()
+        return redirect(url_for("admin_"))
+    return render_template(
+        "edit_product.html",
+        product=product
     )
-    conn.commit()
-    product_id = cursor.lastrowid
-    conn.close()
-
-    return jsonify({"ok": True, "product_id": product_id}), 201
 
 #########################################################################################################################################################
 
-@app.post("/api/products/<int:product_id>/deactivate")
-def deactivate_product(product_id: int):
-    """Простой endpoint для скрытия товара с витрины.
+@app.route('/admin/delete/<int:product_id>', methods=['POST'])
+@admin_required
+def delete_product(product_id):
 
-    Тоже требует `X-Api-Key`.
-    """
-    api_key = request.headers.get("X-Api-Key", "")
-    if api_key != secret.API_TG_KEY:
-        return jsonify({"error": "Unauthorized"}), 401
+    product = Product.query.get_or_404(product_id)
 
-    conn = get_db_connection()
-    conn.execute("UPDATE products SET is_active = 0 WHERE id = ?", (product_id,))
-    conn.commit()
-    conn.close()
+    db.session.delete(product)
+    db.session.commit()
 
-    return jsonify({"ok": True})
+    return redirect(url_for("admin_"))
+
+
 
 
 
