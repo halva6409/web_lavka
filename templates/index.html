@@ -599,14 +599,14 @@
 
     <div class="auth-buttons">
 
-      {% if session.get('user_id') %}
+      {% if user %}
 
       <!-- =================================================
            АВАТАР = КНОПКА
            ================================================= -->
       <a
-        href="/like"
-        class="like"
+        href="/favorites"
+        class="liked"
       >
         Избранное
       </a>
@@ -652,22 +652,44 @@
 
     <div class="hero-content">
 
-      <p class="kicker">
-        Свежие товары каждый день
-      </p>
+      {% if session.get('user_id') %}
+
+      
+      <a href="/o_nas"
+        class="kicker-line-marg-news"
+      >О нас</a>
+
+      <a href="/news"
+        class="kicker-line"
+      >Новости</a>
+
+      <a href="#catalog"
+        class="kicker-line"
+      >Каталог</a>
+
+      <a href="/favorites"
+        class="kicker-line"
+      >Избранное</a>
+
+      <a href="/zakazy"
+        class="kicker-line"
+      >Мои заказы</a>
 
 
-      <h1>
-        Онлайн-витрина для магазина
+      {% else %}
+      <p class="kicker">Свежие товары каждый день</p>
+
+
+      <h2>Онлайн-витрина для магазина
         с автоматическим обновлением
-      </h1>
+      </h2>
 
 
       <p class="subtitle">
         Товары добавляются через Telegram-бота
         и сразу появляются на сайте.
       </p>
-
+      {% endif %}
     </div>
 
   </header>
@@ -686,10 +708,32 @@
 
       <div class="panel-head">
 
-        <h2>
-          Каталог
-        </h2>
+        <h2>Каталог</h2>
 
+        <form class="search_" method="GET" action="/">
+          <div class="search-wrapper">
+
+            <input
+              class="search-input"
+              type="text"
+              name="search"
+              placeholder="Поиск по товарам..."
+              value="{{ search or '' }}"
+              autocomplete="off"
+            >
+
+            <button
+              type="button"
+              class="clear-btn10"
+              onclick="clearInput(this)"
+            >×</button>
+
+          </div>
+
+          <button type="submit" class="search-btn">
+            Найти
+          </button>
+        </form>
 
         <button
           type="button"
@@ -697,12 +741,35 @@
           class="refresh-btn"
           onclick="location.reload()"
         >
-          Обновить
+          <img 
+            src="{{url_for('static', filename='/images/refresh-button.png')}}"
+            alt="a;onjgreoiq"
+            >
         </button>
 
       </div>
 
+      <script>
+        const searchInput = document.querySelector('.search_ input[name="search"]');
+        const clearButton = document.querySelector('.clear-btn10');
 
+        function updateClearButton() {
+            clearButton.style.display =
+                searchInput.value.length > 0 ? "flex" : "none";
+        }
+
+        function clearInput(button) {
+            const form = button.closest("form");
+
+            searchInput.value = "";
+
+            form.submit();
+        }
+
+        searchInput.addEventListener("input", updateClearButton);
+
+        updateClearButton();
+        </script>
       <!-- =================================================
            ТОВАРЫ
            ================================================= -->
@@ -746,12 +813,32 @@
 
               {% if product.images %}
 
+              <img
+              class="card-image"
+              src="{{ url_for('static', filename=product.images[0].image_url) }}"
+              alt="{{ product.title }}"
+              loading="lazy"
+              />
+              
+             <button
+                type="button"
+                class="favorite-btn {% if user and product.id in (user.favorites or []) %}is-favorite{% endif %}"
+                data-product-id="{{ product.id }}"
+                aria-label="Добавить в избранное"
+              >
+              
                 <img
-                  class="card-image"
-                  src="{{ url_for('static', filename=product.images[0].image_url) }}"
-                  alt="{{ product.title }}"
-                  loading="lazy"
-                />
+                    class="favorite-icon favorite-icon-empty"
+                    src="{{ url_for('static', filename='images/heart.png') }}"
+                    alt=""
+                >
+
+                <img
+                    class="favorite-icon favorite-icon-filled"
+                    src="{{ url_for('static', filename='images/heart2.png') }}"
+                    alt=""
+                >
+              </button>
 
               {% else %}
 
@@ -782,7 +869,7 @@
                 <div class="card-row">
 
                   <strong class="price">
-                    {{ product.price }} ₽
+                    {{ "{:,}".format(product.price).replace(",", " ") }} ₽
                   </strong>
 
 
@@ -790,11 +877,11 @@
 
                     {% if product.kolvo and product.kolvo > 0 %}
 
-                      В наличии
+                      🟢 В наличии
 
                     {% else %}
 
-                      Нет в наличии
+                      Под заказ
 
                     {% endif %}
 
@@ -994,7 +1081,7 @@
 
         <p
           id="modalCategory"
-          class="chip"
+          class="product-chip"
         ></p>
 
 
@@ -1050,6 +1137,47 @@
        ПЕРЕМЕННЫЕ ГАЛЕРЕИ
        ===================================================== */
 
+
+
+    document.querySelectorAll(".favorite-btn").forEach(button => {
+
+        button.addEventListener("click", async function(event) {
+
+            event.stopPropagation();
+
+            const productId = this.dataset.productId;
+
+            try {
+
+                const response = await fetch("/api/favorite/toggle", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        product_id: Number(productId)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    console.error(data.error);
+                    return;
+                }
+
+                this.classList.toggle(
+                    "is-favorite",
+                    data.favorite
+                );
+
+            } catch (error) {
+                console.error("Ошибка избранного:", error);
+            }
+
+        });
+
+    });
     let currentImageIndex = 0;
 
     let currentImages = [];
@@ -1456,11 +1584,9 @@
          ================================================= */
 
       document
-        .getElementById(
-          "modalPrice"
-        )
+        .getElementById("modalPrice")
         .textContent =
-          price + " ₽";
+          Number(price).toLocaleString("ru-RU") + " ₽";
 
 
       /* =================================================
@@ -2203,5 +2329,4 @@
 
 
 </body>
-
 

@@ -9,6 +9,7 @@ import os
 from werkzeug.utils import secure_filename
 import uuid
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
 
@@ -66,6 +67,23 @@ def admin_required(f):
     return decorated
 
 
+def logined(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+
+        user_id = session.get("user_id")
+
+        if not user_id:
+            return jsonify({
+                "success": False,
+                "error": "Необходимо войти в аккаунт"
+            }), 401
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
 
 #########################################################################################################################################################
 #########################################################################################################################################################
@@ -81,6 +99,8 @@ class User(db.Model):
     created_at = db.Column(db.String(50))
     is_admin = db.Column(db.Integer, default=0)
     password_hash = db.Column(db.String(120))
+    favorites = db.Column(db.JSON, nullable=False, default=list)
+
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -108,10 +128,24 @@ class Image_prod(db.Model):
 
 @app.route("/")
 def index():
-    products = Product.query.filter_by(is_active=1).order_by(Product.id.desc()).all()
-    user_id = session.get("user_id")
+    fovorites = []
+
+    user_id = session.get("user_id","")
     user = User.query.get(user_id) if user_id else None
-    return render_template("index.html", products=products, user=user)
+
+    search = request.args.get("search", "").strip()
+    query = Product.query.filter_by(is_active=1)
+    if search:
+        query = query.filter(or_(
+                                Product.title.ilike(f"%{search}%"),
+                                Product.category.ilike(f"%{search}%"),
+                                Product.description.ilike(f"%{search}%"),
+                                ))
+    products = query.filter_by(is_active=1).order_by(Product.id.desc()).all()
+
+    
+    
+    return render_template("index.html", products=products, user=user, search=search, )
 
 #########################################################################################################################################################
 
@@ -266,12 +300,59 @@ def logout():
     session.clear()
     return redirect('/')
 
+@app.route("/favorites")
+def favorite():
+    favorite_products = []
+    user_id = session.get("user_id","")
+    user = User.query.get(user_id) if user_id else None
+    if not user:
+        return redirect(url_for("login"))
+    if user and user.favorites:
+        favorite_products = Product.query.filter(Product.id.in_(user.favorites)).all()
+    return render_template("favor.html", user=user, favorite_products=favorite_products)
 #########################################################################################################################################################
 
+@app.post("/api/favorite/toggle")
+@logined
+def toggle_favorite():
+    data = request.get_json()
+    product_id = data.get("product_id")
+    if not product_id:
+        return jsonify({
+            "success": False,
+            "error": "Не передан ID товара"
+        }), 400
+    product_id = int(product_id)
+    user_id = session.get("user_id")
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({
+            "success": False,
+            "error": "Пользователь не найден"
+        }), 404
+    product = Product.query.get(product_id)
+    if not product:
+        return jsonify({
+            "success": False,
+            "error": "Товар не найден"
+        }), 404
+    favorites = list(user.favorites or [])
+    favorites = [int(fav) for fav in favorites]
+    if product_id in favorites:
+        favorites.remove(product_id)
+        is_favorite = False
+    else:
+        favorites.append(product_id)
+        is_favorite = True
+    user.favorites = favorites
+    db.session.commit()
+    return jsonify({
+        "success": True,
+        "favorite": is_favorite,
+        "favorites": favorites
+    })
 
-
-
-
+#########################################################################################################################################################
 
 
 

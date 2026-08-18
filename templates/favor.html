@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>Избранное</title>
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/styles.css') }}"
+  >
+
+  <style>
+
+    /* =========================================================
+       СТРАНИЦА ИЗБРАННОГО
+       ========================================================= */
+
+    .favorites-page {
+      width: min(1100px, calc(100% - 30px));
+
+      margin: 100px auto 40px;
+
+      padding: 30px;
+
+      background: rgba(18, 18, 18, 0.78);
+
+      border: 1px solid #262626;
+
+      border-radius: 22px;
+
+      box-sizing: border-box;
+
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+
+    /* =========================================================
+       ЗАГОЛОВОК
+       ========================================================= */
+
+    .favorites-title {
+      margin: 0 0 30px;
+
+      text-align: center;
+
+      font-family:
+        "Fira Sans Extra Condensed",
+        sans-serif;
+
+      font-size: 38px;
+
+      font-weight: 800;
+
+      color: #ffffff;
+    }
+
+
+    /* =========================================================
+       СЕТКА ТОВАРОВ
+       ========================================================= */
+
+    .favorites-grid {
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(auto-fill, minmax(220px, 1fr));
+
+      gap: 18px;
+    }
+
+
+    /* =========================================================
+       КАРТОЧКА
+       ========================================================= */
+
+    .favorite-card {
+
+      position: relative;
+
+      overflow: hidden;
+
+      background: #11101770;
+
+      border: 1px solid #292929;
+
+      border-radius: 16px;
+
+      display: flex;
+
+      flex-direction: column;
+
+      min-height: 250px;
+
+      cursor: pointer;
+
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+
+    .favorite-card:hover {
+
+      transform: translateY(-4px);
+
+      border-color: #3a3a3a;
+
+      background: #0e073bb8;
+
+      box-shadow:
+        0 12px 30px rgba(201, 45, 36, 0.45);
+    }
+
+
+    /* =========================================================
+       ФОТО
+       ========================================================= */
+
+    .favorite-card-image {
+
+      width: 100%;
+
+      aspect-ratio: 1 / 1;
+
+      object-fit: cover;
+
+      display: block;
+
+      background: #222;
+    }
+
+
+    .favorite-card-no-image {
+
+      width: 100%;
+
+      aspect-ratio: 1 / 1;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      background: #222;
+
+      color: #666;
+    }
+
+
+    /* =========================================================
+       ТЕЛО КАРТОЧКИ
+       ========================================================= */
+
+    .favorite-card-body {
+
+      padding: 12px;
+
+      display: flex;
+
+      flex-direction: column;
+
+      flex: 1;
+
+      min-height: 0;
+    }
+
+
+    /* =========================================================
+       КАТЕГОРИЯ
+       ========================================================= */
+
+    .favorite-category {
+
+      margin: 0 0 4px;
+
+      color: #c92d24;
+
+      font-size: 10px;
+
+      font-weight: 700;
+    }
+
+
+    /* =========================================================
+       НАЗВАНИЕ
+       ========================================================= */
+
+    .favorite-title {
+
+      margin: 4px 0 8px;
+
+      font-size: 20px;
+
+      font-weight: 800;
+
+      line-height: 1.15;
+
+      overflow: hidden;
+
+      display: -webkit-box;
+
+      -webkit-box-orient: vertical;
+
+      -webkit-line-clamp: 3;
+
+      line-clamp: 3;
+
+      overflow-wrap: anywhere;
+
+      word-break: normal;
+    }
+
+
+    /* =========================================================
+       НИЖНЯЯ СТРОКА
+       ========================================================= */
+
+    .favorite-row {
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 10px;
+
+      margin-top: auto;
+    }
+
+
+    .favorite-price {
+
+      font-size: 18px;
+
+      font-weight: 700;
+
+      white-space: nowrap;
+    }
+
+
+    .favorite-stock {
+
+      color: #86868b;
+
+      font-size: 12px;
+
+      text-align: right;
+
+      white-space: nowrap;
+    }
+
+
+    /* =========================================================
+       СЕРДЕЧКО
+       ========================================================= */
+
+    .favorite-btn {
+
+      position: absolute;
+
+      top: 8px;
+
+      right: 8px;
+
+      width: 32px;
+
+      height: 32px;
+
+      padding: 0;
+
+      border: none;
+
+      border-radius: 50%;
+
+      background: rgba(0, 0, 0, 0.65);
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      cursor: pointer;
+
+      z-index: 20;
+    }
+
+
+    /* Оба изображения находятся
+       в одной точке */
+
+    .favorite-icon {
+
+      position: absolute;
+
+      width: 17px;
+
+      height: 17px;
+
+      object-fit: contain;
+
+      display: block;
+
+      pointer-events: none;
+    }
+
+
+    /* =========================================================
+       В ИЗБРАННОМ ПОКАЗЫВАЕМ ТОЛЬКО ЗАПОЛНЕННОЕ
+       ========================================================= */
+
+    .favorite-icon-empty {
+      display: none;
+    }
+
+
+    .favorite-icon-filled {
+      display: block;
+    }
+
+
+    /* =========================================================
+       АНИМАЦИЯ УДАЛЕНИЯ
+       ========================================================= */
+
+    .favorite-card.removing {
+
+      opacity: 0;
+
+      transform: scale(0.9);
+
+      transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+    }
+
+
+    /* =========================================================
+       ПУСТОЕ ИЗБРАННОЕ
+       ========================================================= */
+
+    .favorites-empty {
+
+      padding: 70px 20px;
+
+      text-align: center;
+    }
+
+
+    .favorites-empty h2 {
+
+      margin: 0 0 10px;
+
+      font-size: 24px;
+
+      color: #fff;
+    }
+
+
+    .favorites-empty p {
+
+      margin: 0;
+
+      color: #86868b;
+
+      font-size: 15px;
+    }
+
+
+    /* =========================================================
+       МОБИЛЬНАЯ ВЕРСИЯ
+       ========================================================= */
+
+    @media (max-width: 600px) {
+
+      .favorites-page {
+
+        width: calc(100% - 16px);
+
+        margin: 75px auto 20px;
+
+        padding: 12px;
+
+        border-radius: 18px;
+      }
+
+
+      .favorites-title {
+
+        margin-bottom: 20px;
+
+        font-size: 30px;
+      }
+
+
+      .favorites-grid {
+
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+
+        gap: 9px;
+      }
+
+
+      .favorite-card {
+
+        border-radius: 12px;
+
+        min-height: 0;
+      }
+
+
+      .favorite-card-body {
+
+        padding: 9px;
+      }
+
+
+      .favorite-category {
+
+        font-size: 9px;
+      }
+
+
+      .favorite-title {
+
+        margin: 3px 0 7px;
+
+        font-size: 14px;
+
+        line-height: 1.15;
+
+        -webkit-line-clamp: 2;
+
+        line-clamp: 2;
+      }
+
+
+      .favorite-price {
+
+        font-size: 14px;
+      }
+
+
+      .favorite-stock {
+
+        font-size: 9px;
+      }
+
+
+      .favorite-btn {
+
+        top: 6px;
+
+        right: 6px;
+
+        width: 30px;
+
+        height: 30px;
+      }
+
+
+      .favorite-icon {
+
+        width: 16px;
+
+        height: 16px;
+      }
+
+    }
+
+
+    /* =========================================================
+       375px И МЕНЬШЕ
+       ========================================================= */
+
+    @media (max-width: 380px) {
+
+      .favorites-page {
+
+        width: calc(100% - 10px);
+
+        padding: 9px;
+      }
+
+
+      .favorites-grid {
+
+        gap: 7px;
+      }
+
+
+      .favorite-card-body {
+
+        padding: 8px;
+      }
+
+
+      .favorite-title {
+
+        font-size: 13px;
+      }
+
+
+      .favorite-price {
+
+        font-size: 13px;
+      }
+
+
+      .favorite-stock {
+
+        font-size: 8px;
+      }
+
+
+      .favorite-btn {
+
+        width: 28px;
+
+        height: 28px;
+      }
+
+
+      .favorite-icon {
+
+        width: 15px;
+
+        height: 15px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+  <main class="favorites-page">
+
+
+    <h1 class="favorites-title">
+      Избранное
+    </h1>
+
+
+    {% if favorite_products %}
+
+
+      <div class="favorites-grid">
+
+
+        {% for product in favorite_products %}
+
+
+          <article
+            class="favorite-card"
+            data-product-id="{{ product.id }}"
+          >
+
+
+            <!-- =============================================
+                 ФОТО
+                 ============================================= -->
+
+            {% if product.images %}
+
+              <img
+                class="favorite-card-image"
+                src="{{ url_for(
+                  'static',
+                  filename=product.images[0].image_url
+                ) }}"
+                alt="{{ product.title }}"
+                loading="lazy"
+              >
+
+            {% else %}
+
+              <div class="favorite-card-no-image">
+                Нет изображения
+              </div>
+
+            {% endif %}
+
+
+            <!-- =============================================
+                 СЕРДЕЧКО
+                 ============================================= -->
+
+            <button
+              type="button"
+              class="favorite-btn"
+              data-product-id="{{ product.id }}"
+              aria-label="Убрать из избранного"
+            >
+
+              <img
+                class="favorite-icon favorite-icon-empty"
+                src="{{ url_for(
+                  'static',
+                  filename='images/heart.png'
+                ) }}"
+                alt=""
+              >
+
+
+              <img
+                class="favorite-icon favorite-icon-filled"
+                src="{{ url_for(
+                  'static',
+                  filename='images/heart2.png'
+                ) }}"
+                alt=""
+              >
+
+            </button>
+
+
+            <!-- =============================================
+                 ИНФОРМАЦИЯ
+                 ============================================= -->
+
+            <div class="favorite-card-body">
+
+
+              {% if product.category %}
+
+                <p class="favorite-category">
+                  {{ product.category }}
+                </p>
+
+              {% endif %}
+
+
+              <h3 class="favorite-title">
+                {{ product.title }}
+              </h3>
+
+
+              <div class="favorite-row">
+
+
+                <strong class="favorite-price">
+
+                  {{ "{:,.0f}".format(
+                    product.price
+                  ).replace(",", " ") }} ₽
+
+                </strong>
+
+
+                <span class="favorite-stock">
+
+                  {% if product.kolvo and product.kolvo > 0 %}
+
+                    🟢 В наличии
+
+                  {% else %}
+
+                    Нет в наличии
+
+                  {% endif %}
+
+                </span>
+
+
+              </div>
+
+
+            </div>
+
+
+          </article>
+
+
+        {% endfor %}
+
+
+      </div>
+
+
+    {% else %}
+
+
+      <div class="favorites-empty">
+
+        <h2>
+          В избранном пока пусто
+        </h2>
+
+        <p>
+          Добавьте товары в избранное,
+          и они появятся здесь.
+        </p>
+
+      </div>
+
+
+    {% endif %}
+
+
+  </main>
+
+
+  <script>
+
+    /*
+     * ========================================================
+     * УДАЛЕНИЕ ИЗ ИЗБРАННОГО
+     * ========================================================
+     */
+
+    document
+      .querySelectorAll(".favorite-btn")
+      .forEach(button => {
+
+        button.addEventListener(
+          "click",
+          async function(event) {
+
+            /*
+             * Не даём клику перейти
+             * на карточку товара.
+             */
+
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            const productId =
+              Number(this.dataset.productId);
+
+
+            const card =
+              this.closest(".favorite-card");
+
+
+            try {
+
+              const response =
+                await fetch(
+                  "/api/favorite/toggle",
+                  {
+
+                    method: "POST",
+
+                    headers: {
+                      "Content-Type":
+                        "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                      product_id: productId
+
+                    })
+
+                  }
+                );
+
+
+              const data =
+                await response.json();
+
+
+              if (!data.success) {
+
+                console.error(
+                  data.error
+                );
+
+                return;
+              }
+
+
+              /*
+               * На странице избранного
+               * товар всегда уже является
+               * избранным.
+               *
+               * Поэтому после нажатия
+               * favorite === false
+               * означает удаление.
+               */
+
+              if (!data.favorite) {
+
+                card.classList.add(
+                  "removing"
+                );
+
+
+                setTimeout(() => {
+
+                  card.remove();
+
+
+                  /*
+                   * Если карточек больше нет,
+                   * показываем сообщение.
+                   */
+
+                  const grid =
+                    document.querySelector(
+                      ".favorites-grid"
+                    );
+
+
+                  if (
+                    grid &&
+                    grid.children.length === 0
+                  ) {
+
+                    grid.innerHTML = `
+
+                      <div
+                        class="favorites-empty"
+                        style="grid-column: 1 / -1;"
+                      >
+
+                        <h2>
+                          В избранном пока пусто
+                        </h2>
+
+                        <p>
+                          Добавьте товары в избранное,
+                          и они появятся здесь.
+                        </p>
+
+                      </div>
+
+                    `;
+
+                  }
+
+                }, 200);
+
+              }
+
+            }
+
+            catch (error) {
+
+              console.error(
+                "Ошибка избранного:",
+                error
+              );
+
+            }
+
+          }
+        );
+
+      });
+
+
+  </script>
+
+
+</body>
+<a href="/" class="back-home">
+    ← На главную
+</a>
+
+</html>
