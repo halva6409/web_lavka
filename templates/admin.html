@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Админка</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <main class="panel" style="max-width:900px;margin:24px auto;">
+    <h2>Админ-панель</h2>
+    <p><a href="/">На сайт</a> • <a href="/logout">Выйти</a></p>
+    <h3>Товары</h3>
+    <table style="width:100%;border-collapse:collapse">
+      <tr><th>ID</th><th>Название</th><th>Цена</th><th>Остаток</th><th>Активен</th></tr>
+      {% for p in products %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.title }}</td>
+        <td>{{ p.price }}</td>
+        <td>{{ p.stock }}</td>
+        <td>{{ 'Да' if p.is_active else 'Нет' }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </main>
+</body>
+</html>

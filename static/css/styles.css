@@ -1,0 +1,226 @@
+:root {
+  --bg: #f8f4ea;
+  --surface: #fffaf0;
+  --ink: #17212b;
+  --muted: #5f6b76;
+  --accent: #e6582d;
+  --accent-2: #1f8f7a;
+  --line: #e7dcc7;
+  --shadow: 0 18px 40px rgba(23, 33, 43, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  font-family: "Manrope", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 10% 20%, #ffe5c3 0, rgba(255, 229, 195, 0) 35%),
+    radial-gradient(circle at 90% 15%, #d9f1eb 0, rgba(217, 241, 235, 0) 32%),
+    var(--bg);
+  position: relative;
+}
+
+.grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  opacity: 0.2;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='%2317212b' fill-opacity='0.06'%3E%3Ccircle cx='10' cy='10' r='1'/%3E%3Ccircle cx='30' cy='70' r='1'/%3E%3Ccircle cx='78' cy='20' r='1'/%3E%3Ccircle cx='120' cy='42' r='1'/%3E%3Ccircle cx='59' cy='100' r='1'/%3E%3Ccircle cx='100' cy='122' r='1'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.hero {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 42px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 56px;
+}
+
+.brand {
+  font-family: "Fraunces", serif;
+  font-weight: 700;
+  font-size: clamp(1.3rem, 2vw, 1.9rem);
+}
+
+.cta {
+  text-decoration: none;
+  color: #fff;
+  background: linear-gradient(120deg, var(--accent), #f2864f);
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-weight: 700;
+  transition: transform 180ms ease;
+}
+
+.cta:hover {
+  transform: translateY(-2px);
+}
+
+.hero-content h1 {
+  max-width: 850px;
+  margin: 8px 0 14px;
+  font-family: "Fraunces", serif;
+  font-size: clamp(2rem, 6vw, 4.25rem);
+  line-height: 1.04;
+}
+
+.kicker {
+  color: var(--accent-2);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.subtitle {
+  max-width: 680px;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--muted);
+  margin-top: 0;
+}
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 40px;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), var(--surface));
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-size: clamp(1.2rem, 2vw, 1.7rem);
+}
+
+.refresh-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+  transform: translateY(8px);
+  opacity: 0;
+  animation: rise 350ms ease forwards;
+}
+
+.card-image {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  background: #f5efe3;
+}
+
+.card-body {
+  padding: 14px;
+}
+
+.chip {
+  display: inline-block;
+  margin: 0 0 10px;
+  background: #e8f7f3;
+  color: #136d5d;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.card-title {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+.card-text {
+  margin: 0 0 12px;
+  color: var(--muted);
+  min-height: 40px;
+}
+
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.price {
+  font-size: 1.2rem;
+  color: var(--accent);
+}
+
+.stock {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.empty {
+  color: var(--muted);
+  padding: 20px 0;
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 700px) {
+  .topbar {
+    margin-bottom: 38px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+}
