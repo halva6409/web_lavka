@@ -550,15 +550,713 @@
     </button>
     <div class="product-modal-body">
       <h2 class="product-modal-title">
-        Разработка
+        Разработчик
       </h2>
-      <p class="product-modal-description">Сайт разработан: halvas</p>
+      <p class="product-modal-description">Сайт разработан: halvas (Хвалов Роман)</p>
       <p class="product-modal-description">Контакты:</p>
       <p class="product-modal-description">+7 (906) 311-59-24</p>
       <p class="product-modal-description">r.xvalov@yandex.ru</p>
     </div>
   </div>
 </div>
+
+
+
+<script>
+(() => {
+
+  /* =========================================================
+     НАСТРОЙКИ SNAP
+     ========================================================= */
+
+  const SNAP = {
+    positions: [
+      0,
+      830
+    ],
+
+    triggerDistance: 15,
+    lockTime: 550
+  };
+
+
+  /* =========================================================
+     ОБЩЕЕ СОСТОЯНИЕ
+     ========================================================= */
+
+  let snapping = false;
+
+
+  /* =========================================================
+     PC / WHEEL СОСТОЯНИЕ
+     ========================================================= */
+
+  let wheelAccumulator = 0;
+  let wheelTriggered = false;
+  let wheelResetTimer = null;
+
+
+  /* =========================================================
+     ПОИСК СЛЕДУЮЩЕЙ ПОЗИЦИИ
+     ========================================================= */
+
+  function getNextPosition() {
+
+    const current = window.scrollY;
+
+    for (const position of SNAP.positions) {
+
+      if (position > current + 5) {
+        return position;
+      }
+
+    }
+
+    return null;
+  }
+
+
+  /* =========================================================
+     ПОИСК ПРЕДЫДУЩЕЙ ПОЗИЦИИ
+     ========================================================= */
+
+  function getPreviousPosition() {
+
+    const current = window.scrollY;
+
+    for (
+      let i = SNAP.positions.length - 1;
+      i >= 0;
+      i--
+    ) {
+
+      if (SNAP.positions[i] < current - 5) {
+        return SNAP.positions[i];
+      }
+
+    }
+
+    return null;
+  }
+
+
+  /* =========================================================
+     SNAP ВНИЗ
+     ========================================================= */
+
+  function snapNext() {
+
+    if (snapping) {
+      return;
+    }
+
+    const target = getNextPosition();
+
+    if (target === null) {
+      return;
+    }
+
+    performSnap(target);
+  }
+
+
+  /* =========================================================
+     SNAP ВВЕРХ
+     ========================================================= */
+
+  function snapPrevious() {
+
+    if (snapping) {
+      return;
+    }
+
+    const target = getPreviousPosition();
+
+    if (target === null) {
+      return;
+    }
+
+    performSnap(target);
+  }
+
+
+  /* =========================================================
+     ОБЩИЙ SNAP ДЛЯ PC
+     ========================================================= */
+
+  function performSnap(target) {
+
+    if (snapping) {
+      return;
+    }
+
+    snapping = true;
+
+    window.scrollTo({
+      top: target,
+      behavior: "smooth"
+    });
+
+    setTimeout(() => {
+
+      snapping = false;
+
+    }, SNAP.lockTime);
+
+  }
+
+
+  /* =========================================================
+     MOBILE / TOUCH
+     ========================================================= */
+
+  let mobileTouchStartY = 0;
+  let mobileTouchTriggered = false;
+  let mobileTouchStarted = false;
+
+  let mobileSnapAnimation = null;
+
+
+  /* =========================================================
+     НАСТРОЙКИ MOBILE
+     ========================================================= */
+
+  const MOBILE_SNAP = {
+
+    /*
+      Сколько px должен пройти палец,
+      прежде чем сработает snap.
+
+      18 — хороший вариант.
+      25 — менее чувствительно.
+      12 — более чувствительно.
+    */
+    triggerDistance: 18,
+
+    /*
+      Продолжительность анимации.
+
+      350 = быстро
+      500 = нормально
+      650 = медленно
+    */
+    duration: 500
+
+  };
+  function getMobilePositions() {
+
+    const catalog = document.getElementById("catalog");
+
+    if (!catalog) {
+      return [0];
+    }
+
+    const catalogPosition =
+      catalog.getBoundingClientRect().top +
+      window.scrollY;
+
+    return [
+      0,
+      catalogPosition
+    ];
+  }
+
+  /* =========================================================
+     MOBILE TOUCH START
+     ========================================================= */
+
+  window.addEventListener(
+    "touchstart",
+    (event) => {
+
+      /*
+        Только один палец.
+      */
+      if (event.touches.length !== 1) {
+        return;
+      }
+
+      /*
+        Если предыдущий snap ещё идёт,
+        новый не начинаем.
+      */
+      if (snapping) {
+        return;
+      }
+
+      mobileTouchStartY =
+        event.touches[0].clientY;
+
+      mobileTouchStarted = true;
+      mobileTouchTriggered = false;
+
+    },
+    {
+      passive: true
+    }
+  );
+
+
+  /* =========================================================
+     MOBILE TOUCH MOVE
+     ========================================================= */
+
+  window.addEventListener(
+    "touchmove",
+    (event) => {
+
+      /*
+        Только один палец.
+      */
+      if (event.touches.length !== 1) {
+        return;
+      }
+
+      if (!mobileTouchStarted) {
+        return;
+      }
+
+      if (snapping) {
+        return;
+      }
+
+      /*
+        Один свайп = один snap.
+      */
+      if (mobileTouchTriggered) {
+        return;
+      }
+
+
+      const currentY =
+        event.touches[0].clientY;
+
+
+      /*
+        Палец вверх:
+        delta > 0
+
+        Палец вниз:
+        delta < 0
+      */
+      const delta =
+        mobileTouchStartY - currentY;
+
+
+      /*
+        Пока палец прошёл слишком мало —
+        ничего не делаем.
+      */
+      if (
+        Math.abs(delta) <
+        MOBILE_SNAP.triggerDistance
+      ) {
+        return;
+      }
+
+
+      /*
+        Жест определён.
+      */
+      mobileTouchTriggered = true;
+
+
+      /*
+        ВАЖНО:
+        запрещаем браузеру продолжать
+        обычную прокрутку этого жеста.
+
+        Поэтому обработчик должен быть
+        passive: false.
+      */
+      event.preventDefault();
+
+
+      /*
+        ПАЛЕЦ ВВЕРХ
+        → страница вниз
+      */
+      if (delta > 0) {
+
+        snapMobileNext();
+
+      }
+
+
+      /*
+        ПАЛЕЦ ВНИЗ
+        → страница вверх
+      */
+      else {
+
+        snapMobilePrevious();
+
+      }
+
+    },
+    {
+      passive: false
+    }
+  );
+
+
+  /* =========================================================
+     MOBILE TOUCH END
+     ========================================================= */
+
+  window.addEventListener(
+    "touchend",
+    () => {
+
+      mobileTouchStarted = false;
+      mobileTouchTriggered = false;
+
+    },
+    {
+      passive: true
+    }
+  );
+
+
+  /* =========================================================
+     MOBILE TOUCH CANCEL
+     ========================================================= */
+
+  window.addEventListener(
+    "touchcancel",
+    () => {
+
+      mobileTouchStarted = false;
+      mobileTouchTriggered = false;
+
+    },
+    {
+      passive: true
+    }
+  );
+
+
+  /* =========================================================
+     MOBILE SNAP ВНИЗ
+     ========================================================= */
+
+  function snapMobileNext() {
+
+    if (snapping) {
+      return;
+    }
+
+    function snapMobileNext() {
+
+      if (snapping) {
+        return;
+      }
+
+  const positions = getMobilePositions();
+
+  const current = window.scrollY;
+
+  const target = positions.find(
+    position => position > current + 5
+  );
+
+  if (target === undefined) {
+    return;
+  }
+
+  performMobileSnap(target);
+}
+
+    if (target === null) {
+      return;
+    }
+
+    performMobileSnap(target);
+  }
+
+
+  /* =========================================================
+     MOBILE SNAP ВВЕРХ
+     ========================================================= */
+
+  function snapMobilePrevious() {
+
+    if (snapping) {
+      return;
+    }
+
+    const positions = getMobilePositions();
+
+    const current = window.scrollY;
+
+    let target = null;
+
+    for (let i = positions.length - 1; i >= 0; i--) {
+
+      if (positions[i] < current - 5) {
+        target = positions[i];
+        break;
+      }
+
+    }
+
+    if (target === null) {
+      return;
+    }
+
+    performMobileSnap(target);
+  }
+
+
+  /* =========================================================
+     MOBILE ПЛАВНАЯ АНИМАЦИЯ
+     ========================================================= */
+
+  function performMobileSnap(target) {
+
+    if (snapping) {
+      return;
+    }
+
+    snapping = true;
+
+
+    /*
+      На всякий случай отменяем
+      предыдущую мобильную анимацию.
+    */
+    if (mobileSnapAnimation !== null) {
+
+      cancelAnimationFrame(
+        mobileSnapAnimation
+      );
+
+      mobileSnapAnimation = null;
+    }
+
+
+    const start =
+      window.scrollY;
+
+    const distance =
+      target - start;
+
+    const startTime =
+      performance.now();
+
+
+    /*
+      Плавное замедление.
+    */
+    function easeOutCubic(t) {
+
+      return 1 - Math.pow(1 - t, 3);
+
+    }
+
+
+    function animate(currentTime) {
+
+      const elapsed =
+        currentTime - startTime;
+
+
+      let progress =
+        elapsed / MOBILE_SNAP.duration;
+
+
+      progress =
+        Math.min(
+          Math.max(progress, 0),
+          1
+        );
+
+
+      const eased =
+        easeOutCubic(progress);
+
+
+      const position =
+        start +
+        distance * eased;
+
+
+      window.scrollTo(
+        0,
+        position
+      );
+
+
+      /*
+        Анимация закончилась.
+      */
+      if (progress >= 1) {
+
+        window.scrollTo(
+          0,
+          target
+        );
+
+        mobileSnapAnimation = null;
+
+
+        /*
+          Небольшая защита от повторного
+          срабатывания того же касания.
+        */
+        setTimeout(() => {
+
+          snapping = false;
+
+        }, 80);
+
+        return;
+      }
+
+
+      mobileSnapAnimation =
+        requestAnimationFrame(
+          animate
+        );
+
+    }
+
+
+    mobileSnapAnimation =
+      requestAnimationFrame(
+        animate
+      );
+
+  }
+
+
+  /* =========================================================
+     PC / MOUSE / TRACKPAD
+
+     ЭТУ ЛОГИКУ НЕ МЕНЯЕМ.
+     ========================================================= */
+
+  window.addEventListener(
+    "wheel",
+    (event) => {
+
+      if (snapping) {
+        return;
+      }
+
+      if (wheelTriggered) {
+        return;
+      }
+
+
+      /*
+        Накапливаем движение
+        колеса / тачпада.
+      */
+      wheelAccumulator +=
+        event.deltaY;
+
+
+      /*
+        Пока движения недостаточно —
+        ждём.
+      */
+      if (
+        Math.abs(wheelAccumulator) <
+        SNAP.triggerDistance
+      ) {
+        return;
+      }
+
+
+      /*
+        Определяем направление.
+      */
+      const direction =
+        wheelAccumulator > 0
+          ? 1
+          : -1;
+
+
+      /*
+        Сбрасываем накопленное движение.
+      */
+      wheelAccumulator = 0;
+
+
+      /*
+        Блокируем повторный snap.
+      */
+      wheelTriggered = true;
+
+
+      /*
+        ВНИЗ
+      */
+      if (direction > 0) {
+
+        snapNext();
+
+      }
+
+
+      /*
+        ВВЕРХ
+      */
+      else {
+
+        snapPrevious();
+
+      }
+
+
+      /*
+        Разрешаем новый wheel-жест
+        после блокировки.
+      */
+      setTimeout(() => {
+
+        wheelTriggered = false;
+
+      }, SNAP.lockTime);
+
+    },
+    {
+      passive: true
+    }
+  );
+
+
+  /* =========================================================
+     СБРОС WHEEL
+     ========================================================= */
+
+  window.addEventListener(
+    "wheel",
+    () => {
+
+      clearTimeout(
+        wheelResetTimer
+      );
+
+
+      wheelResetTimer =
+        setTimeout(() => {
+
+          wheelAccumulator = 0;
+          wheelTriggered = false;
+
+        }, 250);
+
+    },
+    {
+      passive: true
+    }
+  );
+
+
+})();
+</script>
 
 <body>
 
@@ -2242,7 +2940,7 @@
             (topbarHeight - Math.max(smallSize, bigSize)) / 2
           );
 
-        const startTop = mobile ? 165 : 190;
+        const startTop = mobile ? 120 : 240;
 
         const top =
           startTop +
@@ -2374,7 +3072,7 @@
 
   <footer class="footer">
     <div class="footer-content">
-      <p class="footer-title">© 2026 Теннисная Лавка</p> 
+      <p class="footer-title">2026 Теннисная Лавка</p> 
     </div>
     <div class="footer-columns">
       <div class="footer-column">
@@ -2393,7 +3091,7 @@
       <div class="footer-column">
         <a class="footer-title-">О компании</a>
         <a href="/o-nas" class="footer-content-right">- О нас</a>
-        <a href="#" class="footer-content-right" onclick="openDeveloperModal(event); return false;">- Разработка</a>
+        <a href="#" class="footer-content-right" onclick="openDeveloperModal(event); return false;">- Разработчик</a>
       </div>
     </div>
   </footer>
