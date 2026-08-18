@@ -9,14 +9,6 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
-  <!-- Цвет системных областей iPhone / Safari -->
-  <meta name="theme-color" content="#07111f" />
-
-  <!-- Для iPhone с вырезом / Dynamic Island -->
-  <meta
-    name="apple-mobile-web-app-status-bar-style"
-    content="black-translucent"
-  />
 
   <title>Теннисная Лавка</title>
 
@@ -37,51 +29,7 @@
     href="{{ url_for('static', filename='css/styles.css') }}"
   />
 
-  <!-- =====================================================
-     ИКОНКИ САЙТА
-     ===================================================== -->
 
-<!-- Основная иконка сайта -->
-  <link
-    rel="icon"
-    type="image/png"
-    sizes="512x512"
-    href="{{ url_for('static', filename='images/icon.png') }}"
-  >
-
-  <!-- Для старых браузеров -->
-  <link
-    rel="shortcut icon"
-    href="{{ url_for('static', filename='images/icon.png') }}"
-  >
-
-  <!-- iPhone / iPad -->
-  <link
-    rel="apple-touch-icon"
-    sizes="180x180"
-    href="{{ url_for('static', filename='images/icon.png') }}"
-  >
-
-  <!-- Android / современные браузеры -->
-  <link
-    rel="icon"
-    type="image/png"
-    sizes="192x192"
-    href="{{ url_for('static', filename='images/icon.png') }}"
-  >
-
-  <link
-    rel="icon"
-    type="image/png"
-    sizes="512x512"
-    href="{{ url_for('static', filename='images/icon.png') }}"
-  >
-
-  <!-- Цвет интерфейса браузера -->
-  <meta
-    name="theme-color"
-    content="#07111f"
-  >
   <!-- =====================================================
        CSS ГАЛЕРЕИ
        ===================================================== -->
@@ -1912,266 +1860,261 @@
 
   <script>
     (() => {
+
       const logo = document.querySelector(".tennis-logo");
       const small = document.querySelector(".tennis-logo-small");
       const big = document.querySelector(".tennis-logo-big");
-      const topbar = document.querySelector(".topbar");
 
-      if (!logo || !small || !big) return;
+      if (!logo || !small || !big) {
+        return;
+      }
 
       let targetProgress = 0;
       let progress = 0;
-      let raf = null;
-      let resizeTimer = null;
+      let animationFrame = null;
 
-      const clamp = (value, min, max) =>
-        Math.max(min, Math.min(max, value));
-
-      const ease = (value) =>
-        1 - Math.pow(1 - value, 3);
-
-      function cssNumber(value) {
-        return parseFloat(value) || 0;
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
       }
 
-      function setVar(name, value) {
-        logo.style.setProperty(name, value);
-      }
-
-      /*
-       * Важный момент:
-       * ширина компактного логотипа берётся из реального DOM,
-       * а не угадывается через коэффициенты вроде 4.8.
-       * Поэтому логотип нормально собирается с этим же шрифтом
-       * на ноутбуке, планшете и телефоне.
-       */
-      function measureLogo() {
-        const viewport = window.innerWidth;
-        const mobile = viewport <= 600;
-
-        const startSmall = mobile
-          ? clamp(viewport * 0.075, 20, 30)
-          : clamp(viewport * 0.03, 25, 42);
-
-        const startBig = mobile
-          ? clamp(viewport * 0.23, 78, 105)
-          : clamp(viewport * 0.16, 110, 230);
-
-        const endSmall = mobile
-          ? clamp(viewport * 0.032, 8, 11)
-          : clamp(viewport * 0.012, 10, 14);
-
-        const endBig = mobile
-          ? clamp(viewport * 0.052, 14, 19)
-          : clamp(viewport * 0.019, 18, 28);
-
-        return {
-          viewport,
-          mobile,
-          startSmall,
-          startBig,
-          endSmall,
-          endBig
-        };
+      function easeOutCubic(value) {
+        return 1 - Math.pow(1 - value, 3);
       }
 
       function updateTarget() {
-        targetProgress = clamp(window.scrollY / 280, 0, 1);
 
-        if (topbar) {
-          topbar.classList.toggle(
-            "is-scrolled",
-            targetProgress > 0.18
-          );
+        /*
+         * 0 — большой логотип по центру.
+         * 1 — компактный логотип в верхней панели слева.
+         *
+         * Вся трансформация проходит постепенно за 260px
+         * прокрутки, поэтому резкого скачка больше нет.
+         */
+        targetProgress =
+          clamp(window.scrollY / 260, 0, 1);
+
+        document.body.classList.toggle(
+          "scrolled",
+          targetProgress > 0.18
+        );
+
+        startAnimation();
+      }
+
+      function startAnimation() {
+        if (animationFrame !== null) {
+          return;
         }
 
-        if (raf === null) {
-          raf = requestAnimationFrame(animate);
-        }
+        animationFrame =
+          requestAnimationFrame(animate);
       }
 
       function animate() {
-        progress += (targetProgress - progress) * 0.15;
 
-        if (Math.abs(targetProgress - progress) < 0.0008) {
+        /*
+         * Сглаживание делает движение мягким даже при
+         * резком вращении колеса или движении трекпада.
+         */
+        progress +=
+          (targetProgress - progress) * 0.16;
+
+        if (
+          Math.abs(targetProgress - progress) < 0.001
+        ) {
           progress = targetProgress;
         }
 
-        render(ease(progress));
+        const p = easeOutCubic(progress);
+        const viewportWidth = window.innerWidth;
 
-        if (Math.abs(targetProgress - progress) >= 0.0008) {
-          raf = requestAnimationFrame(animate);
-        } else {
-          raf = null;
-        }
-      }
+        /* =================================================
+           ПОЛОЖЕНИЕ ВСЕГО ЛОГОТИПА
+           ================================================= */
 
-      function render(p) {
-        const {
-          viewport,
-          mobile,
-          startSmall,
-          startBig,
-          endSmall,
-          endBig
-        } = measureLogo();
+        const startTop = 200;
+        const logoCompactHeight = 30;
+        const endTop = (72 - logoCompactHeight) / 2;
 
-        /*
-         * Большой логотип:
-         * desktop остаётся действительно большим;
-         * mobile уменьшен пропорционально ширине, но не исчезает.
-         */
-        const smallSize =
-          startSmall + (endSmall - startSmall) * p;
-
-        const bigSize =
-          startBig + (endBig - startBig) * p;
-
-        /*
-         * В начале оба слова центрируются относительно окна.
-         * В конце они стоят в одной строке с небольшим нахлёстом.
-         */
-        setVar("--small-size", `${smallSize}px`);
-        setVar("--big-size", `${bigSize}px`);
-
-        const smallSpacing =
-          0.48 + (0.06 - 0.48) * p;
-
-        const bigSpacing =
-          0.08 + (-0.035 - 0.08) * p;
-
-        setVar("--small-spacing", `${smallSpacing}em`);
-        setVar("--big-spacing", `${bigSpacing}em`);
-
-        /*
-         * Для расчёта компактной ширины временно используем
-         * фактические размеры текста.
-         */
-        const smallWidth = small.getBoundingClientRect().width;
-        const bigWidth = big.getBoundingClientRect().width;
-
-        /*
-         * В компактном состоянии "ЛАВКА" слегка заходит под
-         * конец "ТЕННИСНАЯ" — именно небольшой нахлёст, а не
-         * огромный разрыв между словами.
-         */
-        const overlap = mobile ? -2 : -5;
-        const compactWidth =
-          Math.max(1, smallWidth + bigWidth - overlap);
-
-        /*
-         * Ширина родителя тоже меняется вместе с анимацией.
-         * Это принципиально: дочерние элементы absolute,
-         * поэтому width нельзя оставлять нулевой/фиксированной.
-         */
-        const startBlockWidth =
-          Math.max(smallWidth, bigWidth);
-
-        const blockWidth =
-          startBlockWidth +
-          (compactWidth - startBlockWidth) * p;
-
-        setVar("--logo-width", `${blockWidth}px`);
-
-        /*
-         * Центр -> левый край.
-         * На desktop оставляем место слева, на телефоне
-         * логотип компактнее, чтобы не конфликтовать с auth.
-         */
-        const compactLeft = mobile ? 10 : 28;
-        const startLeft = viewport / 2;
-
-        const left =
-          startLeft +
-          (compactLeft - startLeft) * p;
-
-        const topbarHeight =
-          topbar?.getBoundingClientRect().height ||
-          (mobile ? 58 : 60);
-
-        const compactTop =
-          Math.max(
-            0,
-            (topbarHeight - Math.max(smallSize, bigSize)) / 2
-          );
-
-        const startTop = mobile ? 165 : 190;
+        const startLeft = viewportWidth / 2;
+        const endLeft =
+          viewportWidth <= 700 ? 18 : 42;
 
         const top =
           startTop +
-          (compactTop - startTop) * p;
+          (endTop - startTop) * p;
 
-        /*
-         * Parent начинает с transform(-50%) и приходит к 0%.
-         * Так как width теперь равен реальной ширине блока,
-         * центрирование работает одинаково на любом экране.
-         */
-        const parentX = -50 * (1 - p);
+        const left =
+          startLeft +
+          (endLeft - startLeft) * p;
 
-        setVar("--logo-left", `${left}px`);
-        setVar("--logo-top", `${top}px`);
-        setVar("--logo-x", `${parentX}%`);
+        const xPercent =
+          -50 * (1 - p);
 
-        /*
-         * Большой режим: слова друг над другом.
-         * Компактный режим: одна строка.
-         */
-        const startSmallLeft = 0;
-        const startBigLeft =
-          Math.max(
-            0,
-            (smallWidth - bigWidth) / 2
-          );
+        logo.style.setProperty(
+          "--logo-top",
+          `${top}px`
+        );
 
-        const compactBigLeft =
-          Math.max(
-            0,
-            smallWidth - overlap
-          );
+        logo.style.setProperty(
+          "--logo-left",
+          `${left}px`
+        );
 
-        const smallLeft =
-          startSmallLeft;
+        logo.style.setProperty(
+          "--logo-x",
+          `${xPercent}%`
+        );
 
-        const bigLeft =
-          startBigLeft +
-          (compactBigLeft - startBigLeft) * p;
+        /* =================================================
+           ТЕННИСНАЯ
+           ================================================= */
 
-        const smallTop = 0;
-        const bigStartTop = mobile ? 45 : 58;
+        const smallStartSize =
+          viewportWidth <= 700
+            ? Math.min(
+                28,
+                Math.max(18, viewportWidth * 0.05)
+              )
+            : Math.min(
+                42,
+                Math.max(24, viewportWidth * 0.03)
+              );
+
+        const smallEndSize =
+          viewportWidth <= 420 ? 6 :
+          viewportWidth <= 700 ? 7 : 10;
+
+        const smallSize =
+          smallStartSize +
+          (smallEndSize - smallStartSize) * p;
+
+        const smallTop = 10 * p;
+
+        const smallX =
+          -50 * (1 - p);
+
+        const smallStartSpacing = 0.5;
+        const smallEndSpacing =
+          viewportWidth <= 420 ? 0.07 :
+          viewportWidth <= 700 ? 0.07 : 0.10;
+
+        const smallSpacing =
+          smallStartSpacing +
+          (smallEndSpacing - smallStartSpacing) * p;
+
+        logo.style.setProperty(
+          "--small-top",
+          `${smallTop}px`
+        );
+
+        logo.style.setProperty(
+          "--small-left",
+          "0px"
+        );
+
+        logo.style.setProperty(
+          "--small-x",
+          `${smallX}%`
+        );
+
+        logo.style.setProperty(
+          "--small-size",
+          `${smallSize}px`
+        );
+
+        logo.style.setProperty(
+          "--small-spacing",
+          `${smallSpacing}em`
+        );
+
+        logo.style.setProperty(
+          "--small-margin",
+          `${0.22 * (1 - p)}em`
+        );
+
+        /* =================================================
+           ЛАВКА
+           ================================================= */
+
+        const bigStartSize =
+          viewportWidth <= 700
+            ? Math.min(
+                135,
+                Math.max(70, viewportWidth * 0.19)
+              )
+            : Math.min(
+                230,
+                Math.max(110, viewportWidth * 0.16)
+              );
+
+        const bigEndSize =
+          viewportWidth <= 420 ? 18 :
+          viewportWidth <= 700 ? 21 : 27;
+
+        const bigSize =
+          bigStartSize +
+          (bigEndSize - bigStartSize) * p;
+
+        const bigStartTop =
+          viewportWidth <= 700 ? 48 : 56;
 
         const bigTop =
           bigStartTop * (1 - p);
 
-        setVar("--small-left", `${smallLeft}px`);
-        setVar("--small-top", `${smallTop}px`);
-        setVar("--small-x", "0%");
+        const bigX =
+          -50 * (1 - p);
 
-        setVar("--big-left", `${bigLeft}px`);
-        setVar("--big-top", `${bigTop}px`);
-        setVar("--big-x", "0%");
-
-        /*
-         * При p=0 центрируем весь блок независимо от его ширины.
-         * При p=1 parent уже стоит слева.
-         */
-        if (p < 0.999) {
-          }
-      }
-
-      function forceRender() {
-        cancelAnimationFrame(raf);
-        raf = null;
-
-        const previous = progress;
-        progress = targetProgress;
-
-        render(ease(progress));
+        const bigSpacing =
+          0.18 +
+          (0.02 - 0.18) * p;
 
         /*
-         * Не оставляем resize в промежуточном состоянии.
+         * Небольшое горизонтальное смещение появляется
+         * постепенно, поэтому "ТЕННИСНАЯ" и "ЛАВКА"
+         * аккуратно собираются в одну строку.
          */
-        if (previous !== progress) {
-          requestAnimationFrame(() => render(ease(progress)));
+        const smallVisualWidth =
+          small.getBoundingClientRect().width;
+
+        const bigGap =
+          viewportWidth <= 700 ? 8 : 10;
+
+        const bigLeft =
+          (smallVisualWidth + bigGap) * p;
+
+        logo.style.setProperty(
+          "--big-top",
+          `${bigTop}px`
+        );
+
+        logo.style.setProperty(
+          "--big-left",
+          `${bigLeft}px`
+        );
+
+        logo.style.setProperty(
+          "--big-x",
+          `${bigX}%`
+        );
+
+        logo.style.setProperty(
+          "--big-size",
+          `${bigSize}px`
+        );
+
+        logo.style.setProperty(
+          "--big-spacing",
+          `${bigSpacing}em`
+        );
+
+        if (
+          Math.abs(targetProgress - progress) >= 0.001
+        ) {
+          animationFrame =
+            requestAnimationFrame(animate);
+        } else {
+          animationFrame = null;
         }
       }
 
@@ -2183,25 +2126,22 @@
 
       window.addEventListener(
         "resize",
-        () => {
-          clearTimeout(resizeTimer);
-
-          resizeTimer = setTimeout(() => {
-            forceRender();
-          }, 80);
-        },
-        { passive: true }
+        updateTarget
       );
 
-      if (document.fonts?.ready) {
-        document.fonts.ready.then(forceRender);
-      }
-
       updateTarget();
+
     })();
   </script>
 
 
 </body>
+
+<!-- =====================================================
+     IOS SAFE AREA
+     ===================================================== -->
+
+<div class="ios-top-safe-area"></div>
+<div class="ios-bottom-safe-area"></div>
 
 

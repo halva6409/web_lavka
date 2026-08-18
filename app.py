@@ -13,7 +13,6 @@ from sqlalchemy.exc import IntegrityError
 
 
 
-
 #########################################################################################################################################################
 #########################################################################################################################################################
 #########################################################################################################################################################
@@ -29,7 +28,7 @@ db = SQLAlchemy(app)
 app.secret_key = "KUTS_QWERTY_64"
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 ALLOWED_EXT = {'png','jpg','jpeg','gif'}
-MAX_CONTENT = 12 * 1024 * 1024  # 8 MB, при необходимости поменяй
+MAX_CONTENT = 50 * 1024 * 1024  
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT
@@ -68,7 +67,6 @@ def admin_required(f):
 
 
 
-
 #########################################################################################################################################################
 #########################################################################################################################################################
 #########################################################################################################################################################
@@ -90,23 +88,30 @@ class Product(db.Model):
     description = db.Column(db.Text)
     colors = db.Column(db.Text, nullable=True)
     price = db.Column(db.Float, nullable=False)
-    image_url = db.Column(db.String(200))
+    #image_url = db.Column(db.String(200))
     category = db.Column(db.String(50))
     kolvo = db.Column(db.Integer)
     is_active = db.Column(db.Integer, default=0)
     created_at = db.Column(db.String(50))
+    images = db.relationship("Image_prod", backref="product", lazy=True, cascade="all, delete-orphan")
+    
+class Image_prod(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
+    image_url = db.Column(db.String(200), nullable=False)
 
 
 
 #########################################################################################################################################################
 #########################################################################################################################################################
 #########################################################################################################################################################
-
 
 @app.route("/")
 def index():
     products = Product.query.filter_by(is_active=1).order_by(Product.id.desc()).all()
-    return render_template("index.html", products=products)
+    user_id = session.get("user_id")
+    user = User.query.get(user_id) if user_id else None
+    return render_template("index.html", products=products, user=user)
 
 #########################################################################################################################################################
 
@@ -183,12 +188,20 @@ def admin_add():
     category = request.form.get("category") 
     kolvo = int(request.form.get("kolvo"))
 
-    image = request.files.get("image")
-    image_url = None
-    if image and image.filename:
-        filename = secure_filename(image.filename)
-        image.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-        image_url = f"uploads/{filename}"
+    images = request.files.getlist("images")
+
+    print(len(images))
+
+    ready_list_img = []
+
+    for i in range(len(images)):
+        if images[i] and images[i].filename:
+            filename = secure_filename(images[i].filename)
+            images[i].save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+            images_url = f"uploads/{filename}"
+            ready_list_img.append(images_url)
+
+    print(ready_list_img)
 
     product = Product(
         title=title,
@@ -197,12 +210,18 @@ def admin_add():
         price=price,
         category=category,
         kolvo=kolvo,
-        image_url=image_url,
         is_active=1,)
     
     db.session.add(product)
     db.session.commit()
 
+    for i in range(len(ready_list_img)):
+        prod = Image_prod(
+            product_id=product.id,
+            image_url=ready_list_img[i]
+        )
+        db.session.add(prod)
+    db.session.commit()
     return redirect(url_for("admin_"))
 
 #########################################################################################################################################################
@@ -240,6 +259,19 @@ def delete_product(product_id):
 
     return redirect(url_for("admin_"))
 
+#########################################################################################################################################################
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
+
+#########################################################################################################################################################
+
+
+
+
+
 
 
 
@@ -257,4 +289,4 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
     # запускаем сервер для разработки
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)
