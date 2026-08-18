@@ -1,3 +1,7 @@
 worked.txt
 secret.py
 idea.txt
+__pycache__
+.venv
+instance/
+store.db
