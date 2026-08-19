@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Чаты</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+
+            font-family: Arial, sans-serif;
+
+            background: #07111f;
+            color: white;
+        }
+
+
+        /* =====================================================
+           ОСНОВНАЯ СТРАНИЦА
+           ===================================================== */
+
+        .chat-page {
+
+            width: 100%;
+            height: 100vh;
+
+            display: flex;
+
+            background: #07111f;
+        }
+
+
+        /* =====================================================
+           ЛЕВАЯ ПАНЕЛЬ
+           ===================================================== */
+
+        .chats-list {
+
+            width: 350px;
+            min-width: 350px;
+
+            height: 100%;
+
+            background: #0b1728;
+
+            border-right: 1px solid #243247;
+
+            overflow-y: auto;
+        }
+
+
+        .chats-header {
+
+            height: 70px;
+            min-height: 70px;
+
+            display: flex;
+            align-items: center;
+
+            padding: 0 20px;
+
+            border-bottom: 1px solid #243247;
+
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+
+        /* =====================================================
+           ЭЛЕМЕНТ ЧАТА
+           ===================================================== */
+
+        .chat-item {
+
+            position: relative;
+
+            width: 100%;
+
+            padding: 16px 55px 16px 20px;
+
+            border-bottom: 1px solid #18263a;
+
+            cursor: pointer;
+
+            transition:
+                background 0.15s ease;
+        }
+
+
+        .chat-item:hover {
+
+            background: #132238;
+        }
+
+
+        .chat-item.active {
+
+            background: #19304d;
+        }
+
+
+        .chat-user-name {
+
+            margin-bottom: 6px;
+
+            font-size: 16px;
+            font-weight: bold;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+
+        .chat-preview {
+
+            color: #8fa0b5;
+
+            font-size: 14px;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+
+        /* =====================================================
+           МАРКЕР НОВЫХ СООБЩЕНИЙ
+           ===================================================== */
+
+        .unread-badge {
+
+            position: absolute;
+
+            right: 18px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            min-width: 22px;
+            height: 22px;
+
+            padding: 0 6px;
+
+            display: none;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 999px;
+
+            background: #2377b9;
+
+            color: white;
+
+            font-size: 12px;
+            font-weight: bold;
+
+            line-height: 1;
+        }
+
+
+        /* =====================================================
+           НЕТ ЧАТОВ
+           ===================================================== */
+
+        .no-chats {
+
+            padding: 30px 20px;
+
+            text-align: center;
+
+            color: #718198;
+        }
+
+
+        /* =====================================================
+           ПРАВАЯ ЧАСТЬ
+           ===================================================== */
+
+        .chat-window {
+
+            flex: 1;
+
+            min-width: 0;
+
+            height: 100%;
+
+            display: flex;
+
+            flex-direction: column;
+
+            background: #07111f;
+        }
+
+
+        /* =====================================================
+           ПУСТОЕ СОСТОЯНИЕ
+           ===================================================== */
+
+        .empty-chat {
+
+            width: 100%;
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            color: #7f91a7;
+
+            font-size: 18px;
+        }
+
+
+        /* =====================================================
+           HEADER ОТКРЫТОГО ЧАТА
+           ===================================================== */
+
+        .chat-header {
+
+            height: 70px;
+            min-height: 70px;
+
+            display: none;
+
+            align-items: center;
+
+            padding: 0 25px;
+
+            border-bottom: 1px solid #243247;
+
+            background: #0b1728;
+        }
+
+
+        .chat-header-name {
+
+            font-size: 18px;
+
+            font-weight: bold;
+        }
+
+
+        /* =====================================================
+           СООБЩЕНИЯ
+           ===================================================== */
+
+        .messages {
+
+            flex: 1;
+
+            min-height: 0;
+
+            overflow-y: auto;
+
+            padding: 25px;
+
+            display: none;
+
+            flex-direction: column;
+
+            gap: 10px;
+        }
+
+
+        .message {
+
+            max-width: 70%;
+
+            padding: 10px 14px;
+
+            border-radius: 12px;
+
+            line-height: 1.4;
+
+            word-break: break-word;
+        }
+
+
+        /* Пользователь */
+
+        .message.user {
+
+            align-self: flex-start;
+
+            background: #17263a;
+        }
+
+
+        /* Админ */
+
+        .message.admin {
+
+            align-self: flex-end;
+
+            background: #1c4d78;
+        }
+
+
+        .message-time {
+
+            margin-top: 4px;
+
+            font-size: 11px;
+
+            color: #8da0b5;
+        }
+
+
+        /* =====================================================
+           ФОРМА ОТПРАВКИ
+           ===================================================== */
+
+        .send-form {
+
+            display: none;
+
+            padding: 15px;
+
+            border-top: 1px solid #243247;
+
+            background: #0b1728;
+        }
+
+
+        .send-form-inner {
+
+            display: flex;
+
+            gap: 10px;
+        }
+
+
+        .send-input {
+
+            flex: 1;
+
+            min-width: 0;
+
+            padding: 13px 15px;
+
+            border: 1px solid #30435b;
+
+            border-radius: 10px;
+
+            outline: none;
+
+            background: #111f32;
+
+            color: white;
+
+            font-size: 15px;
+        }
+
+
+        .send-input:focus {
+
+            border-color: #4c7fb3;
+        }
+
+
+        .send-button {
+
+            padding: 0 22px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: #2377b9;
+
+            color: white;
+
+            font-size: 15px;
+
+            cursor: pointer;
+        }
+
+
+        .send-button:hover {
+
+            background: #2c8bd2;
+        }
+
+
+        .send-button:disabled {
+
+            opacity: 0.5;
+
+            cursor: default;
+        }
+
+
+        /* =====================================================
+           МОБИЛЬНАЯ ВЕРСИЯ
+           ===================================================== */
+
+        @media (max-width: 700px) {
+
+            .chats-list {
+
+                width: 100%;
+                min-width: 100%;
+            }
+
+
+            .chat-window {
+
+                display: none;
+            }
+
+
+            .chat-page.chat-open .chats-list {
+
+                display: none;
+            }
+
+
+            .chat-page.chat-open .chat-window {
+
+                display: flex;
+            }
+
+
+            .message {
+
+                max-width: 85%;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div
+    class="chat-page"
+    id="chatPage"
+>
+
+
+    <!-- =====================================================
+         ЛЕВАЯ ЧАСТЬ
+         ===================================================== -->
+
+    <aside class="chats-list">
+
+
+        <div class="chats-header">
+
+            Чаты
+
+        </div>
+
+
+        {% if chats %}
+
+
+            {% for chat in chats %}
+
+                <div
+                    class="chat-item"
+                    data-chat-id="{{ chat.id }}"
+                    data-user-name="{{ chat.user.name or 'Пользователь' }}"
+                >
+
+
+                    <div class="chat-user-name">
+
+                        {{ chat.user.name or 'Пользователь' }}
+
+                    </div>
+
+
+                    <div class="chat-preview">
+
+                        {% if chat.messages %}
+
+                            {{ chat.messages[-1].text }}
+
+                        {% else %}
+
+                            Нет сообщений
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div
+                        class="unread-badge"
+                        id="unread-{{ chat.id }}"
+                    ></div>
+
+
+                </div>
+
+            {% endfor %}
+
+
+        {% else %}
+
+
+            <div class="no-chats">
+
+                Пока нет чатов
+
+            </div>
+
+
+        {% endif %}
+
+
+    </aside>
+
+
+    <!-- =====================================================
+         ПРАВАЯ ЧАСТЬ
+         ===================================================== -->
+
+    <main class="chat-window">
+
+
+        <!-- Пустое состояние -->
+
+        <div
+            class="empty-chat"
+            id="emptyChat"
+        >
+
+            Выберите чат
+
+        </div>
+
+
+        <!-- Header -->
+
+        <div
+            class="chat-header"
+            id="chatHeader"
+        >
+
+            <div
+                class="chat-header-name"
+                id="chatHeaderName"
+            >
+
+                Пользователь
+
+            </div>
+
+        </div>
+
+
+        <!-- Сообщения -->
+
+        <div
+            class="messages"
+            id="messages"
+        ></div>
+
+
+        <!-- Отправка -->
+
+        <form
+            class="send-form"
+            id="sendForm"
+        >
+
+            <div class="send-form-inner">
+
+
+                <input
+                    type="text"
+                    class="send-input"
+                    id="messageInput"
+                    name="message_text"
+                    placeholder="Написать сообщение..."
+                    autocomplete="off"
+                >
+
+
+                <button
+                    type="submit"
+                    class="send-button"
+                    id="sendButton"
+                >
+
+                    Отправить
+
+                </button>
+
+
+            </div>
+
+        </form>
+
+
+    </main>
+
+
+</div>
+
+
+<script>
+
+    /* =========================================================
+       СОСТОЯНИЕ
+       ========================================================= */
+
+    let currentChatId = null;
+
+    /*
+     * Для каждого чата запоминаем последнее
+     * сообщение, которое админ уже видел.
+     */
+
+    const lastSeenMessages = {};
+
+
+    /*
+     * Количество непрочитанных сообщений.
+     */
+
+    const unreadCounts = {};
+
+
+    /* =========================================================
+       ЭЛЕМЕНТЫ
+       ========================================================= */
+
+    const chatPage =
+        document.getElementById("chatPage");
+
+    const emptyChat =
+        document.getElementById("emptyChat");
+
+    const chatHeader =
+        document.getElementById("chatHeader");
+
+    const chatHeaderName =
+        document.getElementById("chatHeaderName");
+
+    const messagesContainer =
+        document.getElementById("messages");
+
+    const sendForm =
+        document.getElementById("sendForm");
+
+    const messageInput =
+        document.getElementById("messageInput");
+
+    const sendButton =
+        document.getElementById("sendButton");
+
+
+    /* =========================================================
+       КЛИК ПО ЧАТАМ
+       ========================================================= */
+
+    document
+        .querySelectorAll(".chat-item")
+        .forEach(function(item) {
+
+            item.addEventListener(
+                "click",
+                function() {
+
+                    const chatId =
+                        this.dataset.chatId;
+
+                    const userName =
+                        this.dataset.userName;
+
+                    openChat(
+                        chatId,
+                        userName,
+                        this
+                    );
+
+                }
+            );
+
+        });
+
+
+    /* =========================================================
+       ОТКРЫТИЕ ЧАТА
+       ========================================================= */
+
+    async function openChat(
+        chatId,
+        userName,
+        item
+    ) {
+
+        currentChatId =
+            String(chatId);
+
+
+        /*
+         * Убираем active у остальных
+         */
+
+        document
+            .querySelectorAll(".chat-item")
+            .forEach(function(chat) {
+
+                chat.classList.remove("active");
+
+            });
+
+
+        /*
+         * Делаем текущий активным
+         */
+
+        item.classList.add("active");
+
+
+        /*
+         * Заголовок
+         */
+
+        chatHeaderName.textContent =
+            userName;
+
+
+        /*
+         * Показываем интерфейс
+         */
+
+        emptyChat.style.display =
+            "none";
+
+        chatHeader.style.display =
+            "flex";
+
+        messagesContainer.style.display =
+            "flex";
+
+        sendForm.style.display =
+            "block";
+
+
+        /*
+         * Мобильный режим
+         */
+
+        chatPage.classList.add(
+            "chat-open"
+        );
+
+
+        /*
+         * Убираем уведомление
+         */
+
+        unreadCounts[currentChatId] = 0;
+
+        updateUnreadBadge(
+            currentChatId,
+            0
+        );
+
+
+        /*
+         * Загружаем сообщения
+         */
+
+        await loadMessages(
+            true
+        );
+
+
+        /*
+         * Запоминаем последнее
+         * сообщение как прочитанное
+         */
+
+        markChatAsRead();
+
+
+        /*
+         * Фокус на поле
+         */
+
+        messageInput.focus();
+
+    }
+
+
+    /* =========================================================
+       ЗАГРУЗКА СООБЩЕНИЙ ОТКРЫТОГО ЧАТА
+       ========================================================= */
+
+    async function loadMessages(
+        forceRender = false
+    ) {
+
+        if (!currentChatId) {
+
+            return;
+
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/admin/chat/"
+                    + currentChatId
+                    + "/messages",
+                    {
+                        cache: "no-store"
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                console.error(
+                    "Ошибка HTTP:",
+                    response.status
+                );
+
+                return;
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            if (!data.success) {
+
+                console.error(
+                    data.error
+                );
+
+                return;
+
+            }
+
+
+            const messages =
+                data.messages || [];
+
+
+            /*
+             * Последнее сообщение
+             */
+
+            const lastMessage =
+                messages.length
+                    ? messages[messages.length - 1]
+                    : null;
+
+
+            /*
+             * Если ничего не изменилось —
+             * не перерисовываем чат.
+             */
+
+            const currentLastId =
+                lastMessage
+                    ? lastMessage.id
+                    : 0;
+
+
+            const previousLastId =
+                messagesContainer.dataset.lastMessageId
+                    ? Number(
+                        messagesContainer.dataset.lastMessageId
+                    )
+                    : 0;
+
+
+            if (
+                !forceRender &&
+                currentLastId === previousLastId
+            ) {
+
+                return;
+
+            }
+
+
+            /*
+             * Сохраняем ID последнего сообщения
+             */
+
+            messagesContainer.dataset.lastMessageId =
+                currentLastId;
+
+
+            /*
+             * Рендерим
+             */
+
+            renderMessages(
+                messages
+            );
+
+
+            /*
+             * Вниз
+             */
+
+            scrollToBottom();
+
+
+            /*
+             * Текущий чат прочитан
+             */
+
+            markChatAsRead();
+
+
+        } catch (error) {
+
+            console.error(
+                "Ошибка загрузки сообщений:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /* =========================================================
+       РЕНДЕР СООБЩЕНИЙ
+       ========================================================= */
+
+    function renderMessages(
+        messages
+    ) {
+
+        messagesContainer.innerHTML =
+            "";
+
+
+        messages.forEach(
+            function(message) {
+
+                addMessage(
+                    message
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       ДОБАВИТЬ ОДНО СООБЩЕНИЕ
+       ========================================================= */
+
+    function addMessage(
+        message
+    ) {
+
+        const element =
+            document.createElement(
+                "div"
+            );
+
+
+        /*
+         * Админ справа.
+         * Пользователь слева.
+         */
+
+        if (message.is_admin) {
+
+            element.className =
+                "message admin";
+
+        } else {
+
+            element.className =
+                "message user";
+
+        }
+
+
+        const text =
+            document.createElement(
+                "div"
+            );
+
+        text.textContent =
+            message.text;
+
+
+        const time =
+            document.createElement(
+                "div"
+            );
+
+        time.className =
+            "message-time";
+
+        time.textContent =
+            formatTime(
+                message.send_at
+            );
+
+
+        element.appendChild(
+            text
+        );
+
+        element.appendChild(
+            time
+        );
+
+
+        messagesContainer.appendChild(
+            element
+        );
+
+    }
+
+
+    /* =========================================================
+       ОТПРАВКА СООБЩЕНИЯ АДМИНОМ
+       ========================================================= */
+
+    sendForm.addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+
+            if (!currentChatId) {
+
+                return;
+
+            }
+
+
+            const text =
+                messageInput.value.trim();
+
+
+            if (!text) {
+
+                return;
+
+            }
+
+
+            sendButton.disabled =
+                true;
+
+
+            try {
+
+                const formData =
+                    new FormData();
+
+
+                formData.append(
+                    "message_text",
+                    text
+                );
+
+
+                const response =
+                    await fetch(
+                        "/admin/chat/"
+                        + currentChatId
+                        + "/send",
+                        {
+                            method: "POST",
+                            body: formData
+                        }
+                    );
+
+
+                /*
+                 * Сначала проверяем HTTP.
+                 */
+
+                if (!response.ok) {
+
+                    const errorText =
+                        await response.text();
+
+                    console.error(
+                        "Ошибка HTTP:",
+                        response.status,
+                        errorText
+                    );
+
+                    alert(
+                        "Ошибка отправки сообщения"
+                    );
+
+                    return;
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    alert(
+                        data.error
+                        ||
+                        "Ошибка отправки сообщения"
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                 * Очищаем поле.
+                 */
+
+                messageInput.value =
+                    "";
+
+
+                /*
+                 * Добавляем сообщение
+                 * сразу на экран.
+                 */
+
+                addMessage(
+                    data.message
+                );
+
+
+                /*
+                 * Запоминаем его ID,
+                 * чтобы polling не добавил
+                 * его повторно.
+                 */
+
+                messagesContainer.dataset.lastMessageId =
+                    data.message.id;
+
+
+                /*
+                 * Сообщение админа уже прочитано.
+                 */
+
+                markChatAsRead();
+
+
+                scrollToBottom();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Ошибка отправки:",
+                    error
+                );
+
+                alert(
+                    "Ошибка отправки сообщения"
+                );
+
+            } finally {
+
+                sendButton.disabled =
+                    false;
+
+                messageInput.focus();
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       ENTER
+       ========================================================= */
+
+    messageInput.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendForm.requestSubmit();
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       ПРОКРУТКА ВНИЗ
+       ========================================================= */
+
+    function scrollToBottom() {
+
+        messagesContainer.scrollTop =
+            messagesContainer.scrollHeight;
+
+    }
+
+
+    /* =========================================================
+       ВРЕМЯ
+       ========================================================= */
+
+    function formatTime(
+        value
+    ) {
+
+        if (!value) {
+
+            return "";
+
+        }
+
+
+        const date =
+            new Date(value);
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return "";
+
+        }
+
+
+        return date.toLocaleTimeString(
+            "ru-RU",
+            {
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       МАРКЕР НЕПРОЧИТАННЫХ
+       ========================================================= */
+
+    function updateUnreadBadge(
+        chatId,
+        count
+    ) {
+
+        const badge =
+            document.getElementById(
+                "unread-" + chatId
+            );
+
+
+        if (!badge) {
+
+            return;
+
+        }
+
+
+        if (count <= 0) {
+
+            badge.style.display =
+                "none";
+
+            badge.textContent =
+                "";
+
+            return;
+
+        }
+
+
+        badge.textContent =
+            count > 99
+                ? "99+"
+                : count;
+
+
+        badge.style.display =
+            "flex";
+
+    }
+
+
+    /* =========================================================
+       ПОМЕТИТЬ ЧАТ ПРОЧИТАННЫМ
+       ========================================================= */
+
+    function markChatAsRead() {
+
+        if (!currentChatId) {
+
+            return;
+
+        }
+
+
+        const lastId =
+            Number(
+                messagesContainer.dataset.lastMessageId
+                || 0
+            );
+
+
+        lastSeenMessages[currentChatId] =
+            lastId;
+
+
+        unreadCounts[currentChatId] =
+            0;
+
+
+        updateUnreadBadge(
+            currentChatId,
+            0
+        );
+
+    }
+
+
+    /* =========================================================
+       ПРОВЕРКА НОВЫХ СООБЩЕНИЙ
+       ========================================================= */
+
+    async function checkUnreadMessages() {
+
+        const chatItems =
+            document.querySelectorAll(
+                ".chat-item"
+            );
+
+
+        for (
+            const item
+            of chatItems
+        ) {
+
+            const chatId =
+                String(
+                    item.dataset.chatId
+                );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/admin/chat/"
+                        + chatId
+                        + "/messages",
+                        {
+                            cache: "no-store"
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    continue;
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    continue;
+
+                }
+
+
+                const messages =
+                    data.messages || [];
+
+
+                /*
+                 * Нет сообщений.
+                 */
+
+                if (!messages.length) {
+
+                    continue;
+
+                }
+
+
+                const lastMessage =
+                    messages[
+                        messages.length - 1
+                    ];
+
+
+                /*
+                 * Первый запуск.
+                 *
+                 * Не считаем старые сообщения
+                 * новыми.
+                 */
+
+                if (
+                    !(chatId in lastSeenMessages)
+                ) {
+
+                    lastSeenMessages[chatId] =
+                        lastMessage.id;
+
+                    continue;
+
+                }
+
+
+                const lastSeen =
+                    lastSeenMessages[chatId];
+
+
+                /*
+                 * Считаем только сообщения
+                 * пользователя.
+                 */
+
+                let unread = 0;
+
+
+                messages.forEach(
+                    function(message) {
+
+                        if (
+                            message.id > lastSeen &&
+                            !message.is_admin
+                        ) {
+
+                            unread++;
+
+                        }
+
+                    }
+                );
+
+
+                /*
+                 * Если чат открыт —
+                 * автоматически считаем
+                 * сообщения прочитанными.
+                 */
+
+                if (
+                    String(currentChatId)
+                    ===
+                    String(chatId)
+                ) {
+
+                    lastSeenMessages[chatId] =
+                        lastMessage.id;
+
+                    unreadCounts[chatId] =
+                        0;
+
+                    updateUnreadBadge(
+                        chatId,
+                        0
+                    );
+
+                } else {
+
+                    unreadCounts[chatId] =
+                        unread;
+
+                    updateUnreadBadge(
+                        chatId,
+                        unread
+                    );
+
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    "Ошибка проверки чата "
+                    + chatId
+                    + ":",
+                    error
+                );
+
+            }
+
+        }
+
+    }
+
+
+    /* =========================================================
+       АВТООБНОВЛЕНИЕ
+       ========================================================= */
+
+    /*
+     * Каждые 2 секунды:
+     *
+     * 1. Проверяем новые сообщения
+     *    во всех чатах.
+     *
+     * 2. Обновляем открытый чат.
+     */
+
+    setInterval(
+        async function() {
+
+            await checkUnreadMessages();
+
+
+            if (currentChatId) {
+
+                await loadMessages(
+                    false
+                );
+
+            }
+
+        },
+        2000
+    );
+
+
+    /* =========================================================
+       ПЕРВЫЙ ЗАПУСК
+       ========================================================= */
+
+    /*
+     * Сначала запоминаем текущие сообщения,
+     * чтобы старые сообщения не стали
+     * внезапно "новыми".
+     */
+
+    checkUnreadMessages();
+
+
+</script>
+
+
+</body>
+
+</html>

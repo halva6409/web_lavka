@@ -11,6 +11,7 @@ import uuid
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
+import secrets
 
 
 
@@ -55,33 +56,37 @@ def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         user_id = session.get("user_id")
-
         us = User.query.filter_by(id=user_id).first()
-        if not us:
-            return redirect(url_for("register"))        # не залогинен — на страницу входа
-        elif not us or not us.is_admin:
-            return abort(403)
-        return f(*args, **kwargs)
-    return decorated
 
+        if not us:
+            return redirect(url_for("register"))
+
+        if not us.is_admin:
+            abort(403)
+
+        return f(*args, **kwargs)
+
+    return decorated
 
 def logined(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-
         user_id = session.get("user_id")
+        us = User.query.filter_by(id=user_id).first()
 
-        if not user_id:
-            return jsonify({
-                "success": False,
-                "error": "Необходимо войти в аккаунт"
-            }), 401
+        if not us:
+            return redirect(url_for("register"))
 
         return f(*args, **kwargs)
 
     return decorated_function
 
+def generate_id():
+    while True:
+        user_id = str(secrets.randbelow(900000) + 100000)
 
+        if not User.query.filter_by(id=user_id).first():
+            return user_id
 
 #########################################################################################################################################################
 #########################################################################################################################################################
@@ -90,7 +95,7 @@ def logined(f):
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, nullable=False, primary_key=True)
     name = db.Column(db.String(80))
     phone = db.Column(db.String(120), nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=True)
@@ -98,7 +103,6 @@ class User(db.Model):
     is_admin = db.Column(db.Integer, default=0)
     password_hash = db.Column(db.String(120))
     favorites = db.Column(db.JSON, nullable=False, default=list)
-
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -117,6 +121,20 @@ class Image_prod(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
     image_url = db.Column(db.String(200), nullable=False)
 
+class Chat(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey("user.id"), nullable=False, unique=True)
+    created_at = db.Column(db.String(50))
+    user = db.relationship("User", backref="chats")
+    messages = db.relationship("Message", backref="chat", lazy=True, cascade="all, delete-orphan")
+    
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    chat_id = db.Column(db.Integer, db.ForeignKey("chat.id"), nullable=False)
+    sender_id = db.Column(db.String, db.ForeignKey("user.id"), nullable=False)
+    text = db.Column(db.Text, nullable=False)
+    send_at = db.Column(db.String(50))
+    sender = db.relationship("User")
 
 
 #########################################################################################################################################################
@@ -125,7 +143,6 @@ class Image_prod(db.Model):
 
 @app.route("/")
 def index():
-    fovorites = []
 
     user_id = session.get("user_id","")
     user = db.session.get(User, user_id) if user_id else None
@@ -153,26 +170,33 @@ def register():
         phone = request.form.get("phone", "")
         email = request.form.get("email", "").lower().strip()
         pw = request.form.get("password", "")
-        
-        if not(email or phone) and not pw:
+
+        if not (email or phone) and not pw:
             return render_template('register.html', error='Email или телефон, пароль обязательны')
-            
+
         pw_hash = generate_password_hash(pw)
+
+        emails_db = User.query.filter_by(email=email).first()
+        phones_db = User.query.filter_by(phone=phone).first()
+
+        if emails_db or phones_db:
+            return render_template("register.html", error="Этот номер или почта уже зарегистрированы!")
 
         new_user = User(
             name = us,
+            id=generate_id(),
             phone = phone,
             email=email,
             password_hash=pw_hash,
             created_at=datetime.now(timezone.utc).isoformat()
             )
-
+        
         try:
             db.session.add(new_user)
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            return render_template("register.html", error="Вы уже зарегестрированы!")            
+            return render_template("register.html", error="Этот номер или почта уже зарегистрированы!")            
         return redirect(url_for('login'))
     return render_template('register.html')
 
@@ -297,8 +321,8 @@ def logout():
 @app.route("/favorites")
 def favorite():
     favorite_products = []
-    user_id = session.get("user_id","")
-    user = db.session.get(User, user_id) if user_id else None
+    user_id = session.get("user_id")
+    user = User.query.filter_by(id=user_id).first() if user_id else None
     if not user:
         return redirect(url_for("login"))
     if user and user.favorites:
@@ -318,8 +342,8 @@ def toggle_favorite():
             "error": "Не передан ID товара"
         }), 400
     product_id = int(product_id)
-    user_id = session.get("user_id")
-    user = db.session.get(User, user_id)
+    user_id = session.get("user_id","")
+    user = db.session.get(User, user_id) if user_id else None
     if not user:
         return jsonify({
             "success": False,
@@ -364,7 +388,185 @@ def toggle_product_active(product_id):
         "is_active": product.is_active
     }
 
+#########################################################################################################################################################
 
+@app.get('/chat')
+@logined
+def chat():
+    user_id = session.get("user_id")
+
+    chat = Chat.query.filter_by(user_id=user_id).first()
+
+    product_id = request.args.get("product_id", type=int)
+
+    # ВОТ ЭТО ДОБАВЛЯЕМ
+    message = request.args.get("message", "")
+
+    product = None
+
+    if product_id:
+        product = Product.query.get(product_id)
+
+    if not chat:
+        chat = Chat(
+            user_id=user_id,
+            created_at=datetime.now(timezone.utc).isoformat()
+        )
+
+        db.session.add(chat)
+        db.session.commit()
+
+    return render_template(
+        "chat.html",
+        chat=chat,
+        messages=chat.messages,
+        product=product,
+        message=message
+    )
+
+#########################################################################################################################################################
+
+@app.post("/chat/send")
+@logined
+def send():
+    user_id = session.get("user_id")
+
+    message_text = request.form.get("message_text", "").strip()
+    if not message_text:
+        return jsonify({
+            "success": False,
+            "error": "Пустое сообщение",
+        }), 400
+    
+    chat = Chat.query.filter_by(user_id=user_id).first()
+    if not chat:
+        chat = Chat(
+            user_id=user_id,
+            created_at=datetime.now(timezone.utc).isoformat()
+        )
+        db.session.add(chat)
+        db.session.flush()
+    message = Message(
+        chat_id=chat.id,
+        sender_id=user_id,
+        text=message_text,
+        send_at=datetime.now(timezone.utc).isoformat()
+    )
+    db.session.add(message)
+    db.session.commit()
+    return jsonify({"success": True,
+                    "message": {
+                            "id": message.id,
+                            "text": message.text,
+                            "send_at": message.send_at}
+                    })
+
+#########################################################################################################################################################
+
+@app.route("/chat/messages", methods=["GET"])
+@logined
+def chat_messages():
+    user_id = session.get("user_id")
+    chat = Chat.query.filter_by(user_id=user_id).first()
+
+    if not chat:
+        return jsonify({
+            "success": True,
+            "messages": []
+        })
+    messages = Message.query.filter_by(chat_id=chat.id).order_by(Message.id.asc()).all()
+    messages_list = [{
+        "id": message.id,
+        "text": message.text,
+        "sender_id": message.sender_id,
+        "send_at": message.send_at
+        } for message in messages
+    ]
+    return jsonify({
+        "success": True,
+        "messages": messages_list
+    })
+
+#########################################################################################################################################################
+
+@app.route("/admin/chats")
+@admin_required
+def admin_chats():
+    chats = Chat.query.all()
+    print("уууааа.    ",chats)
+    return render_template(
+        "admin_chats.html",
+        chats=chats
+    )
+
+
+#########################################################################################################################################################
+
+@app.get("/admin/chat/<int:chat_id>/messages")
+@admin_required
+def admin_chat_messages(chat_id):
+
+    chat = Chat.query.get_or_404(chat_id)
+
+    messages = Message.query.filter_by(
+        chat_id=chat.id
+    ).order_by(
+        Message.id.asc()
+    ).all()
+
+    messages_list = []
+
+    for message in messages:
+        messages_list.append({
+            "id": message.id,
+            "text": message.text,
+            "sender_id": message.sender_id,
+            "send_at": message.send_at,
+            "is_admin": bool(message.sender.is_admin)
+        })
+
+    return jsonify({
+        "success": True,
+        "messages": messages_list
+    })
+
+
+@app.post("/admin/chat/<int:chat_id>/send")
+@admin_required
+def admin_send_message(chat_id):
+
+    admin_id = session.get("user_id")
+
+    chat = Chat.query.get_or_404(chat_id)
+
+    message_text = request.form.get("message_text", "").strip()
+
+    if not message_text:
+        return jsonify({
+            "success": False,
+            "error": "Пустое сообщение"
+        }), 400
+
+    message = Message(
+        chat_id=chat.id,
+        sender_id=admin_id,
+        text=message_text,
+        send_at=datetime.now(timezone.utc).isoformat()
+    )
+
+    db.session.add(message)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": {
+            "id": message.id,
+            "text": message.text,
+            "sender_id": message.sender_id,
+            "send_at": message.send_at,
+            "is_admin": True
+        }
+    })
 #########################################################################################################################################################
 #########################################################################################################################################################
 #########################################################################################################################################################

@@ -136,7 +136,17 @@ const SNAP_ZONE = 150;
   let wheelTriggered = false;
   let wheelResetTimer = null;
 
+  function isSnapZone() {
+    const hero = document.querySelector(".hero");
 
+    if (!hero) {
+      return false;
+    }
+
+    const heroBottom = hero.offsetTop + hero.offsetHeight;
+
+    return window.scrollY < heroBottom;
+  }
   /* =========================================================
      ПОИСК СЛЕДУЮЩЕЙ ПОЗИЦИИ
      ========================================================= */
@@ -267,14 +277,17 @@ const SNAP_ZONE = 150;
   "wheel",
   (event) => {
 
-    // Если открыто модальное окно —
-    // snap страницы не работает.
     if (isModalOpen()) {
       return;
     }
 
-    // На сенсорных устройствах wheel не используем
     if (window.matchMedia("(pointer: coarse)").matches) {
+      return;
+    }
+
+    if (!isSnapZone()) {
+      wheelAccumulator = 0;
+      wheelTriggered = false;
       return;
     }
 
@@ -282,87 +295,43 @@ const SNAP_ZONE = 150;
       return;
     }
 
-      if (wheelTriggered) {
-        return;
-      }
-
-
-      /*
-        Накапливаем движение
-        колеса / тачпада.
-      */
-      wheelAccumulator +=
-        event.deltaY;
-
-
-      /*
-        Пока движения недостаточно —
-        ждём.
-      */
-      if (
-        Math.abs(wheelAccumulator) <
-        SNAP.triggerDistance
-      ) {
-        return;
-      }
-
-
-      /*
-        Определяем направление.
-      */
-      const direction =
-        wheelAccumulator > 0
-          ? 1
-          : -1;
-
-
-      /*
-        Сбрасываем накопленное движение.
-      */
-      wheelAccumulator = 0;
-
-
-      /*
-        Блокируем повторный snap.
-      */
-      wheelTriggered = true;
-
-
-      /*
-        ВНИЗ
-      */
-      if (direction > 0) {
-
-        snapNext();
-
-      }
-
-
-      /*
-        ВВЕРХ
-      */
-      else {
-
-        snapPrevious();
-
-      }
-
-
-      /*
-        Разрешаем новый wheel-жест
-        после блокировки.
-      */
-      setTimeout(() => {
-
-        wheelTriggered = false;
-
-      }, SNAP.lockTime);
-
-    },
-    {
-      passive: true
+    if (wheelTriggered) {
+      return;
     }
-  );
+
+    wheelAccumulator += event.deltaY;
+
+    if (
+      Math.abs(wheelAccumulator) <
+      SNAP.triggerDistance
+    ) {
+      return;
+    }
+
+    const direction =
+      wheelAccumulator > 0
+        ? 1
+        : -1;
+
+    wheelAccumulator = 0;
+
+    wheelTriggered = true;
+
+    if (direction > 0) {
+      snapNext();
+    } else {
+      snapPrevious();
+    }
+
+    setTimeout(() => {
+      wheelTriggered = false;
+    }, SNAP.lockTime);
+
+  },
+  {
+    passive: true
+  }
+);
 
 
   /* =========================================================
@@ -640,29 +609,33 @@ const SNAP_ZONE = 150;
 
 
             <article
+
+             
               class="card"
               onclick="openProduct(this)"
-
+              data-id="{{ product.id }}"
               data-title="{{ product.title }}"
-
               data-description="{{ product.description or '' }}"
-
               data-colors="{{ product.colors or '' }}"
-
               data-category="{{ product.category or '' }}"
-
               data-price="{{ product.price }}"
-
               data-kolvo="{{ product.kolvo or 0 }}"
+
 
               data-image="{% if product.images %}{{ url_for('static', filename=product.images[0].image_url) }}{% endif %}"
 
               data-images='[
+
                 {% for image in product.images %}
+
                   "{{ url_for("static", filename=image.image_url) }}"
+
                   {% if not loop.last %},{% endif %}
+
                 {% endfor %}
+
               ]'
+
             >
 
 
@@ -806,7 +779,7 @@ const SNAP_ZONE = 150;
           alt="Профиль"
         />
       </div>
-
+x
       
 
       <h2 class="account-modal-title">
@@ -972,8 +945,15 @@ const SNAP_ZONE = 150;
             class="product-modal-stock"
           ></span>
 
-
         </div>
+
+        <button
+            type="button"
+            id="orderProductBtn"
+            class="product-order-btn"
+        >
+            Заказать
+        </button>
 
       </div>
 
@@ -1036,6 +1016,7 @@ const SNAP_ZONE = 150;
     let currentImageIndex = 0;
 
     let currentImages = [];
+    let currentProduct = null;
 
 
     /* =====================================================
@@ -1277,6 +1258,7 @@ const SNAP_ZONE = 150;
 
     function openProduct(card) {
 
+      const productId = card.dataset.id;
 
       const title =
         card.dataset.title ||
@@ -1307,6 +1289,15 @@ const SNAP_ZONE = 150;
         Number(
           card.dataset.kolvo || 0
         );
+        currentProduct = {
+        id: productId,
+        title: title,
+        description: description,
+        colors: colors,
+        category: category,
+        price: price,
+        kolvo: kolvo
+      };
 
 
       /* =================================================
@@ -1477,6 +1468,10 @@ const SNAP_ZONE = 150;
       /* =================================================
          ОТКРЫВАЕМ
          ================================================= */
+      const orderButton =
+          document.getElementById("orderProductBtn");
+
+      orderButton.onclick = orderProduct;
 
       modal.classList.add(
         "active"
@@ -1496,7 +1491,46 @@ const SNAP_ZONE = 150;
       );
 
     }
+    function orderProduct(productId) {
 
+        if (!productId) {
+            console.error("Не указан ID товара");
+            return;
+        }
+
+        // ==========================================
+        // СЮДА ТЫ ПОТОМ САМ ВПИШЕШЬ ПАРАМЕТРЫ
+        // ==========================================
+
+        const title = document.getElementById("modalTitle").textContent;
+        const price = document.getElementById("modalPrice").textContent;
+        const colors = document.getElementById("modalColors").textContent;
+        const category = document.getElementById("modalCategory").textContent;
+
+        // ==========================================
+        // ТЕКСТ СООБЩЕНИЯ
+        // ==========================================
+
+        const message =
+    `Здравствуйте! Я хочу заказать товар.
+
+    Товар: ${title}
+    Категория: ${category}
+    Цена: ${price}
+    ${colors}
+
+    ID товара: ${productId}`;
+
+        // ==========================================
+        // ПЕРЕХОД В ЧАТ
+        // ==========================================
+
+        window.location.href =
+            "/chat?product_id=" +
+            encodeURIComponent(productId) +
+            "&message=" +
+            encodeURIComponent(message);
+    }
 
     /* =====================================================
        ПОКАЗ ФОТОГРАФИИ
