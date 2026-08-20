@@ -438,13 +438,17 @@ const SNAP_ZONE = 150;
       </a>
       
 
-      <img
-        id="accountAvatar"
-        src="{{ url_for('static', filename='images/default-avatar.png') }}"
-        alt="Профиль"
-        class="avatar"
-        onclick="openAccountModal(event)"
-      />
+      <div class="chat-avatar-indicator">
+        <span class="avatar-pulse"></span>
+
+        <img
+            id="accountAvatar"
+            src="{{ url_for('static', filename='images/default-avatar.png') }}"
+            alt="Профиль"
+            class="avatar"
+            onclick="openAccountModal(event)"
+        >
+      </div>
 
       {% else %}
 
@@ -779,7 +783,7 @@ const SNAP_ZONE = 150;
           alt="Профиль"
         />
       </div>
-x
+
       
 
       <h2 class="account-modal-title">
@@ -794,7 +798,7 @@ x
 
         <a href="/news" class="account-modal-button account-modal-button-main">Наши новости 📰</a>
         <a href="/orders" class="account-modal-button account-modal-button-main">Мои заказы 🚚</a>
-        <a href="/chat" class="account-modal-button account-modal-button-main">Чат 📱</a>
+        <a href="/chat" class="account-modal-button account-modal-button-main">Чат 📱 <span class="user-unread-badge" id="userUnreadBadge"></span> </a>
         <a href="/profile-id" class="account-modal-button account-modal-button-main">Данные аккаунта</a>
 
         <a
@@ -2235,6 +2239,285 @@ x
       closeDeveloperModal();
     }
   });
+
+ 
+
+  /* =========================================================
+    НЕПРОЧИТАННЫЕ СООБЩЕНИЯ ПОЛЬЗОВАТЕЛЯ
+    ========================================================= */
+
+
+  /*
+  * ID последнего сообщения,
+  * которое пользователь уже видел.
+  */
+  let userLastSeenMessageId = null;
+
+
+  /*
+  * Текущее количество непрочитанных.
+  */
+  let userUnreadCount = 0;
+
+
+  /*
+  * ==========================================
+  * ОБНОВЛЕНИЕ ИНДИКАТОРА
+  * ==========================================
+  */
+
+  function updateUserUnreadBadge(count) {
+
+      const badge =
+          document.getElementById(
+              "userUnreadBadge"
+          );
+
+
+      if (!badge) {
+
+          return;
+
+      }
+
+
+      /*
+      * Непрочитанных нет.
+      */
+
+      if (count <= 0) {
+
+          badge.style.display =
+              "none";
+
+          badge.textContent =
+              "";
+
+          return;
+
+      }
+
+
+      /*
+      * Есть непрочитанные.
+      */
+
+      badge.textContent =
+          count > 99
+              ? "99+"
+              : count;
+
+
+      badge.style.display =
+          "inline-flex";
+
+  }
+
+
+  /*
+  * ==========================================
+  * ПРОВЕРКА НЕПРОЧИТАННЫХ
+  * ==========================================
+  */
+
+  async function checkUserUnreadMessages() {
+
+      try {
+
+          const response =
+              await fetch(
+                  "/chat/messages",
+                  {
+                      cache: "no-store"
+                  }
+              );
+
+
+          if (!response.ok) {
+
+              return;
+
+          }
+
+
+          const data =
+              await response.json();
+
+
+          if (!data.success) {
+
+              return;
+
+          }
+
+
+          const messages =
+              data.messages || [];
+
+
+          /*
+          * Нет сообщений.
+          */
+
+          if (!messages.length) {
+
+              userLastSeenMessageId = 0;
+
+              userUnreadCount = 0;
+
+              updateUserUnreadBadge(0);
+
+              return;
+
+          }
+
+
+          /*
+          * Последнее сообщение.
+          */
+
+          const lastMessage =
+              messages[
+                  messages.length - 1
+              ];
+
+
+          /*
+          * ======================================
+          * ПЕРВЫЙ ЗАПУСК
+          *
+          * Старые сообщения НЕ считаем новыми.
+          * ======================================
+          */
+
+          if (
+              userLastSeenMessageId === null
+          ) {
+
+              userLastSeenMessageId =
+                  lastMessage.id;
+
+              userUnreadCount = 0;
+
+              updateUserUnreadBadge(0);
+
+              return;
+
+          }
+
+
+          /*
+          * ======================================
+          * СЧИТАЕМ НОВЫЕ СООБЩЕНИЯ
+          *
+          * Только сообщения АДМИНА.
+          *
+          * ======================================
+          */
+
+          let unread = 0;
+
+
+          messages.forEach(
+              function(message) {
+
+                  /*
+                  * Новее последнего просмотренного
+                  *
+                  * И НЕ наше сообщение.
+                  *
+                  * Значит это сообщение админа.
+                  */
+
+                  if (
+                      message.id >
+                      userLastSeenMessageId
+                      &&
+                      String(message.sender_id)
+                      !==
+                      String(
+                          "{{ session.get('user_id', '') }}"
+                      )
+                  ) {
+
+                      unread++;
+
+                  }
+
+              }
+          );
+
+
+          /*
+          * ======================================
+          * ЕСЛИ ПОЛЬЗОВАТЕЛЬ СЕЙЧАС НА /chat
+          * ======================================
+          */
+
+          if (
+              window.location.pathname === "/chat"
+          ) {
+
+              userLastSeenMessageId =
+                  lastMessage.id;
+
+              userUnreadCount = 0;
+
+              updateUserUnreadBadge(0);
+
+              return;
+
+          }
+
+
+          /*
+          * ======================================
+          * ПОЛЬЗОВАТЕЛЬ НЕ В ЧАТЕ
+          * ======================================
+          */
+
+          userUnreadCount =
+              unread;
+
+
+          updateUserUnreadBadge(
+              userUnreadCount
+          );
+
+      }
+
+      catch (error) {
+
+          console.error(
+              "Ошибка проверки непрочитанных сообщений:",
+              error
+          );
+
+      }
+
+  }
+
+
+  /*
+  * ==========================================
+  * ПЕРВАЯ ПРОВЕРКА
+  * ==========================================
+  */
+
+  checkUserUnreadMessages();
+
+
+  /*
+  * ==========================================
+  * ПРОВЕРКА КАЖДЫЕ 2 СЕКУНДЫ
+  * ==========================================
+  */
+
+  setInterval(
+      checkUserUnreadMessages,
+      2000
+  );
+
 
 
   </script>
