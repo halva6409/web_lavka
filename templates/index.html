@@ -361,7 +361,24 @@ const SNAP_ZONE = 150;
     }
   );
 
+window.clearInput = function(button) {
 
+  searchInput.value = "";
+
+  updateProducts();
+
+};
+window.resetFilters = function() {
+
+  searchInput.value = "";
+
+  conditionSelect.value = "Все";
+
+  categorySelect.value = "";
+
+  updateProducts();
+
+};
 })();
 </script>
 
@@ -438,15 +455,18 @@ const SNAP_ZONE = 150;
       </a>
       
 
-      <div class="chat-avatar-indicator">
+      <div
+        class="chat-avatar-indicator"
+        id="chatAvatarIndicator"
+      >
         <span class="avatar-pulse"></span>
 
         <img
-            id="accountAvatar"
-            src="{{ url_for('static', filename='images/default-avatar.png') }}"
-            alt="Профиль"
-            class="avatar"
-            onclick="openAccountModal(event)"
+          id="accountAvatar"
+          src="{{ url_for('static', filename='images/default-avatar.png') }}"
+          alt="Профиль"
+          class="avatar"
+          onclick="openAccountModal(event)"
         >
       </div>
 
@@ -538,9 +558,13 @@ const SNAP_ZONE = 150;
 
       <div class="panel-head">
 
-        <h2>Каталог</h2>
+      <h1>Каталог</h1>
 
-        <form class="search_" method="GET" action="/">
+      <form class="catalog-filters" method="GET" action="/">
+
+        <!-- ПОИСК -->
+        <div class="search_">
+
           <div class="search-wrapper">
 
             <input
@@ -560,24 +584,116 @@ const SNAP_ZONE = 150;
 
           </div>
 
-          <button type="submit" class="search-btn">
+          <button
+            type="submit"
+            class="search-btn"
+          >
             Найти
           </button>
-        </form>
 
-        <button
-          type="button"
-          id="refreshBtn"
-          class="refresh-btn"
-          onclick="location.reload()"
-        >
-          <img 
-            src="{{url_for('static', filename='/images/refresh-button.png')}}"
-            alt="a;onjgreoiq"
+        </div>
+
+
+        <!-- ФИЛЬТРЫ -->
+        <div class="filter">
+
+          <select
+            class="condition"
+            name="condition"
+            id="condition"
+            autocomplete="off"
+          >
+            <option value="Все"
+              {% if condition == "Все" %}selected{% endif %}
             >
-        </button>
+              Все
+            </option>
 
-      </div>
+            <option value="Новые в наличии"
+              {% if condition == "Новые в наличии" %}selected{% endif %}
+            >
+              Новые в наличии
+            </option>
+
+            <option value="Под заказ"
+              {% if condition == "Под заказ" %}selected{% endif %}
+            >
+              Под заказ
+            </option>
+
+            <option value="Б/У"
+              {% if condition == "Б/У" %}selected{% endif %}
+            >
+              Б/У
+            </option>
+          </select>
+
+
+          <select
+            class="category_prod"
+            name="category_prod"
+            id="category_prod"
+            autocomplete="off"
+          >
+
+            <option value=""
+              {% if not category_prod %}selected{% endif %}
+            >
+              Категории
+            </option>
+
+            <option value="Основания"
+              {% if category_prod == "Основания" %}selected{% endif %}
+            >
+              Основания
+            </option>
+
+            <option value="Накладки"
+              {% if category_prod == "Накладки" %}selected{% endif %}
+            >
+              Накладки
+            </option>
+
+            <option value="Ракетки"
+              {% if category_prod == "Ракетки" %}selected{% endif %}
+            >
+              Ракетки
+            </option>
+
+            <option value="Одежда"
+              {% if category_prod == "Одежда" %}selected{% endif %}
+            >
+              Одежда
+            </option>
+
+            <option value="Обувь"
+              {% if category_prod == "Обувь" %}selected{% endif %}
+            >
+              Обувь
+            </option>
+
+          </select>
+
+        </div>
+
+      </form>
+
+
+      <!-- ОБНОВИТЬ -->
+      <button
+        type="button"
+        id="refreshBtn"
+        class="refresh-btn"
+        onclick="resetFilters()"
+      >
+        <img
+          src="{{ url_for('static', filename='images/refresh-button.png') }}"
+          alt="Обновить"
+        >
+      </button>
+    </div>
+  </div>
+
 
       <script>
         const searchInput = document.querySelector('.search_ input[name="search"]');
@@ -589,11 +705,11 @@ const SNAP_ZONE = 150;
         }
 
         function clearInput(button) {
-            const form = button.closest("form");
 
             searchInput.value = "";
 
-            form.submit();
+            updateProducts();
+
         }
 
         searchInput.addEventListener("input", updateClearButton);
@@ -744,7 +860,298 @@ const SNAP_ZONE = 150;
     </section>
 
   </main>
+<script>
+(() => {
 
+  const form = document.querySelector(".catalog-filters");
+  const conditionSelect = document.getElementById("condition");
+  const categorySelect = document.getElementById("category_prod");
+  const searchInput = document.querySelector(
+    '.search-input[name="search"]'
+  );
+  const productsGrid = document.querySelector(".products-grid");
+
+  if (
+    !form ||
+    !conditionSelect ||
+    !categorySelect ||
+    !searchInput ||
+    !productsGrid
+  ) {
+    return;
+  }
+
+
+  /* =====================================================
+     ПОЛУЧЕНИЕ ТОВАРОВ С СЕРВЕРА
+     ===================================================== */
+
+  async function updateProducts() {
+
+    const params = new URLSearchParams();
+
+    const search = searchInput.value.trim();
+    const condition = conditionSelect.value;
+    const category = categorySelect.value;
+
+
+    /* ПОИСК */
+
+    if (search) {
+      params.set("search", search);
+    }
+
+
+    /* СОСТОЯНИЕ */
+
+    if (condition && condition !== "Все") {
+      params.set("condition", condition);
+    }
+
+
+    /* КАТЕГОРИЯ */
+
+    if (category) {
+      params.set("category_prod", category);
+    }
+
+
+    const queryString = params.toString();
+
+    const url = queryString
+      ? "/?" + queryString
+      : "/";
+
+
+    try {
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      });
+
+
+      if (!response.ok) {
+        throw new Error(
+          "Ошибка сервера: " + response.status
+        );
+      }
+
+
+      const html = await response.text();
+
+
+      /* =================================================
+         ПОЛУЧАЕМ HTML НОВОЙ СТРАНИЦЫ
+         ================================================= */
+
+      const parser = new DOMParser();
+
+      const documentHTML =
+        parser.parseFromString(
+          html,
+          "text/html"
+        );
+
+
+      const newProductsGrid =
+        documentHTML.querySelector(
+          ".products-grid"
+        );
+
+
+      if (!newProductsGrid) {
+        throw new Error(
+          "Не найден .products-grid"
+        );
+      }
+
+
+      /* =================================================
+         ЗАМЕНЯЕМ ТОЛЬКО ТОВАРЫ
+         ================================================= */
+
+      productsGrid.innerHTML =
+        newProductsGrid.innerHTML;
+
+
+      /* =================================================
+         ОБНОВЛЯЕМ URL
+         ================================================= */
+
+      window.history.replaceState(
+        {},
+        "",
+        url
+      );
+
+
+      /* =================================================
+         ПОВТОРНО ПОДКЛЮЧАЕМ ИЗБРАННОЕ
+         ================================================= */
+
+      initFavoriteButtons();
+
+
+    } catch (error) {
+
+      console.error(
+        "Ошибка обновления товаров:",
+        error
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     ФИЛЬТР СОСТОЯНИЯ
+     ===================================================== */
+
+  conditionSelect.addEventListener(
+    "change",
+    function() {
+
+      updateProducts();
+
+    }
+  );
+
+
+  /* =====================================================
+     ФИЛЬТР КАТЕГОРИИ
+     ===================================================== */
+
+  categorySelect.addEventListener(
+    "change",
+    function() {
+
+      updateProducts();
+
+    }
+  );
+
+
+  /* =====================================================
+     ПОИСК
+     ===================================================== */
+
+  form.addEventListener(
+    "submit",
+    function(event) {
+
+      event.preventDefault();
+
+      updateProducts();
+
+    }
+  );
+
+
+  /* =====================================================
+     ИЗБРАННОЕ
+     ===================================================== */
+
+  function initFavoriteButtons() {
+
+    document
+      .querySelectorAll(".favorite-btn")
+      .forEach(button => {
+
+        /* Чтобы один и тот же обработчик
+           не добавлялся несколько раз */
+
+        if (
+          button.dataset.favoriteInitialized === "1"
+        ) {
+          return;
+        }
+
+
+        button.dataset.favoriteInitialized = "1";
+
+
+        button.addEventListener(
+          "click",
+          async function(event) {
+
+            event.stopPropagation();
+
+
+            const productId =
+              this.dataset.productId;
+
+
+            try {
+
+              const response =
+                await fetch(
+                  "/api/favorite/toggle",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type":
+                        "application/json"
+                    },
+                    body:
+                      JSON.stringify({
+                        product_id:
+                          Number(productId)
+                      })
+                  }
+                );
+
+
+              const data =
+                await response.json();
+
+
+              if (!data.success) {
+
+                console.error(
+                  data.error
+                );
+
+                return;
+
+              }
+
+
+              this.classList.toggle(
+                "is-favorite",
+                data.favorite
+              );
+
+
+            } catch (error) {
+
+              console.error(
+                "Ошибка избранного:",
+                error
+              );
+
+            }
+
+          }
+        );
+
+      });
+
+  }
+
+
+  /* =====================================================
+     ПЕРВИЧНАЯ ИНИЦИАЛИЗАЦИЯ ИЗБРАННОГО
+     ===================================================== */
+
+  initFavoriteButtons();
+
+
+})();
+</script>
 
   <!-- =====================================================
        МОДАЛЬНОЕ ОКНО АККАУНТА
@@ -798,7 +1205,13 @@ const SNAP_ZONE = 150;
 
         <a href="/news" class="account-modal-button account-modal-button-main">Наши новости 📰</a>
         <a href="/orders" class="account-modal-button account-modal-button-main">Мои заказы 🚚</a>
-        <a href="/chat" class="account-modal-button account-modal-button-main">Чат 📱 <span class="user-unread-badge" id="userUnreadBadge"></span> </a>
+        <a href="/chat" class="account-modal-button account-modal-button-main">
+            Чат 📱
+
+            {% if unread %}
+                <span class="user-unread-badge" id="userUnreadBadge"></span>
+            {% endif %}
+        </a>
         <a href="/profile-id" class="account-modal-button account-modal-button-main">Данные аккаунта</a>
 
         <a
@@ -978,45 +1391,7 @@ const SNAP_ZONE = 150;
 
 
 
-    document.querySelectorAll(".favorite-btn").forEach(button => {
-
-        button.addEventListener("click", async function(event) {
-
-            event.stopPropagation();
-
-            const productId = this.dataset.productId;
-
-            try {
-
-                const response = await fetch("/api/favorite/toggle", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        product_id: Number(productId)
-                    })
-                });
-
-                const data = await response.json();
-
-                if (!data.success) {
-                    console.error(data.error);
-                    return;
-                }
-
-                this.classList.toggle(
-                    "is-favorite",
-                    data.favorite
-                );
-
-            } catch (error) {
-                console.error("Ошибка избранного:", error);
-            }
-
-        });
-
-    });
+    
     let currentImageIndex = 0;
 
     let currentImages = [];
@@ -2242,281 +2617,7 @@ const SNAP_ZONE = 150;
 
  
 
-  /* =========================================================
-    НЕПРОЧИТАННЫЕ СООБЩЕНИЯ ПОЛЬЗОВАТЕЛЯ
-    ========================================================= */
-
-
-  /*
-  * ID последнего сообщения,
-  * которое пользователь уже видел.
-  */
-  let userLastSeenMessageId = null;
-
-
-  /*
-  * Текущее количество непрочитанных.
-  */
-  let userUnreadCount = 0;
-
-
-  /*
-  * ==========================================
-  * ОБНОВЛЕНИЕ ИНДИКАТОРА
-  * ==========================================
-  */
-
-  function updateUserUnreadBadge(count) {
-
-      const badge =
-          document.getElementById(
-              "userUnreadBadge"
-          );
-
-
-      if (!badge) {
-
-          return;
-
-      }
-
-
-      /*
-      * Непрочитанных нет.
-      */
-
-      if (count <= 0) {
-
-          badge.style.display =
-              "none";
-
-          badge.textContent =
-              "";
-
-          return;
-
-      }
-
-
-      /*
-      * Есть непрочитанные.
-      */
-
-      badge.textContent =
-          count > 99
-              ? "99+"
-              : count;
-
-
-      badge.style.display =
-          "inline-flex";
-
-  }
-
-
-  /*
-  * ==========================================
-  * ПРОВЕРКА НЕПРОЧИТАННЫХ
-  * ==========================================
-  */
-
-  async function checkUserUnreadMessages() {
-
-      try {
-
-          const response =
-              await fetch(
-                  "/chat/messages",
-                  {
-                      cache: "no-store"
-                  }
-              );
-
-
-          if (!response.ok) {
-
-              return;
-
-          }
-
-
-          const data =
-              await response.json();
-
-
-          if (!data.success) {
-
-              return;
-
-          }
-
-
-          const messages =
-              data.messages || [];
-
-
-          /*
-          * Нет сообщений.
-          */
-
-          if (!messages.length) {
-
-              userLastSeenMessageId = 0;
-
-              userUnreadCount = 0;
-
-              updateUserUnreadBadge(0);
-
-              return;
-
-          }
-
-
-          /*
-          * Последнее сообщение.
-          */
-
-          const lastMessage =
-              messages[
-                  messages.length - 1
-              ];
-
-
-          /*
-          * ======================================
-          * ПЕРВЫЙ ЗАПУСК
-          *
-          * Старые сообщения НЕ считаем новыми.
-          * ======================================
-          */
-
-          if (
-              userLastSeenMessageId === null
-          ) {
-
-              userLastSeenMessageId =
-                  lastMessage.id;
-
-              userUnreadCount = 0;
-
-              updateUserUnreadBadge(0);
-
-              return;
-
-          }
-
-
-          /*
-          * ======================================
-          * СЧИТАЕМ НОВЫЕ СООБЩЕНИЯ
-          *
-          * Только сообщения АДМИНА.
-          *
-          * ======================================
-          */
-
-          let unread = 0;
-
-
-          messages.forEach(
-              function(message) {
-
-                  /*
-                  * Новее последнего просмотренного
-                  *
-                  * И НЕ наше сообщение.
-                  *
-                  * Значит это сообщение админа.
-                  */
-
-                  if (
-                      message.id >
-                      userLastSeenMessageId
-                      &&
-                      String(message.sender_id)
-                      !==
-                      String(
-                          "{{ session.get('user_id', '') }}"
-                      )
-                  ) {
-
-                      unread++;
-
-                  }
-
-              }
-          );
-
-
-          /*
-          * ======================================
-          * ЕСЛИ ПОЛЬЗОВАТЕЛЬ СЕЙЧАС НА /chat
-          * ======================================
-          */
-
-          if (
-              window.location.pathname === "/chat"
-          ) {
-
-              userLastSeenMessageId =
-                  lastMessage.id;
-
-              userUnreadCount = 0;
-
-              updateUserUnreadBadge(0);
-
-              return;
-
-          }
-
-
-          /*
-          * ======================================
-          * ПОЛЬЗОВАТЕЛЬ НЕ В ЧАТЕ
-          * ======================================
-          */
-
-          userUnreadCount =
-              unread;
-
-
-          updateUserUnreadBadge(
-              userUnreadCount
-          );
-
-      }
-
-      catch (error) {
-
-          console.error(
-              "Ошибка проверки непрочитанных сообщений:",
-              error
-          );
-
-      }
-
-  }
-
-
-  /*
-  * ==========================================
-  * ПЕРВАЯ ПРОВЕРКА
-  * ==========================================
-  */
-
-  checkUserUnreadMessages();
-
-
-  /*
-  * ==========================================
-  * ПРОВЕРКА КАЖДЫЕ 2 СЕКУНДЫ
-  * ==========================================
-  */
-
-  setInterval(
-      checkUserUnreadMessages,
-      2000
-  );
+ 
 
 
 

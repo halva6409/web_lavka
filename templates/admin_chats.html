@@ -636,19 +636,7 @@
 
     let currentChatId = null;
 
-    /*
-     * Для каждого чата запоминаем последнее
-     * сообщение, которое админ уже видел.
-     */
-
-    const lastSeenMessages = {};
-
-
-    /*
-     * Количество непрочитанных сообщений.
-     */
-
-    const unreadCounts = {};
+   
 
 
     /* =========================================================
@@ -798,16 +786,16 @@
             true
         );
 
-
+        await markChatAsRead();
         /*
          * Запоминаем последнее
          * сообщение как прочитанное
-         */
+         
 
         markChatAsRead();
 
 
-        /*
+        
          * Фокус на поле
          */
 
@@ -1379,21 +1367,24 @@
     async function checkUnreadMessages() {
 
         const chatItems =
-            document.querySelectorAll(
-                ".chat-item"
-            );
+            document.querySelectorAll(".chat-item");
 
-
-        for (
-            const item
-            of chatItems
-        ) {
+        for (const item of chatItems) {
 
             const chatId =
-                String(
-                    item.dataset.chatId
-                );
+                item.dataset.chatId;
 
+            /*
+            * Открытый чат уже читаем.
+            */
+
+            if (
+                String(currentChatId)
+                ===
+                String(chatId)
+            ) {
+                continue;
+            }
 
             try {
 
@@ -1401,151 +1392,78 @@
                     await fetch(
                         "/admin/chat/"
                         + chatId
-                        + "/messages",
+                        + "/unread",
                         {
                             cache: "no-store"
                         }
                     );
 
-
                 if (!response.ok) {
-
                     continue;
-
                 }
-
 
                 const data =
                     await response.json();
 
-
                 if (!data.success) {
-
                     continue;
-
                 }
 
-
-                const messages =
-                    data.messages || [];
-
-
-                /*
-                 * Нет сообщений.
-                 */
-
-                if (!messages.length) {
-
-                    continue;
-
-                }
-
-
-                const lastMessage =
-                    messages[
-                        messages.length - 1
-                    ];
-
-
-                /*
-                 * Первый запуск.
-                 *
-                 * Не считаем старые сообщения
-                 * новыми.
-                 */
-
-                if (
-                    !(chatId in lastSeenMessages)
-                ) {
-
-                    lastSeenMessages[chatId] =
-                        lastMessage.id;
-
-                    continue;
-
-                }
-
-
-                const lastSeen =
-                    lastSeenMessages[chatId];
-
-
-                /*
-                 * Считаем только сообщения
-                 * пользователя.
-                 */
-
-                let unread = 0;
-
-
-                messages.forEach(
-                    function(message) {
-
-                        if (
-                            message.id > lastSeen &&
-                            !message.is_admin
-                        ) {
-
-                            unread++;
-
-                        }
-
-                    }
+                updateUnreadBadge(
+                    chatId,
+                    data.unread
                 );
-
-
-                /*
-                 * Если чат открыт —
-                 * автоматически считаем
-                 * сообщения прочитанными.
-                 */
-
-                if (
-                    String(currentChatId)
-                    ===
-                    String(chatId)
-                ) {
-
-                    lastSeenMessages[chatId] =
-                        lastMessage.id;
-
-                    unreadCounts[chatId] =
-                        0;
-
-                    updateUnreadBadge(
-                        chatId,
-                        0
-                    );
-
-                } else {
-
-                    unreadCounts[chatId] =
-                        unread;
-
-                    updateUnreadBadge(
-                        chatId,
-                        unread
-                    );
-
-                }
-
 
             } catch (error) {
 
                 console.error(
-                    "Ошибка проверки чата "
-                    + chatId
-                    + ":",
+                    "Ошибка unread:",
                     error
                 );
 
             }
-
         }
-
     }
 
+    async function markChatAsRead() {
 
+        if (!currentChatId) {
+            return;
+        }
+
+        try {
+
+            const response =
+                await fetch(
+                    "/admin/chat/"
+                    + currentChatId
+                    + "/read",
+                    {
+                        method: "POST"
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (!data.success) {
+                return;
+            }
+
+            updateUnreadBadge(
+                currentChatId,
+                0
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Ошибка отметки прочитанного:",
+                error
+            );
+
+        }
+    }
     /* =========================================================
        АВТООБНОВЛЕНИЕ
        ========================================================= */

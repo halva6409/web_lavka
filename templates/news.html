@@ -1,0 +1,1307 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>Новости</title>
+
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/styles.css') }}"
+    >
+
+
+    <style>
+        body {
+            background: #171c2d;
+        }
+        /* =========================================================
+           СТРАНИЦА НОВОСТЕЙ
+           ========================================================= */
+
+        .news-page {
+
+            width: min(
+                1150px,
+                calc(100% - 30px)
+            );
+
+            margin: 100px auto 40px;
+
+            padding: 30px;
+
+            box-sizing: border-box;
+
+            background: rgba(18, 18, 18, 0.78);
+
+            border: 1px solid #262626;
+
+            border-radius: 22px;
+
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+
+        /* =========================================================
+           ЗАГОЛОВОК
+           ========================================================= */
+
+        .news-page-title {
+
+            margin: 0 0 30px;
+
+            text-align: center;
+
+            font-family:
+                "Fira Sans Extra Condensed",
+                sans-serif;
+
+            font-size: 42px;
+
+            font-weight: 800;
+
+            color: #ffffff;
+        }
+
+
+        /* =========================================================
+           СЕТКА
+           ========================================================= */
+
+        .news-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fill,
+                    minmax(300px, 1fr)
+                );
+
+            gap: 22px;
+
+            align-items: start;
+        }
+
+
+        /* =========================================================
+           КАРТОЧКА
+           ========================================================= */
+
+        .news-card {
+
+            position: relative;
+
+            overflow: hidden;
+
+            display: flex;
+
+            flex-direction: column;
+
+            background: #11101770;
+
+            border: 1px solid #292929;
+
+            border-radius: 18px;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.2s ease,
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+
+        .news-card:hover {
+
+            transform: translateY(-5px);
+
+            border-color: #444444;
+
+            background: #0e073bb8;
+
+            box-shadow:
+                0 14px 35px
+                rgba(201, 45, 36, 0.35);
+        }
+
+
+        /* =========================================================
+           ФОТО НА КАРТОЧКЕ
+           ========================================================= */
+
+        .news-card-image-wrap {
+
+            width: 100%;
+
+            height: 220px;
+
+            flex-shrink: 0;
+
+            overflow: hidden;
+
+            background: #222222;
+        }
+
+
+        .news-card-image {
+
+            width: 100%;
+
+            height: 100%;
+
+            display: block;
+
+            object-fit: cover;
+        }
+
+
+        .news-no-image {
+
+            width: 100%;
+
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: #666666;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================================================
+           ТЕЛО КАРТОЧКИ
+           ========================================================= */
+
+        .news-card-body {
+
+            display: flex;
+
+            flex-direction: column;
+
+            min-height: 165px;
+
+            padding: 17px;
+        }
+
+
+        /* =========================================================
+           ЗАГОЛОВОК
+           ========================================================= */
+
+        .news-card-title {
+
+            margin: 0 0 10px;
+
+            color: #ffffff;
+
+            font-size: 23px;
+
+            font-weight: 800;
+
+            line-height: 1.15;
+
+            display: -webkit-box;
+
+            -webkit-box-orient: vertical;
+
+            -webkit-line-clamp: 3;
+
+            line-clamp: 3;
+
+            overflow: hidden;
+        }
+
+
+        /* =========================================================
+           ПРЕВЬЮ
+           ========================================================= */
+
+        .news-card-text {
+
+            margin: 0;
+
+            color: #999999;
+
+            font-size: 14px;
+
+            line-height: 1.45;
+
+            display: -webkit-box;
+
+            -webkit-box-orient: vertical;
+
+            -webkit-line-clamp: 3;
+
+            line-clamp: 3;
+
+            overflow: hidden;
+        }
+
+
+        /* =========================================================
+           ДАТА
+           ========================================================= */
+
+        .news-card-date {
+
+            margin: auto 0 0;
+
+            padding-top: 15px;
+
+            color: #777777;
+
+            font-size: 12px;
+
+            font-weight: 600;
+        }
+
+
+        /* =========================================================
+           ЕСЛИ НЕТ НОВОСТЕЙ
+           ========================================================= */
+
+        .news-empty {
+
+            padding: 70px 20px;
+
+            text-align: center;
+        }
+
+
+        .news-empty h2 {
+
+            margin: 0 0 10px;
+
+            color: #ffffff;
+
+            font-size: 25px;
+        }
+
+
+        .news-empty p {
+
+            margin: 0;
+
+            color: #86868b;
+
+            font-size: 15px;
+        }
+
+
+        /* =========================================================
+           МОДАЛЬНОЕ ОКНО
+           ========================================================= */
+
+        .news-modal {
+
+            position: fixed;
+
+            inset: 0;
+
+            z-index: 99999;
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+
+            box-sizing: border-box;
+
+            background: rgba(0, 0, 0, 0.80);
+
+            backdrop-filter: blur(10px);
+
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+
+        .news-modal.active {
+
+            display: flex;
+        }
+
+
+        /* =========================================================
+           ОКНО
+           ========================================================= */
+
+        .news-modal-window {
+
+            position: relative;
+
+            width: min(900px, 100%);
+
+            max-height: 92vh;
+
+            overflow-y: auto;
+
+            background: #111111;
+
+            border: 1px solid #303030;
+
+            border-radius: 22px;
+
+            box-shadow:
+                0 25px 80px
+                rgba(0, 0, 0, 0.75);
+
+            animation:
+                news-modal-show
+                0.2s ease;
+        }
+
+
+        @keyframes news-modal-show {
+
+            from {
+
+                opacity: 0;
+
+                transform:
+                    scale(0.95)
+                    translateY(15px);
+            }
+
+            to {
+
+                opacity: 1;
+
+                transform:
+                    scale(1)
+                    translateY(0);
+            }
+        }
+
+
+        /* =========================================================
+           КНОПКА ЗАКРЫТИЯ
+           ========================================================= */
+
+        .news-modal-close {
+
+            position: absolute;
+
+            top: 12px;
+
+            right: 12px;
+
+            z-index: 10;
+
+            width: 40px;
+
+            height: 40px;
+
+            padding: 0;
+
+            border: none;
+
+            border-radius: 50%;
+
+            background:
+                rgba(0, 0, 0, 0.72);
+
+            color: #ffffff;
+
+            font-size: 27px;
+
+            line-height: 1;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            transition:
+                background 0.15s ease,
+                transform 0.15s ease;
+        }
+
+
+        .news-modal-close:hover {
+
+            background: #c92d24;
+
+            transform: scale(1.05);
+        }
+
+
+        /* =========================================================
+           БОЛЬШАЯ КАРТИНКА
+           ========================================================= */
+
+        .news-modal-image-wrap {
+
+            width: 100%;
+
+            max-height: 550px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            overflow: hidden;
+
+            background: #080808;
+        }
+
+
+        .news-modal-image {
+
+            width: 100%;
+
+            max-height: 550px;
+
+            display: block;
+
+            object-fit: contain;
+        }
+
+
+        /* =========================================================
+           ТЕКСТ НОВОСТИ
+           ========================================================= */
+
+        .news-modal-body {
+
+            padding:
+                28px 32px 35px;
+        }
+
+
+        .news-modal-title {
+
+            margin:
+                0 0 12px;
+
+            color:
+                #ffffff;
+
+            font-family:
+                "Fira Sans Extra Condensed",
+                sans-serif;
+
+            font-size:
+                40px;
+
+            font-weight:
+                800;
+
+            line-height:
+                1.05;
+        }
+
+
+        .news-modal-date {
+
+            margin:
+                0 0 22px;
+
+            color:
+                #777777;
+
+            font-size:
+                13px;
+
+            font-weight:
+                600;
+        }
+
+
+        .news-modal-text {
+
+            color:
+                #d0d0d0;
+
+            font-size:
+                16px;
+
+            line-height:
+                1.7;
+
+            white-space:
+                pre-line;
+
+            overflow-wrap:
+                anywhere;
+        }
+
+
+        /* =========================================================
+           ССЫЛКА
+           ========================================================= */
+
+        .news-modal-link {
+
+            display:
+                inline-block;
+
+            margin-top:
+                25px;
+
+            color:
+                #c92d24;
+
+            font-size:
+                15px;
+
+            font-weight:
+                700;
+
+            text-decoration:
+                none;
+
+            overflow-wrap:
+                anywhere;
+        }
+
+
+        .news-modal-link:hover {
+
+            text-decoration:
+                underline;
+        }
+
+
+        /* =========================================================
+           МОБИЛЬНАЯ ВЕРСИЯ
+           ========================================================= */
+
+        @media (max-width: 600px) {
+
+            .news-page {
+
+                width:
+                    calc(100% - 16px);
+
+                margin:
+                    75px auto 20px;
+
+                padding:
+                    12px;
+
+                border-radius:
+                    18px;
+            }
+
+
+            .news-page-title {
+
+                margin-bottom:
+                    20px;
+
+                font-size:
+                    32px;
+            }
+
+
+            .news-grid {
+
+                grid-template-columns:
+                    1fr;
+
+                gap:
+                    14px;
+            }
+
+
+            .news-card {
+
+                border-radius:
+                    14px;
+            }
+
+
+            .news-card-image-wrap {
+
+                height:
+                    200px;
+            }
+
+
+            .news-card-body {
+
+                min-height:
+                    135px;
+
+                padding:
+                    14px;
+            }
+
+
+            .news-card-title {
+
+                font-size:
+                    21px;
+            }
+
+
+            .news-card-text {
+
+                font-size:
+                    13px;
+            }
+
+
+            .news-modal {
+
+                padding:
+                    8px;
+            }
+
+
+            .news-modal-window {
+
+                max-height:
+                    94vh;
+
+                border-radius:
+                    17px;
+            }
+
+
+            .news-modal-image-wrap {
+
+                max-height:
+                    350px;
+            }
+
+
+            .news-modal-image {
+
+                max-height:
+                    350px;
+            }
+
+
+            .news-modal-body {
+
+                padding:
+                    22px 18px 28px;
+            }
+
+
+            .news-modal-title {
+
+                font-size:
+                    31px;
+
+                margin-bottom:
+                    10px;
+            }
+
+
+            .news-modal-date {
+
+                margin-bottom:
+                    18px;
+            }
+
+
+            .news-modal-text {
+
+                font-size:
+                    15px;
+
+                line-height:
+                    1.6;
+            }
+
+        }
+
+
+        /* =========================================================
+           МАЛЕНЬКИЕ ЭКРАНЫ
+           ========================================================= */
+
+        @media (max-width: 380px) {
+
+            .news-page {
+
+                width:
+                    calc(100% - 10px);
+
+                padding:
+                    9px;
+            }
+
+
+            .news-card-image-wrap {
+
+                height:
+                    180px;
+            }
+
+
+            .news-card-title {
+
+                font-size:
+                    19px;
+            }
+
+
+            .news-card-text {
+
+                font-size:
+                    12px;
+            }
+
+
+            .news-modal-title {
+
+                font-size:
+                    28px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================================
+         НОВОСТИ
+         ========================================================= -->
+
+    <main class="news-page">
+
+
+        <h1 class="news-page-title">
+            Новости
+        </h1>
+
+
+        {% if news_list %}
+
+
+            <div class="news-grid">
+
+
+                {% for news in news_list %}
+
+
+                    <article
+                        class="news-card"
+
+                        data-news-id="{{ news.id }}"
+
+                        data-title="{{ news.title | e }}"
+
+                        data-text="{{ news.text_news | e }}"
+
+                        data-date="{{ news.date or '' }}"
+
+                        data-link="{{ news.links or '' }}"
+
+                        {% if news.images %}
+
+                            data-image="{{ url_for(
+                                'static',
+                                filename=news.images[0].image_url
+                            ) }}"
+
+                        {% else %}
+
+                            data-image=""
+
+                        {% endif %}
+                    >
+
+
+                        <!-- =================================================
+                             ИЗОБРАЖЕНИЕ
+                             ================================================= -->
+
+                        <div class="news-card-image-wrap">
+
+
+                            {% if news.images %}
+
+                                <img
+                                    class="news-card-image"
+
+                                    src="{{ url_for(
+                                        'static',
+                                        filename=news.images[0].image_url
+                                    ) }}"
+
+                                    alt="{{ news.title }}"
+
+                                    loading="lazy"
+                                >
+
+                            {% else %}
+
+                                <div class="news-no-image">
+                                    Нет изображения
+                                </div>
+
+                            {% endif %}
+
+
+                        </div>
+
+
+                        <!-- =================================================
+                             ИНФОРМАЦИЯ
+                             ================================================= -->
+
+                        <div class="news-card-body">
+
+
+                            <h2 class="news-card-title">
+
+                                {{ news.title }}
+
+                            </h2>
+
+
+                            <p class="news-card-text">
+
+                                {{ news.text_news }}
+
+                            </p>
+
+
+                            <!-- ДАТА ВНИЗУ -->
+
+                            {% if news.date %}
+
+                                <p class="news-card-date">
+
+                                    {{ news.date }}
+
+                                </p>
+
+                            {% endif %}
+
+
+                        </div>
+
+
+                    </article>
+
+
+                {% endfor %}
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="news-empty">
+
+                <h2>
+                    Новостей пока нет
+                </h2>
+
+                <p>
+                    Здесь появятся новости магазина.
+                </p>
+
+            </div>
+
+
+        {% endif %}
+
+
+    </main>
+
+
+    <!-- =========================================================
+         МОДАЛЬНОЕ ОКНО
+         ========================================================= -->
+
+    <div
+        class="news-modal"
+        id="newsModal"
+    >
+
+
+        <div class="news-modal-window">
+
+
+            <!-- КНОПКА ЗАКРЫТИЯ -->
+
+            <button
+                type="button"
+                class="news-modal-close"
+                id="newsModalClose"
+                aria-label="Закрыть"
+            >
+
+                ×
+
+            </button>
+
+
+            <!-- =================================================
+                 БОЛЬШОЕ ИЗОБРАЖЕНИЕ
+                 ================================================= -->
+
+            <div
+                class="news-modal-image-wrap"
+                id="newsModalImageWrap"
+                style="display: none;"
+            >
+
+                <img
+                    class="news-modal-image"
+                    id="newsModalImage"
+                    src=""
+                    alt=""
+                >
+
+            </div>
+
+
+            <!-- =================================================
+                 СОДЕРЖИМОЕ
+                 ================================================= -->
+
+            <div class="news-modal-body">
+
+
+                <h2
+                    class="news-modal-title"
+                    id="newsModalTitle"
+                ></h2>
+
+
+                <p
+                    class="news-modal-date"
+                    id="newsModalDate"
+                ></p>
+
+
+                <div
+                    class="news-modal-text"
+                    id="newsModalText"
+                ></div>
+
+
+                <a
+                    class="news-modal-link"
+                    id="newsModalLink"
+
+                    href="#"
+
+                    target="_blank"
+
+                    rel="noopener noreferrer"
+
+                    style="display: none;"
+                >
+
+                    Подробнее →
+
+                </a>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <script>
+
+        /* =========================================================
+           ЭЛЕМЕНТЫ МОДАЛЬНОГО ОКНА
+           ========================================================= */
+
+        const modal =
+            document.getElementById(
+                "newsModal"
+            );
+
+
+        const modalClose =
+            document.getElementById(
+                "newsModalClose"
+            );
+
+
+        const modalImageWrap =
+            document.getElementById(
+                "newsModalImageWrap"
+            );
+
+
+        const modalImage =
+            document.getElementById(
+                "newsModalImage"
+            );
+
+
+        const modalTitle =
+            document.getElementById(
+                "newsModalTitle"
+            );
+
+
+        const modalDate =
+            document.getElementById(
+                "newsModalDate"
+            );
+
+
+        const modalText =
+            document.getElementById(
+                "newsModalText"
+            );
+
+
+        const modalLink =
+            document.getElementById(
+                "newsModalLink"
+            );
+
+
+        /* =========================================================
+           ОТКРЫТИЕ НОВОСТИ
+           ========================================================= */
+
+        document
+            .querySelectorAll(".news-card")
+            .forEach(card => {
+
+
+                card.addEventListener(
+                    "click",
+                    function () {
+
+
+                        /*
+                         * Получаем данные
+                         * непосредственно
+                         * из карточки
+                         */
+
+                        const title =
+                            this.dataset.title;
+
+
+                        const text =
+                            this.dataset.text;
+
+
+                        const date =
+                            this.dataset.date;
+
+
+                        const link =
+                            this.dataset.link;
+
+
+                        const image =
+                            this.dataset.image;
+
+
+                        /*
+                         * Заголовок
+                         */
+
+                        modalTitle.textContent =
+                            title;
+
+
+                        /*
+                         * Дата
+                         */
+
+                        modalDate.textContent =
+                            date;
+
+
+                        /*
+                         * Полный текст
+                         */
+
+                        modalText.textContent =
+                            text;
+
+
+                        /*
+                         * Изображение
+                         */
+
+                        if (image) {
+
+                            modalImage.src =
+                                image;
+
+                            modalImage.alt =
+                                title;
+
+                            modalImageWrap.style.display =
+                                "flex";
+
+                        }
+
+                        else {
+
+                            modalImage.src =
+                                "";
+
+                            modalImageWrap.style.display =
+                                "none";
+
+                        }
+
+
+                        /*
+                         * Ссылка
+                         */
+
+                        if (link) {
+
+                            modalLink.href =
+                                link;
+
+                            modalLink.style.display =
+                                "inline-block";
+
+                        }
+
+                        else {
+
+                            modalLink.href =
+                                "#";
+
+                            modalLink.style.display =
+                                "none";
+
+                        }
+
+
+                        /*
+                         * Открываем окно
+                         */
+
+                        modal.classList.add(
+                            "active"
+                        );
+
+
+                        /*
+                         * Запрещаем прокрутку
+                         * основной страницы
+                         */
+
+                        document.body.style.overflow =
+                            "hidden";
+
+                    }
+                );
+
+            });
+
+
+        /* =========================================================
+           ЗАКРЫТИЕ МОДАЛЬНОГО ОКНА
+           ========================================================= */
+
+        function closeNewsModal() {
+
+            modal.classList.remove(
+                "active"
+            );
+
+
+            document.body.style.overflow =
+                "";
+
+        }
+
+
+        /* Кнопка × */
+
+        modalClose.addEventListener(
+            "click",
+            closeNewsModal
+        );
+
+
+        /* =========================================================
+           ЗАКРЫТИЕ КЛИКОМ ПО ФОНУ
+           ========================================================= */
+
+        modal.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target === modal
+                ) {
+
+                    closeNewsModal();
+
+                }
+
+            }
+        );
+
+
+        /* =========================================================
+           ЗАКРЫТИЕ ESC
+           ========================================================= */
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape" &&
+                    modal.classList.contains("active")
+                ) {
+
+                    closeNewsModal();
+
+                }
+
+            }
+        );
+
+    </script>
+
+
+</body>
+
+<a href="/" class="back-home">
+    ← На главную
+</a>
+
+</html>

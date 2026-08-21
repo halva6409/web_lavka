@@ -103,6 +103,7 @@ class User(db.Model):
     is_admin = db.Column(db.Integer, default=0)
     password_hash = db.Column(db.String(120))
     favorites = db.Column(db.JSON, nullable=False, default=list)
+    orders = db.Column(db.JSON, nullable=False, default=list)
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -114,11 +115,13 @@ class Product(db.Model):
     kolvo = db.Column(db.Integer)
     is_active = db.Column(db.Integer, default=0)
     created_at = db.Column(db.String(50))
-    images = db.relationship("Image_prod", backref="product", lazy=True, cascade="all, delete-orphan")
+    condition = db.Column(db.String, nullable=True, default="Все")
+    images = db.relationship("Image", backref="product", lazy=True, cascade="all, delete-orphan")
     
-class Image_prod(db.Model):
+class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
+    news_id = db.Column(db.Integer, db.ForeignKey("news.id"), nullable=False)
     image_url = db.Column(db.String(200), nullable=False)
 
 class Chat(db.Model):
@@ -134,7 +137,17 @@ class Message(db.Model):
     sender_id = db.Column(db.String, db.ForeignKey("user.id"), nullable=False)
     text = db.Column(db.Text, nullable=False)
     send_at = db.Column(db.String(50))
+    user_read = db.Column(db.Integer, default=0)
+    admin_read = db.Column(db.Integer, default=0)
     sender = db.relationship("User")
+
+class News(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    text_news = db.Column(db.String, nullable=False)
+    links = db.Column(db.String, nullable=True)
+    date = db.Column(db.String)
+    images = db.relationship("Image", backref="news", lazy=True, cascade="all, delete-orphan")
 
 
 #########################################################################################################################################################
@@ -143,24 +156,45 @@ class Message(db.Model):
 
 @app.route("/")
 def index():
-
-    user_id = session.get("user_id","")
+    user_id = session.get("user_id", "")
     user = db.session.get(User, user_id) if user_id else None
-
     search = request.args.get("search", "").strip()
+    condition = request.args.get("condition", "Все")
+    category_prod = request.args.get("category_prod", "")
     query = Product.query.filter_by(is_active=1)
+
     if search:
-        query = query.filter(or_(
-                                Product.title.ilike(f"%{search}%"),
-                                Product.category.ilike(f"%{search}%"),
-                                Product.description.ilike(f"%{search}%"),
-                                ))
-    products = query.filter_by(is_active=1).order_by(Product.id.desc()).all()
-
+        query = query.filter(
+            or_(
+                Product.title.ilike(f"%{search}%"),
+                Product.category.ilike(f"%{search}%"),
+                Product.description.ilike(f"%{search}%")))
     
-    
-    return render_template("index.html", products=products, user=user, search=search, )
+    if condition != "Все":
+        query = query.filter(Product.condition == condition)
 
+    if category_prod:
+        query = query.filter(Product.category == category_prod)
+
+    products = query.order_by(Product.id.desc()).all()
+    unread = False
+    if user:
+        chat = Chat.query.filter_by(user_id=user.id).first()
+        if chat:
+            unread = Message.query.filter(
+                Message.chat_id == chat.id,
+                Message.user_read == 0,
+                Message.sender_id != user.id).first() is not None
+
+    return render_template(
+        "index.html",
+        products=products,
+        user=user,
+        search=search,
+        condition=condition,
+        category_prod=category_prod,
+        unread=unread
+    )
 #########################################################################################################################################################
 
 @app.route('/register', methods=['GET','POST'])
@@ -267,7 +301,7 @@ def admin_add():
     db.session.commit()
 
     for i in range(len(ready_list_img)):
-        prod = Image_prod(
+        prod = Image(
             product_id=product.id,
             image_url=ready_list_img[i]
         )
@@ -317,6 +351,8 @@ def delete_product(product_id):
 def logout():
     session.clear()
     return redirect('/')
+
+#########################################################################################################################################################
 
 @app.route("/favorites")
 def favorite():
@@ -450,7 +486,9 @@ def send():
         chat_id=chat.id,
         sender_id=user_id,
         text=message_text,
-        send_at=datetime.now(timezone.utc).isoformat()
+        send_at=datetime.now(timezone.utc).isoformat(),
+        user_read=1,
+        admin_read=0
     )
     db.session.add(message)
     db.session.commit()
@@ -551,7 +589,9 @@ def admin_send_message(chat_id):
         chat_id=chat.id,
         sender_id=admin_id,
         text=message_text,
-        send_at=datetime.now(timezone.utc).isoformat()
+        send_at=datetime.now(timezone.utc).isoformat(),
+        user_read=0,
+        admin_read=1
     )
 
     db.session.add(message)
@@ -567,6 +607,117 @@ def admin_send_message(chat_id):
             "is_admin": True
         }
     })
+
+#########################################################################################################################################################
+
+@app.post("/chat/read")
+@logined
+def mark_user_messages_read():
+
+    user_id = session.get("user_id")
+
+    chat = Chat.query.filter_by(
+        user_id=user_id
+    ).first()
+
+    if not chat:
+        return jsonify({
+            "success": True
+        })
+
+    Message.query.filter(
+        Message.chat_id == chat.id,
+        Message.user_read == 0
+    ).update(
+        {
+            Message.user_read: 1
+        }
+    )
+
+    db.session.commit()
+
+    return jsonify({
+        "success": True
+    })
+
+#########################################################################################################################################################
+
+@app.post("/admin/chat/<int:chat_id>/read")
+@admin_required
+def mark_admin_messages_read(chat_id):
+
+    chat = Chat.query.get_or_404(chat_id)
+
+    Message.query.filter(
+        Message.chat_id == chat.id,
+        Message.admin_read == 0
+    ).update(
+        {
+            Message.admin_read: 1
+        }
+    )
+
+    db.session.commit()
+
+    return jsonify({
+        "success": True
+    })
+
+#########################################################################################################################################################
+
+@app.get("/chat/unread")
+@logined
+def user_unread():
+
+    user_id = session.get("user_id")
+
+    chat = Chat.query.filter_by(
+        user_id=user_id
+    ).first()
+
+    if not chat:
+        return jsonify({
+            "success": True,
+            "unread": 0
+        })
+
+    unread = Message.query.filter(
+        Message.chat_id == chat.id,
+        Message.user_read == 0,
+        Message.sender_id != user_id
+    ).count()
+
+    return jsonify({
+        "success": True,
+        "unread": unread
+    })
+
+#########################################################################################################################################################
+
+@app.get("/admin/chat/<int:chat_id>/unread")
+@admin_required
+def admin_unread(chat_id):
+
+    chat = Chat.query.get_or_404(chat_id)
+
+    unread = Message.query.filter(
+        Message.chat_id == chat.id,
+        Message.admin_read == 0
+    ).count()
+
+    return jsonify({
+        "success": True,
+        "unread": unread
+    })
+
+#########################################################################################################################################################
+
+@app.route("/news")
+def news():
+    news_list = (News.query.order_by(News.id.desc()).all())
+    return render_template("news.html", news_list=news_list)
+
+
 #########################################################################################################################################################
 #########################################################################################################################################################
 #########################################################################################################################################################

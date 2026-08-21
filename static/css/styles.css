@@ -253,66 +253,14 @@ body.scrolled .topbar {
     }
 }
 
-/* =====================================================
-   ПУЛЬС АВАТАРА — ТОЛЬКО ПРИ НЕПРОЧИТАННОМ
-   ===================================================== */
-
-.avatar-pulse {
-    position: absolute;
-
-    left: 50%;
-    top: 50%;
-
-    width: 100%;
-    height: 100%;
-
-    transform: translate(-50%, -50%);
-
-    border-radius: 50%;
-
-    border: 2px solid rgba(35, 119, 185, 0.8);
-
-    opacity: 0;
-
-    pointer-events: none;
-
-    z-index: 0;
-}
 
 
 /* =====================================================
    АКТИВНЫЙ ИНДИКАТОР
    ===================================================== */
 
-.chat-avatar-indicator.has-unread .avatar-pulse {
-    animation: avatarPulse 1.8s ease-out infinite;
-}
-
-
-@keyframes avatarPulse {
-
-    0% {
-        width: 100%;
-        height: 100%;
-        opacity: 0.75;
-    }
-
-    70% {
-        width: 155%;
-        height: 155%;
-        opacity: 0;
-    }
-
-    100% {
-        width: 155%;
-        height: 155%;
-        opacity: 0;
-    }
-
-}
 .user-unread-badge {
-
-    display: none;
+    display: inline-flex;
 
     min-width: 22px;
     height: 22px;
@@ -334,6 +282,10 @@ body.scrolled .topbar {
     font-weight: bold;
 
     line-height: 1;
+    
+}
+.user-unread-badge::before{
+  content: "!";
 }
 /* =========================================================
    КНОПКИ ПАНЕЛИ
@@ -382,108 +334,173 @@ body.scrolled .topbar {
    ПОИСК — СТРОГО ПО ЦЕНТРУ
    ========================================================= */
 .search_ {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  position: static;
+
   display: flex;
   align-items: center;
+
+  width: 100%;
+  max-width: 430px;
+
   gap: 10px;
-  width: 430px;
-  margin: 0;
+
+  margin: 0 auto;
+  transform: none;
 }
 
 /* =========================================================
    ПОЛЕ + КРЕСТИК
    ========================================================= */
 .search-wrapper {
+
   position: relative;
+
   flex: 1;
+
   min-width: 0;
+
 }
 
 .search-input {
+
   display: block;
+
   width: 100%;
+
   height: 40px;
+
   padding: 0 42px 0 16px;
+
   border: 1px solid rgba(255, 255, 255, 0.10);
+
   border-radius: 13px;
+
   outline: none;
+
   background: rgba(10, 18, 32, 0.78);
+
   color: #ffffff;
+
   font-family:
+
     "Fira Sans Extra Condensed",
+
     sans-serif;
+
   font-size: 17px;
+
   font-weight: 400;
+
   letter-spacing: 0.02em;
+
   backdrop-filter: blur(14px);
+
   -webkit-backdrop-filter: blur(14px);
+
   box-sizing: border-box;
+
 }
 
 .search-input::placeholder {
+
   color: #737b89;
+
   opacity: 1;
+
 }
 
 .search-input:focus {
-  border-color: rgba(255, 59, 48, 0.65);
-  background: rgba(12, 22, 40, 0.92);
-  box-shadow:
-    0 0 0 3px rgba(255, 59, 48, 0.08);
-}
 
+  border-color: rgba(255, 59, 48, 0.65);
+
+  background: rgba(12, 22, 40, 0.92);
+
+  box-shadow:
+
+    0 0 0 3px rgba(255, 59, 48, 0.08);
+
+}
 
 /* =========================================================
    КРЕСТИК
    ========================================================= */
 .clear-btn10 {
+
   position: absolute;
+
   right: 6px;
+
   top: 50%;
+
   width: 34px;
+
   height: 34px;
+
   transform: translateY(-50%);
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   padding: 0;
+
   border: none;
+
   border-radius: 50%;
+
   background: transparent;
+
   color: #858b96;
+
   font-family: Arial, sans-serif;
+
   font-size: 25px;
+
   font-weight: 300;
+
   line-height: 1;
+
   cursor: pointer;
+
   transition:
+
     color 0.2s ease,
+
     background 0.2s ease,
+
     transform 0.2s ease;
+
 }
 
 .clear-btn10:hover {
+
   color: #ffffff;
+
   background: rgba(255, 255, 255, 0.08);
+
   transform:
+
     translateY(-50%)
+
     scale(1.08);
+
 }
 
 /* =========================================================
    КНОПКА "НАЙТИ"
    ========================================================= */
+
+
 .search-btn {
-  border: 1px solid #333;
-  /*margin: 10px;*/
-  background: #263967;
+  flex: 0 0 auto;
   height: 40px;
-  color: #ffffff;
   padding: 7px 12px;
+  border: 1px solid #333;
   border-radius: 13px;
+  background: #263967;
+  color: #ffffff;
   cursor: pointer;
   font-family:
     "Fira Sans Extra Condensed",
@@ -491,35 +508,39 @@ body.scrolled .topbar {
   font-size: 17px;
   font-weight: 500;
   letter-spacing: 0.02em;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   box-sizing: border-box;
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease,
+    box-shadow 0.2s ease;
 }
-
 .search-btn:hover {
   transform: translateY(-2px);
   filter: brightness(1.08);
   box-shadow:
     0 8px 8px rgba(0, 0, 0, 0.2);
 }
-
 .search-btn:active {
   transform: translateY(0);
 }
-
 /* =============================    ============================
    ОБНОВИТЬ — ОСТАЁТСЯ СПРАВА
    ========================================================= */
-.refresh-btn {
-    width: 42px;
-    height: 42px;
-    padding: 0;
-    border: none;
-    background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+.panel .refresh-btn {
+  position: absolute;
+  margin-top: 25px;
+  right: 10px;
+  width: 42px;
+  height: 42px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
 }
 
 .refresh-btn img {
@@ -529,6 +550,16 @@ body.scrolled .topbar {
     object-fit: contain;
 }
 
+.resreah-btn:active {
+  background: #0000006b;
+  transform: scale(0.85);
+  opacity: 0.6;
+}
+.refresh-btn:active img {
+
+    transform: rotate(-45deg);
+
+}
 /* =========================================================
    ДИНАМИЧЕСКИЙ ЛОГОТИП
    ========================================================= */
@@ -694,6 +725,7 @@ body.scrolled .topbar {
    КАТАЛОГ - ПОДЛОЖКА ПОД КАТАЛОГ
    ========================================================= */
 .panel {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--line);
   background-color: #00000041;
@@ -706,30 +738,93 @@ body.scrolled .topbar {
   margin-right: auto;
   margin-bottom: 50px;
 }
-
 .panel-head {
-  display: flex;
   position: relative;
-  justify-content: space-between;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  min-height: 46px;
-  margin-bottom: 20px;
+  width: 100%;
+  min-height: 0;
+  margin: 0 0 20px;
 }
-
-.panel-head h2 {
-  margin: 0;
-  font-size: 22px;
+.panel-head h1 {
+  padding-top: 10px;
+  margin: 0 0 18px 0;
+  text-align: center;
+  font-size: 25px;
   font-weight: 800;
 }
-
-
+.condition {
+  margin: 10px 5px 0 0;
+  position: static;
+  width: auto;
+  height: 40px;
+  padding: 7px 12px;
+  border: 1px solid #333;
+  border-radius: 13px;
+  background: #263967;
+  color: #ffffff;
+  font-family:
+  "Fira Sans Extra Condensed",
+  sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  box-sizing: border-box;
+}
+.category_prod {
+  margin: 10px 0 0 5px;
+  position: static;
+  width: auto;
+  height: 40px;
+  padding: 7px 12px;
+  border: 1px solid #333;
+  border-radius: 13px;
+  background: #263967;
+  color: #ffffff;
+  font-family:
+  "Fira Sans Extra Condensed",
+  sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  box-sizing: border-box;
+}
+.panel-head .filter-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    margin: 120px auto 0;
+}
+.filter-row .condition,
+.filter-row .category_prod {
+    position: static;
+    width: 150px;
+    height: 40px;
+    margin: 0;
+    padding: 7px 12px;
+    border: 1px solid #333;
+    border-radius: 13px;
+    background: #263967;
+    color: #ffffff;
+    font-family:
+        "Fira Sans Extra Condensed",
+        sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    box-sizing: border-box;
+}
 /* FOOTER */
 
 .footer-content {
   width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; 
 }
 .footer {
   display: flex;

@@ -752,6 +752,40 @@
     */
 
     loadMessages();
+    async function markChatAsRead() {
+
+        try {
+
+            await fetch(
+                "/chat/read",
+                {
+                    method: "POST"
+                }
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Ошибка отметки сообщений:",
+                error
+            );
+
+        }
+    }
+
+    async function updateChat() {
+
+        await loadMessages();
+        await markChatAsRead();
+
+    }
+
+    updateChat();
+
+    setInterval(
+        updateChat,
+        2000
+    );
     const urlParams = new URLSearchParams(window.location.search);
 
     const productId = urlParams.get("product_id");
