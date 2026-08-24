@@ -361,24 +361,7 @@ const SNAP_ZONE = 150;
     }
   );
 
-window.clearInput = function(button) {
 
-  searchInput.value = "";
-
-  updateProducts();
-
-};
-window.resetFilters = function() {
-
-  searchInput.value = "";
-
-  conditionSelect.value = "Все";
-
-  categorySelect.value = "";
-
-  updateProducts();
-
-};
 })();
 </script>
 
@@ -527,18 +510,8 @@ window.resetFilters = function() {
 
 
       {% else %}
-      <p class="kicker">Свежие товары каждый день</p>
-
-
-      <h2>Онлайн-витрина для магазина
-        с автоматическим обновлением
-      </h2>
-
-
-      <p class="subtitle">
-        Товары добавляются через Telegram-бота
-        и сразу появляются на сайте.
-      </p>
+      <h2>Правильный инвентарь — это половина победы.</h2>
+      <h1> Мы собрали лучшие бренды, чтобы вы могли доминировать у стола с первой подачи</h1>
       {% endif %}
     </div>
 
@@ -736,7 +709,7 @@ window.resetFilters = function() {
               data-id="{{ product.id }}"
               data-title="{{ product.title }}"
               data-description="{{ product.description or '' }}"
-              data-colors="{{ product.colors or '' }}"
+              data-colors='{{ product.colors | tojson }}'
               data-category="{{ product.category or '' }}"
               data-price="{{ product.price }}"
               data-kolvo="{{ product.kolvo or 0 }}"
@@ -1005,7 +978,20 @@ window.resetFilters = function() {
     }
 
   }
+  window.clearInput = function() {
+      searchInput.value = "";
+      updateClearButton();
+      updateProducts();
+  };
 
+  window.resetFilters = function() {
+      searchInput.value = "";
+      conditionSelect.value = "Все";
+      categorySelect.value = "";
+
+      updateClearButton();
+      updateProducts();
+  };
 
   /* =====================================================
      ФИЛЬТР СОСТОЯНИЯ
@@ -1778,28 +1764,38 @@ window.resetFilters = function() {
          ================================================= */
 
       const colorsElement =
-        document.getElementById(
-          "modalColors"
-        );
-
+          document.getElementById("modalColors");
 
       if (colors) {
 
-        colorsElement.textContent =
-          "Цвет: " + colors;
+          let colorsList = colors;
 
+          if (typeof colors === "string") {
+              try {
+                  colorsList = JSON.parse(colors);
+              } catch (error) {
+                  colorsList = [colors];
+              }
+          }
 
-        colorsElement.style.display =
-          "block";
+          if (Array.isArray(colorsList) && colorsList.length > 0) {
+
+              colorsElement.textContent =
+                  "Цвет: " + colorsList.join("; ");
+
+              colorsElement.style.display = "block";
+
+          } else {
+
+              colorsElement.textContent = "";
+              colorsElement.style.display = "none";
+
+          }
 
       } else {
 
-        colorsElement.textContent =
-          "";
-
-
-        colorsElement.style.display =
-          "none";
+          colorsElement.textContent = "";
+          colorsElement.style.display = "none";
 
       }
 
@@ -2648,6 +2644,7 @@ window.resetFilters = function() {
         <a class="footer-title-">О компании</a>
         <a href="/o-nas" class="footer-content-right">- О нас</a>
         <a href="#" class="footer-content-right" onclick="openDeveloperModal(event); return false;">- Разработчик</a>
+         <a href="/admin" class="footer-content-right">- Доступ админа</a>
       </div>
     </div>
   </footer>

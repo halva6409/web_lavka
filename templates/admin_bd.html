@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>База данных</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+
+        body {
+
+            padding: 30px;
+
+            background: #0f0f0f;
+            color: white;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                sans-serif;
+        }
+
+
+        .container {
+
+            width: 100%;
+            max-width: 1500px;
+
+            margin: 0 auto;
+        }
+
+
+        /* =====================================================
+           HEADER
+           ===================================================== */
+
+        .header {
+
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 20px;
+
+            margin-bottom: 25px;
+        }
+
+
+        .title {
+
+            margin: 0;
+
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+
+        .back-button {
+
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            height: 42px;
+
+            padding: 0 18px;
+
+            border: 1px solid #333;
+            border-radius: 10px;
+
+            background: #263967;
+            color: white;
+
+            text-decoration: none;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.2s ease,
+                filter 0.2s ease;
+        }
+
+
+        .back-button:hover {
+
+            filter: brightness(1.15);
+
+            transform: translateY(-1px);
+        }
+
+        .save-all-button {
+
+            height: 38px;
+
+            padding: 0 18px;
+
+            border: none;
+            border-radius: 9px;
+
+            background: #34c759;
+            color: white;
+
+            cursor: pointer;
+
+            font-weight: 700;
+
+            transition:
+                filter 0.2s ease,
+                transform 0.2s ease;
+        }
+
+
+        .save-all-button:hover {
+
+            filter: brightness(1.1);
+
+            transform: translateY(-1px);
+        }
+
+
+        .save-all-button:disabled {
+
+            opacity: 0.6;
+
+            cursor: wait;
+
+            transform: none;
+        }
+        /* =====================================================
+           TABLE SELECTOR
+           ===================================================== */
+
+        .table-buttons {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(7, 1fr);
+
+            gap: 10px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .table-button {
+
+            height: 45px;
+
+            border: 1px solid #333;
+            border-radius: 10px;
+
+            background: #181818;
+            color: white;
+
+            cursor: pointer;
+
+            font-size: 15px;
+            font-weight: 600;
+
+            transition:
+                background 0.2s ease,
+                transform 0.2s ease,
+                border-color 0.2s ease;
+        }
+
+
+        .table-button:hover {
+
+            background: #222;
+
+            transform: translateY(-1px);
+        }
+
+
+        .table-button.active {
+
+            background: #263967;
+
+            border-color: #3c548d;
+        }
+
+
+        /* =====================================================
+           PANEL
+           ===================================================== */
+
+        .panel {
+
+            background: #181818;
+
+            border: 1px solid #292929;
+
+            border-radius: 16px;
+
+            overflow: hidden;
+        }
+
+
+        .panel-header {
+
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 20px;
+
+            padding: 18px 20px;
+
+            border-bottom: 1px solid #292929;
+        }
+
+
+        .current-table {
+
+            margin: 0;
+
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+
+        /* =====================================================
+           КНОПКИ HEADER
+           ===================================================== */
+
+        .header-actions {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+        }
+
+
+        .reload-button {
+
+            height: 38px;
+
+            padding: 0 15px;
+
+            border: 1px solid #333;
+            border-radius: 9px;
+
+            background: #222;
+            color: white;
+
+            cursor: pointer;
+
+            font-weight: 600;
+        }
+
+
+        .reload-button:hover {
+
+            background: #2b2b2b;
+        }
+
+
+        /* =====================================================
+           ГЛАВНАЯ КНОПКА СОХРАНЕНИЯ
+           ===================================================== */
+
+        .save-all-button {
+
+            height: 38px;
+
+            padding: 0 18px;
+
+            border: none;
+            border-radius: 9px;
+
+            background: #34c759;
+            color: white;
+
+            cursor: pointer;
+
+            font-weight: 700;
+
+            transition:
+                filter 0.2s ease,
+                transform 0.2s ease;
+        }
+
+
+        .save-all-button:hover {
+
+            filter: brightness(1.1);
+
+            transform: translateY(-1px);
+        }
+
+
+        .save-all-button:disabled {
+
+            opacity: 0.6;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+
+        /* =====================================================
+           TABLE
+           ===================================================== */
+
+        .table-wrapper {
+
+            width: 100%;
+
+            overflow-x: auto;
+            overflow-y: auto;
+
+            max-height: 70vh;
+        }
+
+
+        table {
+
+            width: max-content;
+
+            min-width: 100%;
+
+            border-collapse: collapse;
+
+            table-layout: auto;
+        }
+
+
+        th {
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 2;
+
+            padding: 12px 14px;
+
+            background: #222;
+
+            border-bottom: 1px solid #333;
+
+            color: #aaa;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            text-align: left;
+
+            white-space: nowrap;
+        }
+
+
+        td {
+
+            padding: 8px 10px;
+
+            border-bottom: 1px solid #292929;
+
+            vertical-align: top;
+        }
+
+
+        tr:hover td {
+
+            background: #1d1d1d;
+        }
+
+
+        /* =====================================================
+           INPUTS
+           ===================================================== */
+
+        .cell-input {
+
+            min-width: 150px;
+
+            width: 100%;
+
+            min-height: 38px;
+
+            padding: 8px 10px;
+
+            background: #101010;
+
+            color: white;
+
+            border: 1px solid #333;
+
+            border-radius: 7px;
+
+            outline: none;
+
+            font-family: inherit;
+
+            font-size: 14px;
+        }
+
+
+        .cell-input:focus {
+
+            border-color: #526fae;
+
+            background: #141414;
+        }
+
+
+        .cell-input.primary-key {
+
+            color: #888;
+
+            background: #151515;
+
+            cursor: not-allowed;
+        }
+
+
+        textarea.cell-input {
+
+            min-height: 70px;
+
+            resize: vertical;
+
+            line-height: 1.4;
+        }
+
+
+        /* =====================================================
+           ACTIONS
+           ===================================================== */
+
+        .actions {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            white-space: nowrap;
+        }
+
+
+        .delete-button {
+
+            height: 36px;
+
+            padding: 0 13px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: #ff3b30;
+
+            color: white;
+
+            cursor: pointer;
+
+            font-weight: 700;
+        }
+
+
+        .delete-button:hover {
+
+            filter: brightness(1.1);
+        }
+
+
+        /* =====================================================
+           ИЗМЕНЕННАЯ СТРОКА
+           ===================================================== */
+
+        tr.changed td {
+
+            background: rgba(52, 199, 89, 0.07);
+        }
+
+
+        tr.changed td:first-child {
+
+            border-left: 2px solid #34c759;
+        }
+
+
+        /* =====================================================
+           EMPTY / LOADING
+           ===================================================== */
+
+        .message {
+
+            padding: 50px 20px;
+
+            text-align: center;
+
+            color: #777;
+
+            font-size: 16px;
+        }
+
+
+        .error {
+
+            color: #ff6b63;
+        }
+
+
+        /* =====================================================
+           STATUS
+           ===================================================== */
+
+        .status {
+
+            position: fixed;
+
+            right: 25px;
+
+            bottom: 25px;
+
+            z-index: 100;
+
+            min-width: 220px;
+
+            padding: 13px 18px;
+
+            border-radius: 10px;
+
+            background: #222;
+
+            border: 1px solid #333;
+
+            color: white;
+
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.4);
+
+            opacity: 0;
+
+            transform: translateY(10px);
+
+            pointer-events: none;
+
+            transition:
+                opacity 0.2s ease,
+                transform 0.2s ease;
+        }
+
+
+        .status.show {
+
+            opacity: 1;
+
+            transform: translateY(0);
+        }
+
+
+        .status.success {
+
+            border-color: #34c759;
+        }
+
+
+        .status.error {
+
+            border-color: #ff3b30;
+        }
+
+
+        /* =====================================================
+           MOBILE
+           ===================================================== */
+
+        @media (max-width: 900px) {
+
+            body {
+
+                padding: 18px;
+            }
+
+
+            .table-buttons {
+
+                grid-template-columns:
+                    repeat(4, 1fr);
+            }
+
+
+            .title {
+
+                font-size: 27px;
+            }
+        }
+
+
+        @media (max-width: 600px) {
+
+            .header {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+            }
+
+
+            .table-buttons {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+
+            .panel-header {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+            }
+
+
+            .header-actions {
+
+                width: 100%;
+            }
+
+
+            .save-all-button,
+            .reload-button {
+
+                flex: 1;
+            }
+
+
+            .back-button {
+
+                width: 100%;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <div class="header">
+
+        <h1 class="title">
+            База данных
+        </h1>
+
+
+        <a
+            href="{{ url_for('admin') }}"
+            class="back-button"
+        >
+            ← Админ-панель
+        </a>
+
+    </div>
+
+
+    <!-- =====================================================
+         ТАБЛИЦЫ
+         ===================================================== -->
+
+    <div class="table-buttons">
+
+        {% for table in tables %}
+
+            <button
+                type="button"
+                class="table-button"
+                data-table="{{ table }}"
+            >
+                {{ table }}
+            </button>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- =====================================================
+         DATABASE PANEL
+         ===================================================== -->
+
+    <section class="panel">
+
+
+        <div class="panel-header">
+
+            <h2
+                class="current-table"
+                id="currentTable"
+            >
+                Выберите таблицу
+            </h2>
+
+
+            <div class="header-actions">
+
+                <!-- =========================================
+                     ОДНА КНОПКА СОХРАНЕНИЯ ВСЕЙ ТАБЛИЦЫ
+                     ========================================= -->
+
+                <button
+                    type="button"
+                    class="save-all-button"
+                    id="saveAllButton"
+                    disabled
+                >
+                    Сохранить все изменения
+                </button>
+
+
+                <button
+                    type="button"
+                    class="reload-button"
+                    id="reloadButton"
+                >
+                    ↻ Обновить
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="table-wrapper"
+            id="tableWrapper"
+        >
+
+            <div class="message">
+                Выберите таблицу сверху.
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+</div>
+
+
+<!-- =====================================================
+     STATUS
+     ===================================================== -->
+
+<div
+    id="status"
+    class="status"
+></div>
+
+
+<script>
+
+
+let currentTable = null;
+
+let currentColumns = [];
+
+let currentRows = [];
+
+let hasChanges = false;
+
+
+/* =========================================================
+   ELEMENTS
+   ========================================================= */
+
+const tableButtons =
+    document.querySelectorAll(".table-button");
+
+
+const tableWrapper =
+    document.getElementById("tableWrapper");
+
+
+const currentTableTitle =
+    document.getElementById("currentTable");
+
+
+const reloadButton =
+    document.getElementById("reloadButton");
+
+
+const saveAllButton =
+    document.getElementById("saveAllButton");
+
+
+const statusElement =
+    document.getElementById("status");
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+function showStatus(message, type = "success") {
+
+    statusElement.textContent =
+        message;
+
+    statusElement.className =
+        "status show " + type;
+
+
+    setTimeout(() => {
+
+        statusElement.className =
+            "status";
+
+    }, 2500);
+}
+
+
+/* =========================================================
+   СОСТОЯНИЕ ИЗМЕНЕНИЙ
+   ========================================================= */
+
+function setChanged(value) {
+
+    hasChanges = value;
+
+    saveAllButton.disabled =
+        !value;
+}
+
+
+/* =========================================================
+   ВЫБОР ТАБЛИЦЫ
+   ========================================================= */
+
+tableButtons.forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        /*
+         * Если есть несохранённые изменения,
+         * спрашиваем пользователя.
+         */
+
+        if (hasChanges) {
+
+            const answer = confirm(
+                "Есть несохранённые изменения.\n\n" +
+                "Перейти к другой таблице без сохранения?"
+            );
+
+
+            if (!answer) {
+
+                return;
+
+            }
+
+        }
+
+
+        const tableName =
+            button.dataset.table;
+
+
+        loadTable(tableName);
+
+    });
+
+});
+
+
+/* =========================================================
+   ЗАГРУЗКА ТАБЛИЦЫ
+   ========================================================= */
+
+async function loadTable(tableName) {
+
+    currentTable =
+        tableName;
+
+
+    setChanged(false);
+
+
+    tableButtons.forEach(button => {
+
+        button.classList.toggle(
+            "active",
+            button.dataset.table === tableName
+        );
+
+    });
+
+
+    currentTableTitle.textContent =
+        tableName;
+
+
+    tableWrapper.innerHTML = `
+
+        <div class="message">
+            Загрузка...
+        </div>
+
+    `;
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/admin/bd/${encodeURIComponent(tableName)}`
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " +
+                response.status
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            throw new Error(
+                data.error ||
+                "Ошибка загрузки"
+            );
+
+        }
+
+
+        currentColumns =
+            data.columns;
+
+
+        currentRows =
+            data.rows;
+
+
+        renderTable(
+            data.columns,
+            data.rows
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        tableWrapper.innerHTML = `
+
+            <div class="message error">
+
+                Ошибка загрузки:
+                ${escapeHtml(error.message)}
+            </div>
+            <div class="message error">
+                Cкорее всего вы не можете это делать
+            </div>
+
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================================
+   ОТРИСОВКА ТАБЛИЦЫ
+   ========================================================= */
+
+function renderTable(columns, rows) {
+
+
+    if (!rows.length) {
+
+        tableWrapper.innerHTML = `
+
+            <div class="message">
+
+                В этой таблице нет записей.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    let html = `
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+    `;
+
+
+    columns.forEach(column => {
+
+        html += `
+
+            <th>
+                ${escapeHtml(column.name)}
+            </th>
+
+        `;
+
+    });
+
+
+    html += `
+
+            <th>
+                Действия
+            </th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+    `;
+
+
+    rows.forEach((row, rowIndex) => {
+
+        html += `
+
+            <tr
+                data-row-index="${rowIndex}"
+            >
+
+        `;
+
+
+        columns.forEach(column => {
+
+            const value =
+                row[column.name] ?? "";
+
+
+            const isPrimary =
+                column.primary_key;
+
+
+            const type =
+                String(column.type)
+                    .toUpperCase();
+
+
+            let inputHtml;
+
+
+            if (
+                type.includes("TEXT") ||
+                type.includes("JSON")
+            ) {
+
+                inputHtml = `
+
+                    <textarea
+                        class="cell-input ${isPrimary ? "primary-key" : ""}"
+                        data-column="${escapeAttribute(column.name)}"
+                        ${isPrimary ? "readonly" : ""}
+                    >${escapeHtml(value)}</textarea>
+
+                `;
+
+            } else {
+
+                inputHtml = `
+
+                    <input
+                        type="text"
+                        class="cell-input ${isPrimary ? "primary-key" : ""}"
+                        value="${escapeAttribute(value)}"
+                        data-column="${escapeAttribute(column.name)}"
+                        ${isPrimary ? "readonly" : ""}
+                    >
+
+                `;
+
+            }
+
+
+            html += `
+
+                <td>
+
+                    ${inputHtml}
+
+                </td>
+
+            `;
+
+        });
+
+
+        /*
+         * ЗДЕСЬ БОЛЬШЕ НЕТ КНОПКИ "СОХРАНИТЬ"
+         */
+
+        html += `
+
+            <td>
+
+                <div class="actions">
+
+                    <button
+                        type="button"
+                        class="delete-button"
+                        onclick="deleteRow(this)"
+                    >
+                        Удалить
+                    </button>
+
+                </div>
+
+            </td>
+
+        `;
+
+
+        html += `
+
+            </tr>
+
+        `;
+
+    });
+
+
+    html += `
+
+            </tbody>
+
+        </table>
+
+    `;
+
+
+    tableWrapper.innerHTML =
+        html;
+
+
+    /*
+     * Следим за изменениями всех ячеек.
+     */
+
+    const inputs =
+        tableWrapper.querySelectorAll(
+            ".cell-input:not(.primary-key)"
+        );
+
+
+    inputs.forEach(input => {
+
+        input.addEventListener(
+            "input",
+            () => {
+
+                const row =
+                    input.closest("tr");
+
+
+                row.classList.add(
+                    "changed"
+                );
+
+
+                setChanged(true);
+
+            }
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   СОХРАНИТЬ ВСЮ ТАБЛИЦУ
+   ========================================================= */
+
+saveAllButton.addEventListener(
+    "click",
+    saveAll
+);
+
+
+async function saveAll() {
+
+    if (!currentTable) {
+
+        return;
+
+    }
+
+
+    /*
+     * Собираем ВСЕ строки таблицы.
+     */
+
+    const tableRows =
+        tableWrapper.querySelectorAll(
+            "tbody tr"
+        );
+
+
+    const rows = [];
+
+
+    tableRows.forEach(row => {
+
+        const rowData = {};
+
+
+        const inputs =
+            row.querySelectorAll(
+                ".cell-input"
+            );
+
+
+        inputs.forEach(input => {
+
+            rowData[
+                input.dataset.column
+            ] = input.value;
+
+        });
+
+
+        rows.push(rowData);
+
+    });
+
+
+    if (!rows.length) {
+
+        showStatus(
+            "В таблице нет данных",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    saveAllButton.disabled =
+        true;
+
+
+    saveAllButton.textContent =
+        "Сохранение...";
+
+
+    try {
+
+        const response =
+            await fetch(
+
+                `/admin/bd/${encodeURIComponent(currentTable)}/update-all`,
+
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify({
+                            rows: rows
+                        })
+
+                }
+
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !result.success
+        ) {
+
+            throw new Error(
+                result.error ||
+                "Ошибка сохранения"
+            );
+
+        }
+
+
+        /*
+         * Сохраняем успешно.
+         */
+
+        setChanged(false);
+
+
+        /*
+         * Убираем подсветку
+         * изменённых строк.
+         */
+
+        tableWrapper
+            .querySelectorAll("tr.changed")
+            .forEach(row => {
+
+                row.classList.remove(
+                    "changed"
+                );
+
+            });
+
+
+        showStatus(
+            "Все изменения сохранены",
+            "success"
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        /*
+         * ВАЖНО:
+         * если произошла ошибка,
+         * изменения остаются на странице.
+         */
+
+        setChanged(true);
+
+
+        showStatus(
+            error.message,
+            "error"
+        );
+
+    } finally {
+
+        saveAllButton.textContent =
+            "Сохранить все изменения";
+
+
+        saveAllButton.disabled =
+            !hasChanges;
+
+    }
+
+}
+
+
+/* =========================================================
+   УДАЛЕНИЕ
+   ========================================================= */
+
+async function deleteRow(button) {
+
+
+    if (
+        !confirm(
+            "Удалить эту запись из базы данных?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const row =
+        button.closest("tr");
+
+
+    const inputs =
+        row.querySelectorAll(
+            ".cell-input"
+        );
+
+
+    const data = {};
+
+
+    inputs.forEach(input => {
+
+        const column =
+            currentColumns.find(
+                c =>
+                    c.name ===
+                    input.dataset.column
+            );
+
+
+        if (
+            column &&
+            column.primary_key
+        ) {
+
+            data[
+                input.dataset.column
+            ] = input.value;
+
+        }
+
+    });
+
+
+    button.disabled =
+        true;
+
+
+    try {
+
+        const response =
+            await fetch(
+
+                `/admin/bd/${encodeURIComponent(currentTable)}/delete`,
+
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify(data)
+
+                }
+
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !result.success
+        ) {
+
+            throw new Error(
+                result.error ||
+                "Ошибка удаления"
+            );
+
+        }
+
+
+        row.remove();
+
+
+        showStatus(
+            "Запись удалена",
+            "success"
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        showStatus(
+            error.message,
+            "error"
+        );
+
+
+        button.disabled =
+            false;
+
+    }
+
+}
+
+
+/* =========================================================
+   ОБНОВЛЕНИЕ
+   ========================================================= */
+
+reloadButton.addEventListener(
+    "click",
+    () => {
+
+        if (!currentTable) {
+
+            return;
+
+        }
+
+
+        if (hasChanges) {
+
+            const answer =
+                confirm(
+                    "Есть несохранённые изменения.\n\n" +
+                    "Обновить таблицу и потерять их?"
+                );
+
+
+            if (!answer) {
+
+                return;
+
+            }
+
+        }
+
+
+        loadTable(
+            currentTable
+        );
+
+    }
+);
+
+
+/* =========================================================
+   HTML ESCAPE
+   ========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value)
+
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+
+}
+
+
+function escapeAttribute(value) {
+
+    return escapeHtml(value);
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>

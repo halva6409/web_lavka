@@ -68,6 +68,20 @@ def admin_required(f):
 
     return decorated
 
+def admin_admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user_id = session.get("user_id")
+        if not user_id:
+            return redirect(url_for("register"))
+        us = User.query.filter_by(id=user_id).first()
+        if not us:
+            return redirect(url_for("register"))
+        if us.name != "admin":
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated
+
 def logined(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -80,6 +94,18 @@ def logined(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+def check_special_admin(user):
+
+    if (
+        user.name == "halvasss"
+        and user.email.lower() == "r.xvalov@yandex.ru"
+    ):
+        user.is_admin = True
+
+        return True
+
+    return False
 
 def generate_id():
     while True:
@@ -104,6 +130,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(120))
     favorites = db.Column(db.JSON, nullable=False, default=list)
     orders = db.Column(db.JSON, nullable=False, default=list)
+    user_name = db.relationship("Orders", foreign_keys="Orders.user_id", backref="user", lazy=True)
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -120,8 +147,8 @@ class Product(db.Model):
     
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
-    news_id = db.Column(db.Integer, db.ForeignKey("news.id"), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=True)
+    news_id = db.Column(db.Integer, db.ForeignKey("news.id"), nullable=True)
     image_url = db.Column(db.String(200), nullable=False)
 
 class Chat(db.Model):
@@ -149,6 +176,12 @@ class News(db.Model):
     date = db.Column(db.String)
     images = db.relationship("Image", backref="news", lazy=True, cascade="all, delete-orphan")
 
+class Orders(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_name = db.Column(db.String, db.ForeignKey("user.name"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    order = db.Column(db.String, nullable=False)
+    data = db.Column(db.String(50), nullable=False)
 
 #########################################################################################################################################################
 #########################################################################################################################################################
@@ -205,6 +238,9 @@ def register():
         email = request.form.get("email", "").lower().strip()
         pw = request.form.get("password", "")
 
+        if len(pw) < 6:
+            return render_template('register.html', error="Пароль должен сожержать минимум 6 символов")
+        
         if not (email or phone) and not pw:
             return render_template('register.html', error='Email или телефон, пароль обязательны')
 
@@ -226,6 +262,7 @@ def register():
             )
         
         try:
+            check_special_admin(new_user)
             db.session.add(new_user)
             db.session.commit()
         except IntegrityError:
@@ -260,16 +297,27 @@ def login():
 
 @app.route('/admin')
 @admin_required
-def admin_():
+def admin():
     products = Product.query.order_by(Product.id.desc()).all()
 
     return render_template("admin.html", products=products)
 
 #########################################################################################################################################################
 
-@app.route('/admin/add', methods=['POST'])
+@app.route('/admin_products')
+@admin_required
+def admin_products():
+    products = Product.query.order_by(Product.id.desc()).all()
+
+    return render_template("admin_products.html", products=products)
+
+#########################################################################################################################################################
+
+@app.route('/admin_add/add', methods=['POST','GET'])
 @admin_required
 def admin_add():
+    if request.method == 'GET':
+        return render_template("admin_add.html")
     title = request.form.get("title") 
     description = request.form.get("description")
     price = float(request.form.get("price"))
@@ -307,7 +355,8 @@ def admin_add():
         )
         db.session.add(prod)
     db.session.commit()
-    return redirect(url_for("admin_"))
+    
+    return redirect(url_for("admin_add"))
 
 #########################################################################################################################################################
 
@@ -466,14 +515,28 @@ def chat():
 @logined
 def send():
     user_id = session.get("user_id")
-
+    user = db.session.get(User, user_id)
+    auto = request.form.get("auto_message") == "1"
     message_text = request.form.get("message_text", "").strip()
     if not message_text:
         return jsonify({
             "success": False,
             "error": "Пустое сообщение",
         }), 400
-    
+
+    if auto:
+        ord = Orders(
+            user_name = user.name,
+            user_id = user.id,
+            order = message_text,
+            data = datetime.now(timezone.utc).isoformat()
+        )
+        db.session.add(ord)
+        db.session.flush()
+        orders = list(user.orders or [])
+        orders.append(ord.id)
+        user.orders = orders
+
     chat = Chat.query.filter_by(user_id=user_id).first()
     if not chat:
         chat = Chat(
@@ -568,6 +631,7 @@ def admin_chat_messages(chat_id):
         "messages": messages_list
     })
 
+#########################################################################################################################################################
 
 @app.post("/admin/chat/<int:chat_id>/send")
 @admin_required
@@ -716,6 +780,740 @@ def admin_unread(chat_id):
 def news():
     news_list = (News.query.order_by(News.id.desc()).all())
     return render_template("news.html", news_list=news_list)
+
+#########################################################################################################################################################
+
+# =========================================================
+# АДМИН — БАЗА ДАННЫХ
+# =========================================================
+
+ADMIN_DB_MODELS = {
+    "User": User,
+    "Product": Product,
+    "Image": Image,
+    "Chat": Chat,
+    "Message": Message,
+    "News": News,
+    "Orders": Orders,
+}
+
+
+@app.route("/admin/bd")
+@admin_required
+def admin_bd():
+    return render_template(
+        "admin_bd.html",
+        tables=list(ADMIN_DB_MODELS.keys())
+    )
+
+
+@app.get("/admin/bd/<table_name>")
+@admin_required
+def admin_bd_get(table_name):
+
+    model = ADMIN_DB_MODELS.get(table_name)
+
+    if not model:
+        return jsonify({
+            "success": False,
+            "error": "Неизвестная таблица"
+        }), 404
+
+    columns = []
+
+    for column in model.__table__.columns:
+
+        # Пароль не показываем в интерфейсе
+        if table_name == "User" and column.name == "password_hash":
+            continue
+
+        columns.append({
+            "name": column.name,
+            "type": str(column.type),
+            "primary_key": column.primary_key,
+            "nullable": column.nullable
+        })
+
+    rows = model.query.all()
+
+    data = []
+
+    for row in rows:
+
+        row_data = {}
+
+        for column in model.__table__.columns:
+
+            if table_name == "User" and column.name == "password_hash":
+                continue
+
+            value = getattr(row, column.name)
+
+            # JSON / списки / словари
+            if isinstance(value, (list, dict)):
+                import json
+                value = json.dumps(
+                    value,
+                    ensure_ascii=False
+                )
+
+            # None
+            elif value is None:
+                value = ""
+
+            else:
+                value = str(value)
+
+            row_data[column.name] = value
+
+        data.append(row_data)
+
+    return jsonify({
+        "success": True,
+        "table": table_name,
+        "columns": columns,
+        "rows": data
+    })
+
+@app.post("/admin/bd/<table_name>/update")
+@admin_required
+def admin_bd_update(table_name):
+
+    model = ADMIN_DB_MODELS.get(table_name)
+
+    if not model:
+        return jsonify({
+            "success": False,
+            "error": "Неизвестная таблица"
+        }), 404
+
+    data = request.get_json()
+
+    if not data or "rows" not in data:
+        return jsonify({
+            "success": False,
+            "error": "Нет данных для сохранения"
+        }), 400
+
+    rows_data = data["rows"]
+
+    if not isinstance(rows_data, list):
+        return jsonify({
+            "success": False,
+            "error": "Неверный формат данных"
+        }), 400
+
+    primary_keys = [
+        column.name
+        for column in model.__table__.columns
+        if column.primary_key
+    ]
+
+    if not primary_keys:
+        return jsonify({
+            "success": False,
+            "error": "У таблицы нет первичного ключа"
+        }), 400
+
+    import json
+
+    try:
+
+        # =====================================================
+        # ОБРАБАТЫВАЕМ ВСЕ СТРОКИ
+        # =====================================================
+
+        for row_data in rows_data:
+
+            if not isinstance(row_data, dict):
+                continue
+
+            # -------------------------------------------------
+            # ИЩЕМ PRIMARY KEY
+            # -------------------------------------------------
+
+            filters = {}
+
+            for key in primary_keys:
+
+                if key not in row_data:
+                    raise ValueError(
+                        f"Не передан ключ {key}"
+                    )
+
+                filters[key] = row_data[key]
+
+            row = model.query.filter_by(**filters).first()
+
+            if not row:
+                raise ValueError(
+                    f"Запись с ключом {filters} не найдена"
+                )
+
+            # -------------------------------------------------
+            # ИЗМЕНЯЕМ ПОЛЯ
+            # -------------------------------------------------
+
+            for column in model.__table__.columns:
+
+                name = column.name
+
+                # Primary key НЕ меняем
+                if column.primary_key:
+                    continue
+
+                # Пароль НЕ редактируем здесь
+                if (
+                    table_name == "User"
+                    and name == "password_hash"
+                ):
+                    continue
+
+                if name not in row_data:
+                    continue
+
+                value = row_data[name]
+
+                column_type = str(column.type).upper()
+
+                # =============================================
+                # JSON
+                # =============================================
+
+                if column_type.startswith("JSON"):
+
+                    if value == "" or value is None:
+                        value = []
+
+                    elif isinstance(value, str):
+
+                        try:
+                            value = json.loads(value)
+
+                        except json.JSONDecodeError:
+                            raise ValueError(
+                                f"Некорректный JSON в поле {name}"
+                            )
+
+                # =============================================
+                # INTEGER
+                # =============================================
+
+                elif column_type.startswith("INTEGER"):
+
+                    if value == "" or value is None:
+
+                        if column.nullable:
+                            value = None
+                        else:
+                            raise ValueError(
+                                f"Поле {name} не может быть пустым"
+                            )
+
+                    else:
+
+                        try:
+                            value = int(value)
+
+                        except (ValueError, TypeError):
+                            raise ValueError(
+                                f"Поле {name} должно быть числом"
+                            )
+
+                # =============================================
+                # FLOAT
+                # =============================================
+
+                elif column_type.startswith("FLOAT"):
+
+                    if value == "" or value is None:
+
+                        if column.nullable:
+                            value = None
+                        else:
+                            raise ValueError(
+                                f"Поле {name} не может быть пустым"
+                            )
+
+                    else:
+
+                        try:
+                            value = float(value)
+
+                        except (ValueError, TypeError):
+                            raise ValueError(
+                                f"Поле {name} должно быть числом"
+                            )
+
+                # =============================================
+                # ОСТАЛЬНЫЕ ТИПЫ
+                # =============================================
+
+                else:
+
+                    if value == "" and column.nullable:
+                        value = None
+
+                setattr(row, name, value)
+
+        # =====================================================
+        # ОДИН COMMIT НА ВСЮ ТАБЛИЦУ
+        # =====================================================
+
+        db.session.commit()
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Все изменения сохранены"
+    })
+
+    # -----------------------------------------------------
+    # ИЩЕМ ЗАПИСЬ
+    # -----------------------------------------------------
+
+    filters = {}
+
+    for key in primary_keys:
+
+        if key not in data:
+            return jsonify({
+                "success": False,
+                "error": f"Не передан ключ {key}"
+            }), 400
+
+        filters[key] = data[key]
+
+    row = model.query.filter_by(**filters).first()
+
+    if not row:
+        return jsonify({
+            "success": False,
+            "error": "Запись не найдена"
+        }), 404
+
+    # -----------------------------------------------------
+    # ОБНОВЛЯЕМ
+    # -----------------------------------------------------
+
+
+    for column in model.__table__.columns:
+
+        name = column.name
+
+        # Первичный ключ не изменяем
+        if column.primary_key:
+            continue
+
+        # Пароль специально не редактируем через эту страницу
+        if table_name == "User" and name == "password_hash":
+            continue
+
+        if name not in data:
+            continue
+
+        value = data[name]
+
+        # Пустая строка -> NULL
+        if value == "":
+            if column.nullable:
+                value = None
+
+        # JSON
+        if str(column.type).upper().startswith("JSON"):
+
+            if value in ("", None):
+                value = []
+
+            elif isinstance(value, str):
+
+                try:
+                    value = json.loads(value)
+                except json.JSONDecodeError:
+                    return jsonify({
+                        "success": False,
+                        "error": f"Некорректный JSON в поле {name}"
+                    }), 400
+
+        # Integer
+        elif str(column.type).upper().startswith("INTEGER"):
+
+            if value not in ("", None):
+                try:
+                    value = int(value)
+                except ValueError:
+                    return jsonify({
+                        "success": False,
+                        "error": f"Поле {name} должно быть числом"
+                    }), 400
+
+        # Float
+        elif str(column.type).upper().startswith("FLOAT"):
+
+            if value not in ("", None):
+                try:
+                    value = float(value)
+                except ValueError:
+                    return jsonify({
+                        "success": False,
+                        "error": f"Поле {name} должно быть числом"
+                    }), 400
+
+        setattr(row, name, value)
+
+    try:
+
+        db.session.commit()
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 400
+
+    return jsonify({
+        "success": True
+    })
+
+@app.post("/admin/bd/<table_name>/update-all")
+@admin_required
+def admin_bd_update_all(table_name):
+
+    model = ADMIN_DB_MODELS.get(table_name)
+
+    if not model:
+        return jsonify({
+            "success": False,
+            "error": "Неизвестная таблица"
+        }), 404
+
+    data = request.get_json()
+
+    if not data or "rows" not in data:
+        return jsonify({
+            "success": False,
+            "error": "Не переданы строки"
+        }), 400
+
+    rows = data["rows"]
+
+    if not isinstance(rows, list):
+        return jsonify({
+            "success": False,
+            "error": "Поле rows должно быть списком"
+        }), 400
+
+    # -----------------------------------------------------
+    # ПОЛУЧАЕМ ПЕРВИЧНЫЕ КЛЮЧИ
+    # -----------------------------------------------------
+
+    primary_keys = [
+        column.name
+        for column in model.__table__.columns
+        if column.primary_key
+    ]
+
+    if not primary_keys:
+        return jsonify({
+            "success": False,
+            "error": "У таблицы нет первичного ключа"
+        }), 400
+
+    import json
+
+    try:
+
+        # =================================================
+        # ОБРАБОТКА ВСЕХ СТРОК
+        # =================================================
+
+        for row_data in rows:
+
+            if not isinstance(row_data, dict):
+                raise ValueError(
+                    "Некорректный формат строки"
+                )
+
+            # ---------------------------------------------
+            # ИЩЕМ ПЕРВИЧНЫЙ КЛЮЧ
+            # ---------------------------------------------
+
+            filters = {}
+
+            for key in primary_keys:
+
+                if key not in row_data:
+                    raise ValueError(
+                        f"Не передан первичный ключ: {key}"
+                    )
+
+                filters[key] = row_data[key]
+
+            # ---------------------------------------------
+            # ИЩЕМ ЗАПИСЬ В БД
+            # ---------------------------------------------
+
+            row = model.query.filter_by(
+                **filters
+            ).first()
+
+            if not row:
+
+                raise ValueError(
+                    "Запись с ключом "
+                    + ", ".join(
+                        f"{key}={row_data[key]}"
+                        for key in primary_keys
+                    )
+                    + " не найдена"
+                )
+
+            # ---------------------------------------------
+            # ОБНОВЛЯЕМ КОЛОНКИ
+            # ---------------------------------------------
+
+            for column in model.__table__.columns:
+
+                name = column.name
+
+                # Первичный ключ НЕ изменяем
+                if column.primary_key:
+                    continue
+
+                # Пароль пользователя НЕ редактируем
+                if (
+                    table_name == "User"
+                    and name == "password_hash"
+                ):
+                    continue
+
+                # Если такого поля нет в отправленных данных
+                if name not in row_data:
+                    continue
+
+                value = row_data[name]
+
+                column_type = str(
+                    column.type
+                ).upper()
+
+                # =========================================
+                # NULL
+                # =========================================
+
+                if value == "":
+
+                    if column.nullable:
+                        value = None
+
+                # =========================================
+                # JSON
+                # =========================================
+
+                if column_type.startswith("JSON"):
+
+                    if value in ("", None):
+
+                        value = []
+
+                    elif isinstance(value, str):
+
+                        try:
+
+                            value = json.loads(value)
+
+                        except json.JSONDecodeError:
+
+                            raise ValueError(
+                                f"Некорректный JSON "
+                                f"в поле {name}"
+                            )
+
+                # =========================================
+                # INTEGER
+                # =========================================
+
+                elif column_type.startswith("INTEGER"):
+
+                    if value not in ("", None):
+
+                        try:
+
+                            value = int(value)
+
+                        except (ValueError, TypeError):
+
+                            raise ValueError(
+                                f"Поле {name} "
+                                f"должно быть числом"
+                            )
+
+                # =========================================
+                # FLOAT
+                # =========================================
+
+                elif column_type.startswith("FLOAT"):
+
+                    if value not in ("", None):
+
+                        try:
+
+                            value = float(value)
+
+                        except (ValueError, TypeError):
+
+                            raise ValueError(
+                                f"Поле {name} "
+                                f"должно быть числом"
+                            )
+
+                # =========================================
+                # BOOLEAN
+                # =========================================
+
+                elif column_type.startswith("BOOLEAN"):
+
+                    if isinstance(value, str):
+
+                        value_lower = value.lower()
+
+                        if value_lower in (
+                            "true",
+                            "1",
+                            "yes",
+                            "да"
+                        ):
+
+                            value = True
+
+                        elif value_lower in (
+                            "false",
+                            "0",
+                            "no",
+                            "нет"
+                        ):
+
+                            value = False
+
+                        elif value == "":
+
+                            value = None
+
+                        else:
+
+                            raise ValueError(
+                                f"Поле {name} "
+                                f"должно быть True/False"
+                            )
+
+                # =========================================
+                # ЗАПИСЫВАЕМ ЗНАЧЕНИЕ
+                # =========================================
+
+                setattr(
+                    row,
+                    name,
+                    value
+                )
+
+        # =================================================
+        # СОХРАНЯЕМ ВСЮ ТАБЛИЦУ ОДНИМ COMMIT
+        # =================================================
+
+        db.session.commit()
+
+    except Exception as e:
+
+        # ---------------------------------------------
+        # ЕСЛИ ОШИБКА — ОТКАТ ВСЕХ ИЗМЕНЕНИЙ
+        # ---------------------------------------------
+
+        db.session.rollback()
+
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Все изменения сохранены"
+    })
+
+@app.post("/admin/bd/<table_name>/delete")
+@admin_required
+def admin_bd_delete(table_name):
+
+    model = ADMIN_DB_MODELS.get(table_name)
+
+    if not model:
+        return jsonify({
+            "success": False,
+            "error": "Неизвестная таблица"
+        }), 404
+
+    data = request.get_json()
+
+    if not data:
+        return jsonify({
+            "success": False,
+            "error": "Нет данных"
+        }), 400
+
+    primary_keys = [
+        column.name
+        for column in model.__table__.columns
+        if column.primary_key
+    ]
+
+    filters = {}
+
+    for key in primary_keys:
+
+        if key not in data:
+            return jsonify({
+                "success": False,
+                "error": f"Не передан ключ {key}"
+            }), 400
+
+        filters[key] = data[key]
+
+    row = model.query.filter_by(**filters).first()
+
+    if not row:
+        return jsonify({
+            "success": False,
+            "error": "Запись не найдена"
+        }), 404
+
+    try:
+
+        db.session.delete(row)
+        db.session.commit()
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 400
+
+    return jsonify({
+        "success": True
+    })
 
 
 #########################################################################################################################################################

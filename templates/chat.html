@@ -791,7 +791,7 @@
     const productId = urlParams.get("product_id");
     const message = urlParams.get("message");
 
-    if (message) {
+    if (message && message.trim()) {
 
         fetch("/chat/send", {
             method: "POST",
@@ -799,33 +799,31 @@
                 "Content-Type": "application/x-www-form-urlencoded"
             },
             body: new URLSearchParams({
-                message_text: message
+                message_text: message.trim(),
+                auto_message: "1",
+                product_id: productId || ""
             })
         })
         .then(response => response.json())
         .then(data => {
 
             if (!data.success) {
-                console.error("Ошибка отправки:", data.error);
+                console.error(
+                    "Ошибка автоматической отправки:",
+                    data.error
+                );
                 return;
             }
 
-            console.log("Сообщение автоматически отправлено");
+            console.log("Автоматическое сообщение отправлено");
 
-            // После отправки убираем параметры из URL,
-            // чтобы при обновлении страницы сообщение
-            // не отправилось второй раз.
             window.history.replaceState(
                 {},
                 document.title,
                 "/chat"
             );
 
-            // Если у тебя есть функция обновления сообщений,
-            // здесь можно её вызвать.
-            if (typeof loadMessages === "function") {
-                loadMessages();
-            }
+            loadMessages();
 
         })
         .catch(error => {

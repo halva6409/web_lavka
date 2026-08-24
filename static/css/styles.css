@@ -667,13 +667,13 @@ body.scrolled .topbar {
 }
 
 .kicker {
-  margin: 500px 0 15px;
+  margin: 12vh 0 3vh;
   align-items: center;
   justify-content: center;
   display: flex;
   font-size: 14px;
   font-weight: 600;
-  color: var(--muted);
+  color: #ffffff6a;
 }
 
 .kicker-line{
@@ -696,12 +696,23 @@ body.scrolled .topbar {
   color: #ffffff6a;
 }
 
-.hero-content h1 {
-  margin: 0 0 16px;
-  font-size: 40px;
+.hero-content h2 {
+  margin-top: 12vh;
+  padding: 0%;
+  font-size: 25px;
   line-height: 1.08;
-  font-weight: 800;
+  font-weight: 555;
   letter-spacing: -0.025em;
+  color: #ffffff9d;
+}
+.hero-content h1 {
+  margin-top: 1vh;
+  padding: 0%;
+  font-size: 25px;
+  line-height: 1.08;
+  font-weight: 555;
+  letter-spacing: -0.025em;
+  color: #ffffff9d;
 }
 
 .hero-content .subtitle {
@@ -962,6 +973,7 @@ body.scrolled .topbar {
   color: var(--accent);
   font-size: 10px;
   font-weight: 700;
+  text-align: center;
 }
 /* =========================================================
    НАЗВАНИЕ
@@ -969,7 +981,7 @@ body.scrolled .topbar {
 .card-title {
   margin: 4px auto 7px;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.15; 
   height: calc(3 * 1.15em);
   overflow: hidden;
@@ -980,6 +992,8 @@ body.scrolled .topbar {
   overflow-wrap: anywhere;
   word-break: normal;
   white-space: normal !important;
+  font-family: "Fira Sans Extra Condensed", sans-serif;
+  letter-spacing: 0.02em;
 }
 /* =========================================================
    ЦЕНА + НАЛИЧИЕ
@@ -1202,6 +1216,46 @@ body.scrolled .topbar {
   }
 }
 
+.product-order-btn {
+  display: block;
+  margin: 20px auto 0;
+  min-width: 50vh;
+  height: 40px;
+  padding: 7px 20px;
+
+  border: 1px solid #333;
+  border-radius: 13px;
+
+  background: #263967;
+  color: #ffffff;
+
+  cursor: pointer;
+
+  font-family:
+    "Fira Sans Extra Condensed",
+    sans-serif;
+
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+
+  box-sizing: border-box;
+
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.product-order-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 8px rgba(0, 0, 0, 0.2);
+}
+
+.product-order-btn:active {
+  transform: translateY(0);
+}
 /* =========================================================
    ЕСЛИ ТОВАРОВ НЕТ
    ========================================================= */
@@ -1439,26 +1493,33 @@ body.scrolled .topbar {
    ИНФОРМАЦИЯ ТОВАРА
    ========================================================= */
 .product-modal-body {
-  padding: 26px;
+  padding: 24px;
   min-width: 0;
   box-sizing: border-box;
 }
 
 .product-modal-title {
-  padding-bottom: 5%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 0;
+
+  font-family: "Fira Sans Extra Condensed", sans-serif;
   font-size: 32px;
   line-height: 1.05;
   font-weight: 800;
   text-align: center;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.02em;
+
   overflow-wrap: anywhere;
   word-break: normal;
   white-space: normal !important;
+
   max-width: 100%;
   overflow: visible;
 }
 
 .product-modal-description {
+  margin: 0px;
   margin-left: auto;
   color: #a0a0a0;
   font-size: 20px;
@@ -1467,6 +1528,7 @@ body.scrolled .topbar {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   word-break: normal;
+  
 }
 
 .product-modal-colors {
@@ -1498,7 +1560,7 @@ body.scrolled .topbar {
 
 .product-chip{
   text-align: center;
-  margin: 0px 0 5px;
+  margin: 0px 0 0px;
   font-size: 10px;
   color: var(--accent);
   font-weight: 700;

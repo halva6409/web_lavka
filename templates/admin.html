@@ -2,21 +2,33 @@
 <html lang="ru">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Админ-панель</title>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Админ-доступ</title>
 
     <style>
+
         * {
             box-sizing: border-box;
         }
 
         body {
             margin: 0;
-            padding: 30px;
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
             background: #0f0f0f;
             color: white;
+
             font-family:
                 -apple-system,
                 BlinkMacSystemFont,
@@ -25,550 +37,160 @@
                 sans-serif;
         }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
+
+        .admin-container {
+            width: min(1100px, calc(100% - 40px));
+
+            text-align: center;
         }
 
-        h1 {
-            margin-bottom: 30px;
+
+        .admin-title {
+            margin: 0 0 30px;
+
+            font-size: 40px;
+            font-weight: 800;
+
+            letter-spacing: 0.02em;
         }
 
-        h2 {
-            margin-top: 0;
-        }
 
-        .panel {
-            background: #181818;
-            border: 1px solid #292929;
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 30px;
-        }
-
-        .form {
+        .admin-buttons {
             display: grid;
-            gap: 15px;
-        }
 
-        input,
-        textarea,
-        select {
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 12px;
+
             width: 100%;
-            padding: 12px 14px;
-
-            background: #101010;
-            color: white;
-
-            border: 1px solid #333;
-            border-radius: 8px;
-
-            font-size: 15px;
         }
 
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
 
-        input:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: #666;
-        }
+        .admin-button {
+            display: flex;
 
-        button,
-        .button {
-            display: inline-flex;
             align-items: center;
             justify-content: center;
 
-            padding: 10px 16px;
+            width: 100%;
+            height: 50px;
 
-            border: none;
-            border-radius: 8px;
+            padding: 10px 18px;
 
-            background: #ff3b30;
+            border: 1px solid #333;
+            border-radius: 13px;
+
+            background: #263967;
             color: white;
 
-            font-weight: 700;
             text-decoration: none;
 
-            cursor: pointer;
-        }
+            font-family:
+                "Fira Sans Extra Condensed",
+                sans-serif;
 
-        button:hover,
-        .button:hover {
-            filter: brightness(1.1);
-        }
+            font-size: 17px;
+            font-weight: 500;
 
-        .products {
-            display: grid;
-            gap: 15px;
-        }
-
-        .product {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-
-            width: 100%;
-            height: 120px;
-            min-height: 150px;
-            max-height: 120px;
-
-            padding: 18px;
-
-            background: #111;
-            border: 1px solid #292929;
-            border-radius: 12px;
-
-            overflow: hidden;
-        }
-
-        .product-info {
-            min-width: 0;
-            min-height: 0;
-
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .product-title {
-            margin: 0 0 6px;
-
-            font-size: 18px;
-            font-weight: 800;
-
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .product-description {
-            margin: 0 0 8px;
-
-            color: #888;
-
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .product-price {
-            font-weight: 700;
-        }
-
-        .product-status {
-            margin-top: 6px;
-            font-size: 13px;
-            color: #888;
-        }
-
-        .product-actions {
-            display: flex;
-            padding: auto;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-
-        .edit-button {
-            height: 38px;
-            font-size: 14px;
-            background: #333;
-        }
-
-        .delete-button {
-            height: 38px;
-            font-size: 14px;
-            background: #ff3b30;
-        }
-
-        .empty {
-            color: #888;
-        }
-        /* =========================================================
-   IOS TOGGLE
-   ========================================================= */
-
-        .toggle-row {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .toggle-label {
-            color: white;
-            font-size: 15px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-
-        /* Контейнер */
-
-        .toggleWrapper {
-            position: relative;
-
-            width: 50px;
-            height: 30px;
-
-            flex-shrink: 0;
-        }
-
-
-        /* Скрываем настоящий checkbox */
-
-        .toggleWrapper .mobileToggle {
-            position: absolute;
-
-            width: 1px;
-            height: 1px;
-
-            opacity: 0;
-        }
-
-
-        /* Корпус переключателя */
-
-        .toggleWrapper .mobileToggle + label {
-            position: absolute;
-
-            inset: 0;
-
-            display: block;
-
-            width: 50px;
-            height: 30px;
-
-            border-radius: 30px;
-
-            background: #e5e5ea;
-            border: 1px solid #d1d1d6;
+            letter-spacing: 0.02em;
 
             cursor: pointer;
 
             transition:
-                background 0.2s ease;
+                transform 0.2s ease,
+                filter 0.2s ease,
+                box-shadow 0.2s ease;
         }
 
 
-        /* Белый круг */
+        .admin-button:hover {
+            filter: brightness(1.15);
 
-        .toggleWrapper .mobileToggle + label::after {
-            content: "";
-
-            position: absolute;
-
-            width: 26px;
-            height: 26px;
-
-            top: 1px;
-            left: 1px;
-
-            border-radius: 50%;
-
-            background: white;
+            transform: translateY(-2px);
 
             box-shadow:
-                0 2px 5px rgba(0, 0, 0, 0.25);
-
-            transition:
-                transform 0.25s cubic-bezier(.54, 1.60, .5, 1);
+                0 6px 18px rgba(0, 0, 0, 0.25);
         }
 
 
-        /* ВКЛ */
-
-        .toggleWrapper .mobileToggle:checked + label {
-            background: #34c759;
-            border-color: #34c759;
+        .admin-button:active {
+            transform: scale(0.98);
         }
 
 
-        /* Перемещение круга */
-
-        .toggleWrapper .mobileToggle:checked + label::after {
-            transform: translateX(20px);
-        }
-
-
-        /* Нажатие */
-
-        .toggleWrapper .mobileToggle + label:active::after {
-            transform: scale(0.92);
-        }
-
-        .toggleWrapper .mobileToggle:checked + label:active::after {
-            transform: translateX(20px) scale(0.92);
-        }
         @media (max-width: 700px) {
 
-            body {
-                padding: 18px;
+            .admin-buttons {
+                grid-template-columns:
+                    repeat(2, 1fr);
             }
 
-            .panel {
-                padding: 18px;
-            }
-
-            .product {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            .product-actions {
-                width: 100%;
-            }
-
-            .product-actions a,
-            .product-actions form,
-            .product-actions button {
-                flex: 1;
-            }
         }
+
+
+        @media (max-width: 400px) {
+
+            .admin-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-title {
+                font-size: 27px;
+            }
+
+        }
+
     </style>
+
 </head>
-<script>
-async function toggleProduct(checkbox, productId) {
 
-    const oldState = !checkbox.checked;
-
-    try {
-
-        const response = await fetch(
-            `/admin/toggle-active/${productId}`,
-            {
-                method: "POST"
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error("HTTP " + response.status);
-        }
-
-        const data = await response.json();
-
-        if (!data.success) {
-            throw new Error("Ошибка изменения статуса");
-        }
-
-    } catch (error) {
-
-        console.error(error);
-
-        // Если Flask не ответил —
-        // возвращаем переключатель в старое состояние
-        checkbox.checked = oldState;
-    }
-}
-</script>
 
 <body>
 
-<div class="container">
+    <main class="admin-container">
 
-    <h1>Админ-панель</h1>
+        <h1 class="admin-title">
+            Админ-доступ
+        </h1>
 
 
-    <!-- ==========================================
-         ДОБАВЛЕНИЕ ТОВАРА
-         ========================================== -->
+        <div class="admin-buttons">
 
-    <section class="panel">
-
-        <h2>Добавить товар</h2>
-
-        <form
-            class="form"
-            method="POST"
-            action="{{ url_for('admin_add') }}"
-            enctype="multipart/form-data"
-        >
-
-            <input
-                type="text"
-                name="title"
-                placeholder="Название товара"
-                required
+            <a
+                href="{{ url_for('admin_add') }}"
+                class="admin-button"
             >
-
-            <textarea
-                name="description"
-                placeholder="Описание товара"
-            ></textarea>
-
-            <input
-                type="text"
-                name="colors"
-                placeholder="Цвет"
-            >
-
-            <input
-                type="number"
-                name="price"
-                placeholder="Цена"
-                step="0.01"
-                required
-            >
-
-            <input
-                type="text"
-                name="category"
-                placeholder="Категория"
-            >
-
-            <input
-                type="number"
-                name="kolvo"
-                placeholder="Количество"
-                min="0"
-            >
-
-            <label>
-                Фотография товара:
-            </label>
-
-            <input
-                type="file"
-                name="images"
-                accept="image/*"
-                multiple
-            >
-
-            <button type="submit">
                 Добавить товар
-            </button>
-
-        </form>
-
-    </section>
+            </a>
 
 
-    <!-- ==========================================
-         СПИСОК ТОВАРОВ
-         ========================================== -->
-
-    <section class="panel">
-
-        <h2>Товары</h2>
-
-        <div class="products">
-
-            {% if products %}
-
-                {% for product in products %}
-
-                    <div class="product">
-
-                        <div class="product-info">
-
-                            <h3 class="product-title">
-                                {{ product.title }}
-                            </h3>
-
-                            {% if product.description %}
-                                <p class="product-description">
-                                    {{ product.description }}
-                                </p>
-                            {% endif %}
-
-                            <div class="product-price">
-                                {{ product.price }} ₽
-                            </div>
-
-                            {% if product.category %}
-                                <div class="product-status">
-                                    Категория: {{ product.category }}
-                                </div>
-                            {% endif %}
-
-                            <div class="product-status">
-
-                                {% if product.is_active %}
-                                    Опубликован
-                                {% else %}
-                                    Скрыт
-                                {% endif %}
-
-                            </div>
-
-                        </div>
+            <a
+                href="{{ url_for('admin_products') }}"
+                class="admin-button"
+            >
+                Товары
+            </a>
 
 
-                        <!-- КНОПКИ -->
-
-                        <div class="product-actions">
-
-                            <!-- Изменить -->
-                            <div class="toggle-row">
-
-                                <span class="toggle-label">
-                                    Опубликован
-                                </span>
-
-                                <div class="toggleWrapper">
-
-                                    <input
-                                        type="checkbox"
-                                        class="mobileToggle"
-                                        id="is_active_{{ product.id }}"
-                                        {% if product.is_active %}checked{% endif %}
-                                        onchange="toggleProduct(this, {{ product.id }})"
-                                    >
-
-                                    <label for="is_active_{{ product.id }}"></label>
-
-                                </div>
-
-                            </div>
-                            <a
-                                class="button edit-button"
-                                href="{{ url_for('edit_product', product_id=product.id) }}"
-                            >
-                                Изменить
-                            </a>
+            <a
+                href="{{ url_for('admin_chats') }}"
+                class="admin-button"
+            >
+                Чаты
+            </a>
 
 
-                            <!-- Удалить -->
-
-                            <form
-                                method="POST"
-                                action="{{ url_for('delete_product', product_id=product.id) }}"
-                            >
-
-                                <button
-                                    type="submit"
-                                    class="delete-button"
-                                    onclick="return confirm('Удалить этот товар?');"
-                                >
-                                    Удалить
-                                </button>
-
-                            </form>
-
-                        </div>
-
-                    </div>
-
-                {% endfor %}
-
-            {% else %}
-
-                <p class="empty">
-                    Товаров пока нет.
-                </p>
-
-            {% endif %}
+            <a
+                href="{{ url_for('admin_bd') }}"
+                class="admin-button"
+            >
+                База данных
+            </a>
 
         </div>
 
-    </section>
-
-</div>
+    </main>
 
 </body>
 
