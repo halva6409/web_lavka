@@ -1668,7 +1668,7 @@ body.scrolled .topbar {
   width: min(680px, 100%);
 }*/
 /* =========================================================
-   АНИМИРОВАННЫЙ ФОН ВСЕГО САЙТА
+   АНИМИРОВАННЫЙ ФОН ВСЕГО САЙТА. #171c2d  #0B1021
    ========================================================= */
 .abg-wr-2 {
   position: fixed;
@@ -1683,7 +1683,7 @@ body.scrolled .topbar {
   overflow: hidden;
   z-index: -10;
   pointer-events: none;
-  background: /*#1a233a*/ #171c2d;
+  background: /*#1a233a*/ #0b1021;
 }
 .abg-2{
   position:absolute;
@@ -1717,7 +1717,7 @@ body.scrolled .topbar {
 .abg-2 li:nth-child(10){left:25%;width:80px;height:80px;animation-duration:7s;animation-delay:0s;background-image:url("../images/wallpaper/nth10.png");background-size:contain;background-repeat:no-repeat;background-position:center;}
 @keyframes animationbg-2{
   0%{transform:translateY(0) rotate(0deg);opacity:1}
-  100%{transform:translate(500px, -1000px) rotate(720deg);opacity:.8}
+  100%{transform:translate(500px, -1500px) rotate(720deg);opacity:.8}
 }
 body{background:transparent}
 

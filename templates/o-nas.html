@@ -1,0 +1,1122 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    >
+
+    <meta name="theme-color" content="#07111f">
+
+    <title>О нас — Теннисная Лавка</title>
+
+    <!-- =========================================================
+         ШРИФТ
+         ========================================================= -->
+
+    <style>
+
+        @font-face {
+            font-family: "Fira Sans Extra Condensed";
+            src: url("../fonts/Fira_Sans_Extra_Condensed/FiraSansExtraCondensed-Regular.ttf")
+                 format("truetype");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "Fira Sans Extra Condensed";
+            src: url("../fonts/Fira_Sans_Extra_Condensed/FiraSansExtraCondensed-Bold.ttf")
+                 format("truetype");
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
+        }
+
+
+        /* =========================================================
+           ОСНОВА
+           ========================================================= */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at 50% 10%,
+                    #1e375f33,
+                    transparent 35%
+                ),
+                #07111f;
+
+            color: #ffffff;
+
+            font-family:
+                "Fira Sans Extra Condensed",
+                Arial,
+                sans-serif;
+
+            overflow-x: hidden;
+        }
+
+
+        /* =========================================================
+           ЗЕРНО
+           ========================================================= */
+
+        .grain {
+            position: fixed;
+            inset: 0;
+
+            pointer-events: none;
+
+            z-index: 1000;
+
+            opacity: 0.055;
+
+            background-image:
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+
+            mix-blend-mode: overlay;
+        }
+
+
+        /* =========================================================
+           АНИМИРОВАННЫЙ ФОН
+           ========================================================= */
+
+        .abg-wr-2 {
+            position: fixed;
+            inset: 0;
+
+            overflow: hidden;
+
+            pointer-events: none;
+
+            z-index: 0;
+        }
+
+        .abg-2 {
+            position: absolute;
+            inset: 0;
+
+            list-style: none;
+        }
+
+        .abg-2 li {
+            position: absolute;
+
+            bottom: -180px;
+
+            border-radius: 50%;
+
+            background:
+                radial-gradient(
+                    circle at 30% 30%,
+                    rgba(75, 120, 180, 0.12),
+                    rgba(20, 50, 90, 0.025) 65%,
+                    transparent 70%
+                );
+
+            animation:
+                floatUp linear infinite;
+
+            filter: blur(1px);
+        }
+
+        @keyframes floatUp {
+
+            0% {
+                transform:
+                    translate3d(0, 0, 0)
+                    scale(0.85);
+
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 0.75;
+            }
+
+            100% {
+                transform:
+                    translate3d(
+                        80px,
+                        -125vh,
+                        0
+                    )
+                    scale(1.25);
+
+                opacity: 0;
+            }
+        }
+
+
+        /* =========================================================
+           TOPBAR
+           ========================================================= */
+
+        .topbar {
+            position: fixed;
+
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 64px;
+
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+
+            padding: 0 32px;
+
+            z-index: 500;
+
+            background:
+                rgba(7, 17, 31, 0.58);
+
+            border-bottom:
+                1px solid rgba(255, 255, 255, 0.055);
+
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+
+
+        /* =========================================================
+           ЛОГОТИП
+           ========================================================= */
+
+        .tennis-logo {
+            position: fixed;
+
+            top: 21px;
+            left: 30px;
+
+            z-index: 600;
+
+            display: flex;
+            align-items: baseline;
+
+            gap: 7px;
+
+            color: #fff;
+
+            text-decoration: none;
+
+            user-select: none;
+        }
+
+        .tennis-logo-small {
+            font-size: 15px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.04em;
+        }
+
+        .tennis-logo-big {
+            font-size: 28px;
+
+            font-weight: 700;
+
+            letter-spacing: -0.035em;
+
+            line-height: 0.85;
+        }
+
+        .tennis-logo-big span {
+            color: #e53232;
+        }
+
+
+        /* =========================================================
+           КНОПКИ TOPBAR
+           ========================================================= */
+
+        .auth-buttons {
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+        }
+
+        .top-btn {
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            min-height: 38px;
+
+            padding: 0 17px;
+
+            border-radius: 11px;
+
+            text-decoration: none;
+
+            font-size: 17px;
+
+            color: rgba(255,255,255,0.86);
+
+            border:
+                1px solid rgba(255,255,255,0.08);
+
+            background:
+                rgba(255,255,255,0.035);
+
+            transition:
+                background 0.2s ease,
+                border-color 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .top-btn:hover {
+            background:
+                rgba(255,255,255,0.08);
+
+            border-color:
+                rgba(255,255,255,0.15);
+
+            transform: translateY(-1px);
+        }
+
+        .top-btn-main {
+            background: #ffffff;
+            color: #07111f;
+
+            border-color: #ffffff;
+        }
+
+        .top-btn-main:hover {
+            background: #eeeeee;
+        }
+
+
+        /* =========================================================
+           HERO О НАС
+           ========================================================= */
+
+        .about-hero {
+            position: relative;
+
+            z-index: 2;
+
+            min-height: 520px;
+
+            display: flex;
+            align-items: flex-end;
+
+            padding:
+                150px
+                clamp(24px, 7vw, 120px)
+                70px;
+        }
+
+        .about-hero-inner {
+            width: min(1200px, 100%);
+
+            margin: 0 auto;
+        }
+
+        .about-kicker {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            margin-bottom: 22px;
+
+            color: rgba(255,255,255,0.52);
+
+            font-size: 18px;
+
+            letter-spacing: 0.12em;
+
+            text-transform: uppercase;
+        }
+
+        .about-kicker::before {
+            content: "";
+
+            width: 34px;
+            height: 1px;
+
+            background: #e53232;
+        }
+
+        .about-hero h1 {
+            max-width: 1000px;
+
+            font-size:
+                clamp(68px, 10vw, 150px);
+
+            line-height: 0.78;
+
+            letter-spacing: -0.055em;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+        }
+
+        .about-hero h1 span {
+            color: #e53232;
+        }
+
+        .about-hero-subtitle {
+            max-width: 600px;
+
+            margin-top: 38px;
+
+            font-size: 23px;
+
+            line-height: 1.15;
+
+            color: rgba(255,255,255,0.55);
+        }
+
+
+        /* =========================================================
+           ОСНОВНОЙ КОНТЕНТ
+           ========================================================= */
+
+        .about-content {
+            position: relative;
+
+            z-index: 2;
+
+            width: min(1200px, calc(100% - 48px));
+
+            margin: 0 auto;
+
+            padding:
+                40px 0
+                130px;
+        }
+
+
+        /* =========================================================
+           БЛОК ТЕКСТА
+           ========================================================= */
+
+        .about-block {
+            position: relative;
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(170px, 0.32fr)
+                minmax(0, 1fr);
+
+            gap: 70px;
+
+            padding:
+                65px 0;
+
+            border-top:
+                1px solid rgba(255,255,255,0.10);
+        }
+
+        .about-block:last-child {
+            border-bottom:
+                1px solid rgba(255,255,255,0.10);
+        }
+
+
+        /* Номер блока */
+
+        .about-number {
+            position: relative;
+
+            font-size: 18px;
+
+            color: #e53232;
+
+            letter-spacing: 0.08em;
+
+            font-weight: 700;
+        }
+
+        .about-number::after {
+            content: "";
+
+            position: absolute;
+
+            left: 0;
+            top: 31px;
+
+            width: 38px;
+            height: 2px;
+
+            background: #e53232;
+        }
+
+
+        /* Заголовок блока */
+
+        .about-block-title {
+            margin-bottom: 28px;
+
+            font-size:
+                clamp(38px, 5vw, 70px);
+
+            line-height: 0.85;
+
+            letter-spacing: -0.035em;
+
+            text-transform: uppercase;
+        }
+
+
+        /* Текст */
+
+        .about-text {
+            max-width: 760px;
+
+            font-size:
+                clamp(21px, 2vw, 28px);
+
+            line-height: 1.18;
+
+            color: rgba(255,255,255,0.66);
+        }
+
+        .about-text strong {
+            color: #ffffff;
+
+            font-weight: 700;
+        }
+
+
+        /* =========================================================
+           ДЕКОРАТИВНАЯ ТОЧКА
+           ========================================================= */
+
+        .about-block::after {
+            content: "";
+
+            position: absolute;
+
+            right: 0;
+            top: 65px;
+
+            width: 9px;
+            height: 9px;
+
+            border-radius: 50%;
+
+            background: #e53232;
+
+            box-shadow:
+                0 0 25px rgba(229,50,50,0.35);
+        }
+
+
+        /* =========================================================
+           FOOTER
+           ========================================================= */
+
+        .footer {
+            position: relative;
+
+            z-index: 2;
+
+            border-top:
+                1px solid rgba(255,255,255,0.08);
+
+            padding:
+                45px
+                clamp(24px, 7vw, 120px)
+                55px;
+
+            background:
+                rgba(3, 9, 17, 0.35);
+        }
+
+        .footer-content {
+            margin-bottom: 38px;
+        }
+
+        .footer-title {
+            font-size: 20px;
+
+            color: rgba(255,255,255,0.5);
+        }
+
+        .footer-columns {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 50px;
+        }
+
+        .footer-column {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 8px;
+        }
+
+        .footer-title- {
+            margin-bottom: 8px;
+
+            font-size: 21px;
+
+            color: #ffffff;
+        }
+
+        .footer-contact,
+        .footer-content-middle,
+        .footer-content-right,
+        .footer-content-left {
+            color:
+                rgba(255,255,255,0.43);
+
+            text-decoration: none;
+
+            font-size: 17px;
+
+            transition: color 0.2s ease;
+        }
+
+        .footer-content-middle:hover,
+        .footer-content-right:hover {
+            color: #ffffff;
+        }
+
+
+        /* =========================================================
+           АДАПТИВ
+           ========================================================= */
+
+        @media (max-width: 800px) {
+
+            .topbar {
+                height: 58px;
+
+                padding: 0 16px;
+            }
+
+            .tennis-logo {
+                left: 17px;
+                top: 19px;
+
+                gap: 5px;
+            }
+
+            .tennis-logo-small {
+                font-size: 10px;
+            }
+
+            .tennis-logo-big {
+                font-size: 19px;
+            }
+
+            .top-btn {
+                min-height: 34px;
+
+                padding: 0 12px;
+
+                font-size: 15px;
+
+                border-radius: 9px;
+            }
+
+
+            .about-hero {
+                min-height: 470px;
+
+                padding:
+                    130px
+                    24px
+                    55px;
+            }
+
+            .about-hero h1 {
+                font-size:
+                    clamp(62px, 18vw, 105px);
+            }
+
+            .about-hero-subtitle {
+                margin-top: 28px;
+
+                font-size: 20px;
+            }
+
+
+            .about-content {
+                width: calc(100% - 40px);
+
+                padding-bottom: 80px;
+            }
+
+            .about-block {
+                grid-template-columns: 1fr;
+
+                gap: 24px;
+
+                padding: 48px 0;
+            }
+
+            .about-number {
+                font-size: 16px;
+            }
+
+            .about-number::after {
+                top: 27px;
+            }
+
+            .about-block-title {
+                margin-bottom: 20px;
+
+                font-size:
+                    clamp(38px, 12vw, 62px);
+            }
+
+            .about-text {
+                font-size: 21px;
+
+                line-height: 1.2;
+            }
+
+            .about-block::after {
+                top: 48px;
+            }
+
+
+            .footer {
+                padding:
+                    38px 24px 45px;
+            }
+
+            .footer-columns {
+                grid-template-columns: 1fr;
+
+                gap: 32px;
+            }
+        }
+
+
+        @media (max-width: 430px) {
+
+            .about-hero {
+                min-height: 420px;
+
+                padding-top: 115px;
+            }
+
+            .about-hero h1 {
+                font-size: 62px;
+
+                line-height: 0.82;
+            }
+
+            .about-hero-subtitle {
+                font-size: 19px;
+            }
+
+            .about-block-title {
+                font-size: 43px;
+            }
+
+            .about-text {
+                font-size: 20px;
+            }
+
+            .auth-buttons {
+                gap: 6px;
+            }
+
+            .top-btn {
+                padding: 0 9px;
+
+                font-size: 14px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================================
+         АНИМИРОВАННЫЙ ФОН
+         ========================================================= -->
+
+    <div class="abg-wr-2" aria-hidden="true">
+
+        <ul class="abg-2">
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+
+    </div>
+
+
+    <!-- ЗЕРНО -->
+
+    <div class="grain"></div>
+
+
+    <!-- =========================================================
+         ЛОГОТИП
+         ========================================================= -->
+
+    <a href="/" class="tennis-logo">
+
+        <div class="tennis-logo-small">
+            ТЕННИСНАЯ
+        </div>
+
+        <div class="tennis-logo-big">
+            ЛА<span>ВК</span>А
+        </div>
+
+    </a>
+
+
+    <!-- =========================================================
+         TOPBAR
+         ========================================================= -->
+
+    <nav class="topbar">
+
+        <div class="auth-buttons">
+
+            {% if user %}
+
+                <a href="/favorites" class="top-btn">
+                    Избранное
+                </a>
+
+                <a href="/chat" class="top-btn">
+                    Чат
+                </a>
+
+                <a href="/profile-id" class="top-btn top-btn-main">
+                    Профиль
+                </a>
+
+            {% else %}
+
+                <a href="/login" class="top-btn">
+                    Войти
+                </a>
+
+                <a href="/register" class="top-btn top-btn-main">
+                    Регистрация
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </nav>
+
+
+    <!-- =========================================================
+         HERO
+         ========================================================= -->
+
+    <header class="about-hero">
+
+        <div class="about-hero-inner">
+
+            <div class="about-kicker">
+                ТЕННИСНАЯ ЛАВКА
+            </div>
+
+            <h1>
+                О<br>
+                <span>НАС</span>
+            </h1>
+
+            <p class="about-hero-subtitle">
+                Место, где правильный инвентарь
+                начинается с понимания игры.
+            </p>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================================================
+         ТРИ БЛОКА
+         ========================================================= -->
+
+    <main class="about-content">
+
+
+        <!-- =====================================================
+             БЛОК 1
+             ===================================================== -->
+
+        <section class="about-block">
+
+            <div class="about-number">
+                01
+            </div>
+
+            <div>
+
+                <h2 class="about-block-title">
+                    Кто мы
+                </h2>
+
+                <p class="about-text">
+                    ВСТАВЬТЕ СЮДА ВАШ ТЕКСТ.
+
+                    Здесь можно рассказать о том,
+                    кто такие <strong>Теннисная Лавка</strong>,
+                    как появился проект и чем вы занимаетесь.
+
+                    Этот блок специально оставлен
+                    под ваш настоящий текст.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             БЛОК 2
+             ===================================================== -->
+
+        <section class="about-block">
+
+            <div class="about-number">
+                02
+            </div>
+
+            <div>
+
+                <h2 class="about-block-title">
+                    Наша идея
+                </h2>
+
+                <p class="about-text">
+                    ВСТАВЬТЕ СЮДА ВАШ ТЕКСТ.
+
+                    Здесь можно написать о вашей философии,
+                    отношении к настольному теннису,
+                    подборе инвентаря и о том,
+                    почему вы создали именно
+                    <strong>Теннисную Лавку</strong>.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             БЛОК 3
+             ===================================================== -->
+
+        <section class="about-block">
+
+            <div class="about-number">
+                03
+            </div>
+
+            <div>
+
+                <h2 class="about-block-title">
+                    Для вас
+                </h2>
+
+                <p class="about-text">
+                    ВСТАВЬТЕ СЮДА ВАШ ТЕКСТ.
+
+                    Здесь можно рассказать о том,
+                    что получает покупатель,
+                    почему вам можно доверять
+                    и какое место занимает клиент
+                    в вашей работе.
+                </p>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+    <!-- =========================================================
+         FOOTER
+         ========================================================= -->
+
+    <footer class="footer">
+
+        <div class="footer-content">
+
+            <p class="footer-title">
+                2026 Теннисная Лавка
+            </p>
+
+        </div>
+
+
+        <div class="footer-columns">
+
+
+            <div class="footer-column">
+
+                <a class="footer-title-">
+                    Как с нами связаться?
+                </a>
+
+                <a class="footer-contact">
+                    - Наш канал: ...
+                </a>
+
+                <a class="footer-contact">
+                    - По номеру телефона: +7 (777) 777-77-77
+                </a>
+
+                <a class="footer-contact">
+                    - По почте: tennisnaya_lavka@gmail.com
+                </a>
+
+                <a class="footer-content-left">
+                    - По всем вопросам и предложениям
+                    обращаться на почту выше
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <a class="footer-title-">
+                    Покупателям
+                </a>
+
+                <a href="/" class="footer-content-middle">
+                    - Каталог
+                </a>
+
+                <a href="/favorites" class="footer-content-middle">
+                    - Избранное
+                </a>
+
+                <a href="/zakazy" class="footer-content-middle">
+                    - Мои заказы
+                </a>
+
+                <a href="/o-nas" class="footer-content-middle">
+                    - О нас
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <a class="footer-title-">
+                    О компании
+                </a>
+
+                <a href="/o-nas" class="footer-content-right">
+                    - О нас
+                </a>
+
+                <a
+                    href="/"
+                    class="footer-content-right"
+                >
+                    - Главная
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </footer>
+
+
+    <!-- =========================================================
+         ФОН — JS
+         ========================================================= -->
+
+    <script>
+
+        document
+            .querySelectorAll(".abg-2 li")
+            .forEach((item) => {
+
+                const randomLeft =
+                    Math.random() * 100;
+
+                const randomDuration =
+                    15 + Math.random() * 30;
+
+                const randomDelay =
+                    Math.random() * -30;
+
+                const randomSize =
+                    30 + Math.random() * 120;
+
+                item.style.left =
+                    randomLeft + "%";
+
+                item.style.width =
+                    randomSize + "px";
+
+                item.style.height =
+                    randomSize + "px";
+
+                item.style.animationDuration =
+                    randomDuration + "s";
+
+                item.style.animationDelay =
+                    randomDelay + "s";
+
+            });
+
+    </script>
+
+
+</body>
+
+</html>
