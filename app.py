@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template, request, session, redirect, url_for, abort
 import sqlite3
 import telebot
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import secret
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -125,6 +125,9 @@ class User(db.Model):
     name = db.Column(db.String(80))
     phone = db.Column(db.String(120), nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=True)
+    tg = db.Column(db.String, unique=True, nullable=True)
+    vk = db.Column(db.String, unique=True, nullable=True)
+    phone_verified = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.String(50))
     is_admin = db.Column(db.Integer, default=0)
     password_hash = db.Column(db.String(120))
@@ -183,6 +186,15 @@ class Orders(db.Model):
     order = db.Column(db.String, nullable=False)
     data = db.Column(db.String(50), nullable=False)
     status = db.Column(db.String(50), nullable=False, default="В обработке")
+
+class Verification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey("user.id"), nullable=False)
+    token = db.Column(db.String(128), unique=True, nullable=False)
+    method = db.Column(db.String, nullable=False)
+    telegram_id = db.Column(db.String(50),nullable=True)
+    expires_at = db.Column(db.DateTime(timezone=True), nullable=False)
+    creates_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
 #########################################################################################################################################################
 #########################################################################################################################################################
@@ -1521,6 +1533,51 @@ def admin_bd_delete(table_name):
 def onas():
     return render_template("o-nas.html")
 
+########################################################################################################################################################
+
+@app.route("/politic")
+def politic():
+    return render_template("politic.html")
+
+########################################################################################################################################################
+
+@app.post("/api/phone/verify/telegram")
+@logined
+def create_telegram_verification():
+    user_id = session.get("user_id")
+    user = db.session.get(User, user_id)
+
+    if user.phone_verified:
+        return jsonify({
+            "success": False,
+            "error": "Номер телефона уже подтверждён"
+        }), 400
+
+    Verification.query.filter_by(
+        user_id=user.id,
+        method="telegram"
+    ).delete()
+
+    token = secrets.token_urlsafe(32)
+
+    verification = Verification(
+        user_id=user.id,
+        token=token,
+        method="telegram",
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=10)
+    )
+
+    db.session.add(verification)
+    db.session.commit()
+
+    telegram_link = (
+        f"https://t.me/tennis_lavka_bot?start={token}"
+    )
+
+    return jsonify({
+        "success": True,
+        "url": telegram_link
+    })
 ########################################################################################################################################################
 #########################################################################################################################################################
 ##########################################################################################################################################################

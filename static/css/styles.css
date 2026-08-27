@@ -1843,3 +1843,221 @@ body{background:transparent}
 .chat-item {
     position: relative;
 }
+/* =========================================================
+   ПОДТВЕРЖДЕНИЕ АККАУНТА
+   ========================================================= */
+
+.account-verification {
+  width: min(100%, 360px);
+  margin: 22px auto 24px;
+  text-align: center;
+}
+
+
+/* =========================================================
+   ЗАГОЛОВОК
+   ========================================================= */
+
+.account-verification-title {
+  display: block;
+
+  margin-bottom: 14px;
+
+  font-family: "Fira Sans Extra Condensed", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  color: rgba(255, 255, 255, 0.78);
+}
+
+
+/* =========================================================
+   КНОПКИ
+   ========================================================= */
+
+.account-verification-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+  gap: 12px;
+}
+
+
+/* =========================================================
+   ОБЩАЯ КНОПКА
+   ========================================================= */
+
+.account-verification-button {
+  position: relative;
+
+  width: 165px;
+  height: 52px;
+
+  padding: 0;
+
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.045);
+
+  color: #ffffff;
+
+  font-family: "Fira Sans Extra Condensed", sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 9px;
+
+  cursor: pointer;
+
+  overflow: hidden;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+/* =========================================================
+   ЛЁГКИЙ БЛИК
+   ========================================================= */
+
+.account-verification-button::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: -100%;
+
+  width: 70%;
+  height: 100%;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+
+  transform: skewX(-20deg);
+
+  transition: left 0.45s ease;
+}
+
+.account-verification-button:hover::before {
+  left: 130%;
+}
+
+
+/* =========================================================
+   HOVER
+   ========================================================= */
+
+.account-verification-button:hover {
+  transform: translateY(-2px);
+
+  background: rgba(255, 255, 255, 0.075);
+
+  border-color: rgba(255, 255, 255, 0.18);
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================================
+   ACTIVE
+   ========================================================= */
+
+.account-verification-button:active {
+  transform: scale(0.96);
+}
+
+
+/* =========================================================
+   ИКОНКА
+   ========================================================= */
+
+.verification-icon {
+  position: relative;
+  z-index: 1;
+
+  width: 27px;
+  height: 27px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   ТЕКСТ КНОПКИ
+   ========================================================= */
+
+.account-verification-button span:last-child {
+  position: relative;
+  z-index: 1;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   TELEGRAM
+   ========================================================= */
+
+.account-verification-telegram .verification-icon {
+  background: rgba(42, 171, 238, 0.16);
+  color: #2aabee;
+}
+
+.account-verification-telegram:hover {
+  border-color: rgba(42, 171, 238, 0.38);
+
+  box-shadow:
+    0 8px 25px rgba(42, 171, 238, 0.08);
+}
+
+
+/* =========================================================
+   VK
+   ========================================================= */
+
+.account-verification-vk .verification-icon {
+  background: rgba(0, 119, 255, 0.15);
+  color: #4d9cff;
+}
+
+.account-verification-vk:hover {
+  border-color: rgba(0, 119, 255, 0.38);
+
+  box-shadow:
+    0 8px 25px rgba(0, 119, 255, 0.08);
+}
+
+
+/* =========================================================
+   МОБИЛЬНЫЕ
+   ========================================================= */
+

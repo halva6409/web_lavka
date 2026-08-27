@@ -1137,6 +1137,45 @@ const SNAP_ZONE = 150;
 
 
 })();
+
+
+/* =====================================================
+   ПОДТВЕРЖДЕНИЕ ЧЕРЕЗ TELEGRAM
+   ===================================================== */
+
+function verifyTelegram() {
+
+  /*
+   * Пока просто открываем нашего Telegram-бота.
+   *
+   * ВАЖНО:
+   * подтверждение будет считаться успешным НЕ от самого
+   * факта открытия Telegram.
+   *
+   * Дальше бот должен получить пользователя,
+   * отправить ему сообщение и дождаться подтверждения.
+   */
+
+  window.open(
+    "https://t.me/tennis_lavka_bot",
+    "_blank"
+  );
+}
+
+
+/* =====================================================
+   ПОДТВЕРЖДЕНИЕ ЧЕРЕЗ VK
+   ===================================================== */
+
+function verifyVK() {
+
+  alert(
+    "Подтверждение через ВКонтакте пока находится в разработке."
+  );
+
+}
+
+
 </script>
 
   <!-- =====================================================
@@ -1183,7 +1222,42 @@ const SNAP_ZONE = 150;
         {{user.name}}
       </h2>
 
-      
+      <!-- =====================================================
+          ПОДТВЕРЖДЕНИЕ АККАУНТА
+          ===================================================== -->
+
+      <div class="account-verification">
+
+        <div class="account-verification-title">
+          Подтвердить аккаунт
+        </div>
+
+        <div class="account-verification-buttons">
+
+          <!-- TELEGRAM -->
+          <button
+            type="button"
+            class="account-verification-button account-verification-telegram"
+            onclick="verifyTelegram()"
+          >
+            <span class="verification-icon">✈</span>
+            <span>Telegram</span>
+          </button>
+
+
+          <!-- VK -->
+          <button
+            type="button"
+            class="account-verification-button account-verification-vk"
+            onclick="verifyVK()"
+          >
+            <span class="verification-icon">VK</span>
+            <span>ВКонтакте</span>
+          </button>
+
+        </div>
+
+      </div>
 
       
 
@@ -2637,6 +2711,7 @@ const SNAP_ZONE = 150;
         <a href="/favorites" class="footer-content-middle">- Избранное</a>
         <a href="/zakazy" class="footer-content-middle">- Мои заказы</a>
         <a href="javascript:void(0)" class="footer-content-middle" onclick="openAccountModal(event)">- Личный кабинет</a>
+        <a href="/politic" class="footer-content-middle">- Политика конфиденциальности</a>
       </div>
       <div class="footer-column">
         <a class="footer-title-">О компании</a>
