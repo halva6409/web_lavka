@@ -192,9 +192,9 @@ class Verification(db.Model):
     user_id = db.Column(db.String, db.ForeignKey("user.id"), nullable=False)
     token = db.Column(db.String(128), unique=True, nullable=False)
     method = db.Column(db.String, nullable=False)
-    telegram_id = db.Column(db.String(50),nullable=True)
+    telegram_id = db.Column(db.String, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     expires_at = db.Column(db.DateTime(timezone=True), nullable=False)
-    creates_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
 #########################################################################################################################################################
 #########################################################################################################################################################
@@ -1541,43 +1541,128 @@ def politic():
 
 ########################################################################################################################################################
 
-@app.post("/api/phone/verify/telegram")
-@logined
-def create_telegram_verification():
-    user_id = session.get("user_id")
-    user = db.session.get(User, user_id)
+@app.route("/verify/telegram", methods=["POST"])
+def verify_telegram():
 
-    if user.phone_verified:
+    print("====================================")
+    print("VERIFY TELEGRAM: REQUEST")
+
+    # =====================================================
+    # ПРОВЕРЯЕМ АВТОРИЗАЦИЮ
+    # =====================================================
+
+    if "user_id" not in session:
+
+        print("ERROR: user_id нет в session")
+
         return jsonify({
             "success": False,
-            "error": "Номер телефона уже подтверждён"
+            "error": "Необходимо войти в аккаунт"
+        }), 401
+
+    user_id = session["user_id"]
+
+    print("user_id:", user_id)
+
+    # =====================================================
+    # ПОЛУЧАЕМ USER
+    # =====================================================
+
+    user = db.session.get(User, user_id)
+
+    if not user:
+
+        print("ERROR: пользователь не найден")
+
+        return jsonify({
+            "success": False,
+            "error": "Пользователь не найден"
+        }), 404
+
+    print("user:", user.name)
+    print("phone_verified:", user.phone_verified)
+    print("tg:", user.tg)
+
+    # =====================================================
+    # УЖЕ ПОДТВЕРЖДЁН
+    # =====================================================
+
+    if user.phone_verified:
+
+        return jsonify({
+            "success": False,
+            "error": "Аккаунт уже подтверждён"
         }), 400
 
+    # =====================================================
+    # УДАЛЯЕМ СТАРЫЕ VERIFICATION
+    # =====================================================
+
     Verification.query.filter_by(
-        user_id=user.id,
+        user_id=user_id,
         method="telegram"
-    ).delete()
+    ).delete(
+        synchronize_session=False
+    )
+
+    # =====================================================
+    # СОЗДАЁМ НОВЫЙ TOKEN
+    # =====================================================
 
     token = secrets.token_urlsafe(32)
 
+    now = datetime.now(timezone.utc)
+
     verification = Verification(
-        user_id=user.id,
+        user_id=user_id,
         token=token,
         method="telegram",
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=10)
+        telegram_id=None,
+        created_at=now,
+        expires_at=now + timedelta(minutes=10)
     )
 
     db.session.add(verification)
-    db.session.commit()
 
-    telegram_link = (
-        f"https://t.me/tennis_lavka_bot?start={token}"
+    try:
+
+        db.session.commit()
+
+        print("VERIFICATION СОЗДАНА")
+        print("ID:", verification.id)
+        print("TOKEN:", token)
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        print("ОШИБКА COMMIT:")
+        print(repr(e))
+
+        return jsonify({
+            "success": False,
+            "error": "Ошибка создания подтверждения"
+        }), 500
+
+    # =====================================================
+    # TELEGRAM DEEP LINK
+    # =====================================================
+
+    bot_username = "tennis_lavka_bot"
+
+    telegram_url = (
+        f"https://t.me/{bot_username}"
+        f"?start={token}"
     )
+
+    print("TELEGRAM URL:", telegram_url)
+    print("====================================")
 
     return jsonify({
         "success": True,
-        "url": telegram_link
+        "telegram_url": telegram_url
     })
+
 ########################################################################################################################################################
 #########################################################################################################################################################
 ##########################################################################################################################################################

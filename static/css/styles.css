@@ -1843,73 +1843,53 @@ body{background:transparent}
 .chat-item {
     position: relative;
 }
+
+
 /* =========================================================
    ПОДТВЕРЖДЕНИЕ АККАУНТА
    ========================================================= */
 
 .account-verification {
-  width: min(100%, 360px);
-  margin: 22px auto 24px;
-  text-align: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 24px 20px 28px;
 }
 
-
-/* =========================================================
-   ЗАГОЛОВОК
-   ========================================================= */
-
+/* Заголовок */
 .account-verification-title {
-  display: block;
-
-  margin-bottom: 14px;
+  width: 100%;
+  text-align: center;
 
   font-family: "Fira Sans Extra Condensed", sans-serif;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.1;
 
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: #ffffff;
 
-  color: rgba(255, 255, 255, 0.78);
+  margin: 0 0 24px;
 }
 
-
-/* =========================================================
-   КНОПКИ
-   ========================================================= */
-
+/* Контейнер кнопок */
 .account-verification-buttons {
+  width: 100%;
+
   display: flex;
   justify-content: center;
   align-items: center;
 
-  width: 100%;
-  gap: 12px;
+  gap: 14px;
+
+  flex-wrap: wrap;
 }
 
-
-/* =========================================================
-   ОБЩАЯ КНОПКА
-   ========================================================= */
-
+/* Общая кнопка */
 .account-verification-button {
-  position: relative;
-
-  width: 165px;
+  width: 150px;
   height: 52px;
-
-  padding: 0;
-
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 14px;
-
-  background: rgba(255, 255, 255, 0.045);
-
-  color: #ffffff;
-
-  font-family: "Fira Sans Extra Condensed", sans-serif;
-  font-size: 17px;
-  font-weight: 500;
 
   display: flex;
   align-items: center;
@@ -1917,147 +1897,92 @@ body{background:transparent}
 
   gap: 9px;
 
+  padding: 0 16px;
+  box-sizing: border-box;
+
+  border: none;
+  border-radius: 12px;
+
+  font-family: "Fira Sans Extra Condensed", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+
+  color: #ffffff;
+
   cursor: pointer;
 
-  overflow: hidden;
-
   transition:
-    transform 0.2s ease,
-    background 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-
-/* =========================================================
-   ЛЁГКИЙ БЛИК
-   ========================================================= */
-
-.account-verification-button::before {
-  content: "";
-
-  position: absolute;
-
-  top: 0;
-  left: -100%;
-
-  width: 70%;
-  height: 100%;
-
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.08),
-    transparent
-  );
-
-  transform: skewX(-20deg);
-
-  transition: left 0.45s ease;
-}
-
-.account-verification-button:hover::before {
-  left: 130%;
-}
-
-
-/* =========================================================
-   HOVER
-   ========================================================= */
-
-.account-verification-button:hover {
-  transform: translateY(-2px);
-
-  background: rgba(255, 255, 255, 0.075);
-
-  border-color: rgba(255, 255, 255, 0.18);
-
-  box-shadow:
-    0 8px 25px rgba(0, 0, 0, 0.18);
-}
-
-
-/* =========================================================
-   ACTIVE
-   ========================================================= */
-
-.account-verification-button:active {
-  transform: scale(0.96);
-}
-
-
-/* =========================================================
-   ИКОНКА
-   ========================================================= */
-
+/* Иконка */
 .verification-icon {
-  position: relative;
-  z-index: 1;
-
-  width: 27px;
-  height: 27px;
-
   display: flex;
   align-items: center;
   justify-content: center;
 
-  border-radius: 8px;
-
-  font-family: Arial, sans-serif;
-  font-size: 13px;
-  font-weight: 700;
+  width: 24px;
+  height: 24px;
 
   flex-shrink: 0;
+
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Telegram */
+.account-verification-telegram {
+  background: #229ed9;
+
+  box-shadow: 0 5px 16px rgba(34, 158, 217, 0.25);
+}
+
+/* VK */
+.account-verification-vk {
+  background: #0077ff;
+
+  box-shadow: 0 5px 16px rgba(0, 119, 255, 0.25);
+}
+
+/* Наведение */
+.account-verification-button:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+
+/* Нажатие */
+.account-verification-button:active {
+  transform: translateY(0);
+  filter: brightness(0.95);
 }
 
 
 /* =========================================================
-   ТЕКСТ КНОПКИ
+   МОБИЛЬНАЯ ВЕРСИЯ
    ========================================================= */
 
-.account-verification-button span:last-child {
-  position: relative;
-  z-index: 1;
+@media (max-width: 480px) {
 
-  white-space: nowrap;
+  .account-verification {
+    padding: 22px 16px 24px;
+  }
+
+  .account-verification-title {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  .account-verification-buttons {
+    gap: 10px;
+  }
+
+  .account-verification-button {
+    width: 140px;
+    height: 50px;
+
+    font-size: 17px;
+  }
 }
-
-
-/* =========================================================
-   TELEGRAM
-   ========================================================= */
-
-.account-verification-telegram .verification-icon {
-  background: rgba(42, 171, 238, 0.16);
-  color: #2aabee;
-}
-
-.account-verification-telegram:hover {
-  border-color: rgba(42, 171, 238, 0.38);
-
-  box-shadow:
-    0 8px 25px rgba(42, 171, 238, 0.08);
-}
-
-
-/* =========================================================
-   VK
-   ========================================================= */
-
-.account-verification-vk .verification-icon {
-  background: rgba(0, 119, 255, 0.15);
-  color: #4d9cff;
-}
-
-.account-verification-vk:hover {
-  border-color: rgba(0, 119, 255, 0.38);
-
-  box-shadow:
-    0 8px 25px rgba(0, 119, 255, 0.08);
-}
-
-
-/* =========================================================
-   МОБИЛЬНЫЕ
-   ========================================================= */
-

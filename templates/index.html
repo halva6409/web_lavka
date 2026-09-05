@@ -1143,23 +1143,49 @@ const SNAP_ZONE = 150;
    ПОДТВЕРЖДЕНИЕ ЧЕРЕЗ TELEGRAM
    ===================================================== */
 
-function verifyTelegram() {
+async function verifyTelegram() {
 
-  /*
-   * Пока просто открываем нашего Telegram-бота.
-   *
-   * ВАЖНО:
-   * подтверждение будет считаться успешным НЕ от самого
-   * факта открытия Telegram.
-   *
-   * Дальше бот должен получить пользователя,
-   * отправить ему сообщение и дождаться подтверждения.
-   */
+  try {
 
-  window.open(
-    "https://t.me/tennis_lavka_bot",
-    "_blank"
-  );
+    const response = await fetch(
+      "/verify/telegram",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+
+      alert(
+        data.error || "Не удалось начать подтверждение"
+      );
+
+      return;
+    }
+
+    window.open(
+      data.telegram_url,
+      "_blank"
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Ошибка запуска Telegram-подтверждения:",
+      error
+    );
+
+    alert(
+      "Не удалось связаться с сервером"
+    );
+
+  }
+
 }
 
 
@@ -1225,7 +1251,7 @@ function verifyVK() {
       <!-- =====================================================
           ПОДТВЕРЖДЕНИЕ АККАУНТА
           ===================================================== -->
-
+      {% if user and not user.phone_verified %}
       <div class="account-verification">
 
         <div class="account-verification-title">
@@ -1258,6 +1284,7 @@ function verifyVK() {
         </div>
 
       </div>
+      {% endif %}
 
       
 
