@@ -569,6 +569,7 @@ def callback_handler(call):
         # =================================================
 
         user.tg = call.from_user.username
+        user.tg_id = str(call.from_user.id)
 
         user.phone_verified = True
 

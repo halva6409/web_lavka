@@ -1986,3 +1986,84 @@ body{background:transparent}
     font-size: 17px;
   }
 }
+
+/* =====================================================
+   БАННЕР ВЕРИФИКАЦИИ
+   ===================================================== */
+
+.verification-banner {
+    position: fixed;
+
+    top: 20px;
+    left: 50%;
+
+    width: min(500px, calc(100% - 30px));
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 16px 18px;
+
+    background: #101b2d;
+    border: 1px solid #30476b;
+    border-radius: 14px;
+
+    box-sizing: border-box;
+
+    color: #ffffff;
+
+    z-index: 100000;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: translate(-50%, -130px);
+
+    transition:
+        opacity 0.35s ease,
+        transform 0.35s ease,
+        visibility 0.35s ease;
+}
+
+.verification-banner.show {
+    opacity: 1;
+    visibility: visible;
+
+    transform: translate(-50%, 0);
+}
+
+.verification-banner-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.verification-banner-content strong {
+    font-size: 16px;
+}
+
+.verification-banner-content span {
+    font-size: 14px;
+    opacity: 0.75;
+}
+
+.verification-banner-close {
+    flex-shrink: 0;
+
+    width: 30px;
+    height: 30px;
+
+    padding: 0;
+
+    border: none;
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 25px;
+    line-height: 1;
+
+    cursor: pointer;
+}

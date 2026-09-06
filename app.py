@@ -95,6 +95,20 @@ def logined(f):
 
     return decorated_function
 
+def verify(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user_id = session.get("user_id")
+        user = User.query.get(user_id)
+
+        if not user.phone_verified:
+            return redirect(url_for("register"))
+
+        return f(*args, **kwargs)
+    return decorated
+
+
+
 def check_special_admin(user):
 
     if (
@@ -126,6 +140,7 @@ class User(db.Model):
     phone = db.Column(db.String(120), nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=True)
     tg = db.Column(db.String, unique=True, nullable=True)
+    tg_id = db.Column(db.String, unique=True, nullable=True)
     vk = db.Column(db.String, unique=True, nullable=True)
     phone_verified = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.String(50))
@@ -195,6 +210,43 @@ class Verification(db.Model):
     telegram_id = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     expires_at = db.Column(db.DateTime(timezone=True), nullable=False)
+
+class PasswordRecovery(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.String,
+        db.ForeignKey("user.id"),
+        nullable=False
+    )
+    code = db.Column(
+        db.String(128),
+        nullable=False
+    )
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    expires_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False
+    )
+    attempts = db.Column(
+        db.Integer,
+        default=0,
+        nullable=False
+    )
+    verified = db.Column(
+        db.Boolean,
+        default=False,
+        nullable=False
+    )
+    used = db.Column(
+        db.Boolean,
+        default=False,
+        nullable=False
+    )
+
 
 #########################################################################################################################################################
 #########################################################################################################################################################
@@ -305,6 +357,386 @@ def login():
             session['user_id'] = user.id
             return redirect(url_for('index'))
     return render_template('login.html')
+
+#########################################################################################################################################################
+
+@app.route("/recovery_pass")
+def recovery_pass():
+    return render_template("recovery.html")
+
+@app.post('/verify-reset-code')
+def verify_reset_code():
+
+    data = request.get_json() or {}
+
+    phone = data.get("phone", "").strip()
+    code = data.get("code", "").strip()
+
+    if not phone or not code:
+        return jsonify({
+            "success": False,
+            "error": "Введите номер телефона и код"
+        }), 400
+
+    # ============================================
+    # ИЩЕМ ПОЛЬЗОВАТЕЛЯ
+    # ============================================
+
+    user = User.query.filter_by(
+        phone=phone
+    ).first()
+
+    if not user:
+        return jsonify({
+            "success": False,
+            "error": "Пользователь не найден"
+        }), 404
+
+    # ============================================
+    # ИЩЕМ КОД
+    # ============================================
+
+    recovery = PasswordRecovery.query.filter_by(
+        user_id=user.id,
+        used=False,
+        verified=False
+    ).order_by(
+        PasswordRecovery.id.desc()
+    ).first()
+
+    if not recovery:
+        return jsonify({
+            "success": False,
+            "error": "Код не найден. Запросите новый код."
+        }), 400
+
+    # ============================================
+    # ПРОВЕРЯЕМ СРОК
+    # ============================================
+
+    expires_at = recovery.expires_at
+
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(
+            tzinfo=timezone.utc
+        )
+
+    if expires_at < datetime.now(timezone.utc):
+
+        recovery.used = True
+        db.session.commit()
+
+        return jsonify({
+            "success": False,
+            "error": "Срок действия кода истёк"
+        }), 400
+
+    # ============================================
+    # ЛИМИТ ПОПЫТОК
+    # ============================================
+
+    if recovery.attempts >= 3:
+
+        recovery.used = True
+        db.session.commit()
+
+        return jsonify({
+            "success": False,
+            "error": "Слишком много попыток. Запросите новый код."
+        }), 400
+
+    # ============================================
+    # ПРОВЕРЯЕМ КОД
+    # ============================================
+
+    if not check_password_hash(
+        recovery.code,
+        code
+    ):
+
+        recovery.attempts += 1
+        db.session.commit()
+
+        remaining = 3 - recovery.attempts
+
+        return jsonify({
+            "success": False,
+            "error": (
+                f"Неверный код. "
+                f"Осталось попыток: {remaining}"
+            )
+        }), 400
+
+    # ============================================
+    # КОД ПРАВИЛЬНЫЙ
+    # ============================================
+
+    recovery.verified = True
+
+    db.session.commit()
+
+    # ============================================
+    # СОЗДАЁМ СЕССИЮ ВОССТАНОВЛЕНИЯ
+    # ============================================
+
+    session["password_reset_user_id"] = user.id
+    session["password_reset_recovery_id"] = recovery.id
+
+    return jsonify({
+        "success": True
+    })
+
+@app.post('/change-reset-password')
+def change_reset_password():
+
+    user_id = session.get(
+        "password_reset_user_id"
+    )
+
+    recovery_id = session.get(
+        "password_reset_recovery_id"
+    )
+
+    if not user_id or not recovery_id:
+        return jsonify({
+            "success": False,
+            "error": "Сначала подтвердите код"
+        }), 403
+
+    # ============================================
+    # ПОЛЬЗОВАТЕЛЬ
+    # ============================================
+
+    user = db.session.get(
+        User,
+        user_id
+    )
+
+    if not user:
+        return jsonify({
+            "success": False,
+            "error": "Пользователь не найден"
+        }), 404
+
+    # ============================================
+    # RECOVERY
+    # ============================================
+
+    recovery = db.session.get(
+        PasswordRecovery,
+        recovery_id
+    )
+
+    if not recovery:
+        return jsonify({
+            "success": False,
+            "error": "Сессия восстановления недействительна"
+        }), 403
+
+    if recovery.user_id != user.id:
+        return jsonify({
+            "success": False,
+            "error": "Ошибка восстановления"
+        }), 403
+
+    if not recovery.verified:
+        return jsonify({
+            "success": False,
+            "error": "Код не подтверждён"
+        }), 403
+
+    if recovery.used:
+        return jsonify({
+            "success": False,
+            "error": "Код уже использован"
+        }), 403
+
+    # ============================================
+    # ПОЛУЧАЕМ НОВЫЙ ПАРОЛЬ
+    # ============================================
+
+    data = request.get_json() or {}
+
+    password = data.get(
+        "password",
+        ""
+    )
+
+    password_confirm = data.get(
+        "password_confirm",
+        ""
+    )
+
+    if len(password) < 6:
+        return jsonify({
+            "success": False,
+            "error": "Пароль должен содержать минимум 6 символов"
+        }), 400
+
+    if password != password_confirm:
+        return jsonify({
+            "success": False,
+            "error": "Пароли не совпадают"
+        }), 400
+
+    # ============================================
+    # МЕНЯЕМ ПАРОЛЬ
+    # ============================================
+
+    user.password_hash = generate_password_hash(
+        password
+    )
+
+    # ============================================
+    # ИНВАЛИДИРУЕМ КОД
+    # ============================================
+
+    recovery.used = True
+
+    db.session.commit()
+
+    # ============================================
+    # УДАЛЯЕМ RESET SESSION
+    # ============================================
+
+    session.pop(
+        "password_reset_user_id",
+        None
+    )
+
+    session.pop(
+        "password_reset_recovery_id",
+        None
+    )
+
+    return jsonify({
+        "success": True
+    })
+
+@app.post("/send-reset-code")
+def send_reset_code():
+
+    data = request.get_json() or {}
+
+    phone = data.get("phone", "").strip()
+
+    if not phone:
+        return jsonify({
+            "success": False,
+            "error": "Введите номер телефона"
+        }), 400
+
+    # ============================================
+    # ИЩЕМ ПОЛЬЗОВАТЕЛЯ
+    # ============================================
+
+    user = User.query.filter_by(
+        phone=phone
+    ).first()
+
+    if not user:
+        return jsonify({
+            "success": False,
+            "error": "Пользователь с таким номером не найден"
+        }), 404
+
+    # ============================================
+    # ПРОВЕРЯЕМ TELEGRAM
+    # ============================================
+
+    if not user.tg_id:
+        return jsonify({
+            "success": False,
+            "error": "К этому аккаунту не привязан Telegram"
+        }), 400
+
+    # ============================================
+    # УДАЛЯЕМ СТАРЫЕ КОДЫ
+    # ============================================
+
+    PasswordRecovery.query.filter_by(
+        user_id=user.id,
+        used=False
+    ).delete(
+        synchronize_session=False
+    )
+
+    # ============================================
+    # ГЕНЕРИРУЕМ КОД
+    # ============================================
+
+    code = str(
+        secrets.randbelow(900000) + 100000
+    )
+
+    code_hash = generate_password_hash(code)
+
+    now = datetime.now(timezone.utc)
+
+    recovery = PasswordRecovery(
+        user_id=user.id,
+        code=code_hash,
+        created_at=now,
+        expires_at=now + timedelta(minutes=10),
+        attempts=0,
+        verified=False,
+        used=False
+    )
+
+    db.session.add(recovery)
+    db.session.commit()
+
+    # ============================================
+    # ОТПРАВЛЯЕМ В TELEGRAM
+    # ============================================
+
+    try:
+
+        bot.send_message(
+            int(user.tg_id),
+
+            "🔐 Восстановление пароля\n\n"
+
+            "Был запрошен код для восстановления "
+            "пароля вашего аккаунта «Теннисная Лавка».\n\n"
+
+            f"Ваш код: {code}\n\n"
+
+            "Код действует 10 минут.\n\n"
+
+            "⚠️ Если это были не вы — "
+            "ничего делать не нужно."
+        )
+
+    except Exception as e:
+
+        print(
+            "ОШИБКА ОТПРАВКИ TELEGRAM:",
+            repr(e)
+        )
+
+        db.session.delete(recovery)
+        db.session.commit()
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "Не удалось отправить сообщение "
+                "в Telegram"
+            )
+        }), 500
+
+    print()
+    print("====================================")
+    print("КОД ВОССТАНОВЛЕНИЯ ОТПРАВЛЕН")
+    print("USER:", user.id)
+    print("PHONE:", user.phone)
+    print("TG ID:", user.tg_id)
+    print("====================================")
+
+    return jsonify({
+        "success": True
+    })
 
 #########################################################################################################################################################
 

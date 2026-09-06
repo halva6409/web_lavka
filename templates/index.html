@@ -363,9 +363,83 @@ const SNAP_ZONE = 150;
 
 
 })();
+
+/* =====================================================
+   БАННЕР ВЕРИФИКАЦИИ
+   ===================================================== */
+
+let verificationBannerTimer = null;
+
+function showVerificationBanner() {
+
+    const banner =
+        document.getElementById("verificationBanner");
+
+    if (!banner) {
+        return;
+    }
+
+    banner.classList.add("show");
+
+    clearTimeout(
+        verificationBannerTimer
+    );
+
+    verificationBannerTimer =
+        setTimeout(function() {
+
+            hideVerificationBanner();
+
+        }, 5000);
+}
+
+
+function hideVerificationBanner() {
+
+    const banner =
+        document.getElementById("verificationBanner");
+
+    if (!banner) {
+        return;
+    }
+
+    banner.classList.remove("show");
+
+    clearTimeout(
+        verificationBannerTimer
+    );
+}
+
+ 
+
 </script>
 
 <body>
+  <script>
+      const phoneVerified = {{ (user.phone_verified if user else false) | tojson }};
+  </script>
+  <!-- =====================================================
+      БАННЕР ВЕРИФИКАЦИИ
+      ===================================================== -->
+
+  <div id="verificationBanner" class="verification-banner">
+
+      <div class="verification-banner-content">
+          <strong>Аккаунт не подтверждён</strong>
+          <span>Для заказа необходимо подтвердить аккаунт.</span>
+          <span>Это можно сделать через профиль.</span>
+      </div>
+
+      <button
+          type="button"
+          class="verification-banner-close"
+          onclick="hideVerificationBanner()"
+          aria-label="Закрыть"
+      >
+          ×
+      </button>
+
+  </div>
 
   <!-- Анимированный фон всего сайта -->
   <div class="abg-wr-2" aria-hidden="true">
@@ -1408,8 +1482,8 @@ function verifyVK() {
            ИНФОРМАЦИЯ ТОВАРА
            ================================================= -->
 
-      <div class="product-modal-body">
-
+     <div class="product-modal-body">
+        
 
         <p
           id="modalCategory"
@@ -1453,7 +1527,7 @@ function verifyVK() {
 
         <button
             type="button"
-            id="orderProductBtn"
+            id="orderProductBtn" 
             class="product-order-btn"
         >
             Заказать
@@ -1469,7 +1543,7 @@ function verifyVK() {
   <!-- =====================================================
        JAVASCRIPT
        ===================================================== -->
-
+ 
   <script>
 
     /* =====================================================
@@ -1967,43 +2041,68 @@ function verifyVK() {
       );
 
     }
-    function orderProduct(productId) {
+    function orderProduct(event) {
 
-        if (!productId) {
-            console.error("Не указан ID товара");
-            return;
-        }
+      // НИЧЕГО НЕ ДЕЛАЕМ, если пользователь не авторизован
+      if (!phoneVerified) {
 
-        // ==========================================
-        // СЮДА ТЫ ПОТОМ САМ ВПИШЕШЬ ПАРАМЕТРЫ
-        // ==========================================
+          if (event) {
+              event.preventDefault();
+              event.stopPropagation();
+          }
 
-        const title = document.getElementById("modalTitle").textContent;
-        const price = document.getElementById("modalPrice").textContent;
-        const colors = document.getElementById("modalColors").textContent;
-        const category = document.getElementById("modalCategory").textContent;
+          showVerificationBanner();
 
-        // ==========================================
-        // ТЕКСТ СООБЩЕНИЯ
-        // ==========================================
+          return;
+      }
 
-        const message =
-    `Здравствуйте! Я хочу заказать товар.
+      // Берём ID текущего открытого товара
+      if (!currentProduct || !currentProduct.id) {
 
-    Товар: ${title}
-    Категория: ${category}
-    Цена: ${price}
-    ${colors}`;
+              console.error("Не указан ID товара");
 
-        // ==========================================
-        // ПЕРЕХОД В ЧАТ
-        // ==========================================
+              return;
+          }
 
-        window.location.href =
-            "/chat?product_id=" +
-            encodeURIComponent(productId) +
-            "&message=" +
-            encodeURIComponent(message);
+          const productId = currentProduct.id;
+
+          // ==========================================
+          // ДАННЫЕ ТОВАРА
+          // ==========================================
+
+          const title =
+              document.getElementById("modalTitle").textContent;
+
+          const price =
+              document.getElementById("modalPrice").textContent;
+
+          const colors =
+              document.getElementById("modalColors").textContent;
+
+          const category =
+              document.getElementById("modalCategory").textContent;
+
+          // ==========================================
+          // ТЕКСТ СООБЩЕНИЯ
+          // ==========================================
+
+          const message =
+          `Здравствуйте! Я хочу заказать товар.
+
+          Товар: ${title}
+          Категория: ${category}
+          Цена: ${price}
+          ${colors}`;
+
+          // ==========================================
+          // ПЕРЕХОД В ЧАТ
+          // ==========================================
+
+          window.location.href =
+              "/chat?product_id=" +
+              encodeURIComponent(productId) +
+              "&message=" +
+              encodeURIComponent(message);
     }
 
     /* =====================================================

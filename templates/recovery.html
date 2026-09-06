@@ -1,0 +1,1554 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
+
+  <title>Восстановление пароля</title>
+
+  <link
+    rel="stylesheet"
+    href="/static/css/styles.css"
+  >
+
+  <style>
+
+    body {
+      background-color: #0a0a0a;
+      color: #ffffff;
+      font-family: -apple-system, sans-serif;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .panel {
+      max-width: 600px !important;
+      width: 100%;
+
+      padding: 42px 48px !important;
+
+      background: #141414;
+      border-radius: 20px;
+    }
+
+
+    /* =====================================================
+       ЗАГОЛОВОК
+       ===================================================== */
+
+    h2 {
+      text-align: center;
+
+      font-size: 32px;
+      line-height: 1.15;
+
+      margin: 0 0 10px;
+    }
+
+    .subtitle {
+      max-width: 440px;
+
+      margin: 0 auto 30px;
+
+      text-align: center;
+
+      color: #888;
+
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+
+    /* =====================================================
+       ШАГИ
+       ===================================================== */
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+
+    /* =====================================================
+       LABEL
+       ===================================================== */
+
+    label {
+      display: block;
+
+      font-size: 15px;
+      line-height: 1.3;
+
+      color: #a5b4c9;
+
+      font-weight: 500;
+
+      transition: color 0.3s ease;
+    }
+
+    label:focus-within {
+      color: #ffffff;
+    }
+
+
+    /* =====================================================
+       INPUT
+       ===================================================== */
+
+    .input-wrapper {
+      position: relative;
+
+      width: 100%;
+
+      margin-top: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 50px;
+
+      box-sizing: border-box;
+
+      padding: 14px 45px 14px 16px;
+
+      background: #1c1c1c;
+
+      border: 1px solid #333;
+      border-radius: 10px;
+
+      font-size: 16px;
+      color: #fff;
+
+      outline: none;
+
+      transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+    }
+
+    .form-input:focus {
+      border-color: #ff3b30;
+      background: #222;
+      outline: none;
+    }
+
+    .form-input::placeholder {
+      color: #666;
+    }
+
+    .form-input.error {
+      border-color: #ff3b30;
+    }
+
+
+    /* =====================================================
+       CLEAR
+       ===================================================== */
+
+    .clear-btn {
+      position: absolute;
+
+      right: 12px;
+      top: 50%;
+
+      transform: translateY(-50%);
+
+      background: transparent !important;
+
+      border: none !important;
+
+      font-size: 22px !important;
+
+      color: #666 !important;
+
+      cursor: pointer;
+
+      display: none;
+
+      z-index: 10;
+
+      padding: 0 !important;
+    }
+
+    .clear-btn:hover {
+      color: #aaa !important;
+    }
+
+
+    /* =====================================================
+       CODE
+       ===================================================== */
+
+    .code-input {
+      text-align: center;
+
+      letter-spacing: 8px;
+
+      font-size: 24px;
+
+      font-weight: 600;
+
+      padding-left: 24px;
+    }
+
+
+    /* =====================================================
+       TELEGRAM INFO
+       ===================================================== */
+
+    .telegram-info {
+      display: flex;
+      align-items: flex-start;
+
+      gap: 10px;
+
+      margin: 0 0 20px;
+
+      padding: 13px 15px;
+
+      background: #1c1c1c;
+
+      border: 1px solid #292929;
+
+      border-radius: 10px;
+
+      color: #999;
+
+      font-size: 13px;
+
+      line-height: 1.5;
+    }
+
+    .telegram-icon {
+      color: #ffffff;
+
+      font-size: 18px;
+
+      line-height: 1.3;
+
+      flex-shrink: 0;
+    }
+
+
+    /* =====================================================
+       СООБЩЕНИЯ
+       ===================================================== */
+
+    .server-message {
+      display: none;
+
+      margin: 0 0 18px;
+
+      padding: 11px 14px;
+
+      border-radius: 10px;
+
+      font-size: 14px;
+
+      line-height: 1.4;
+
+      text-align: center;
+    }
+
+    .server-message.error {
+      display: block;
+
+      background: rgba(255, 59, 48, 0.08);
+
+      border: 1px solid rgba(255, 59, 48, 0.25);
+
+      color: #ff6258;
+    }
+
+    .server-message.success {
+      display: block;
+
+      background: rgba(70, 180, 100, 0.08);
+
+      border: 1px solid rgba(70, 180, 100, 0.25);
+
+      color: #7bdc99;
+    }
+
+
+    /* =====================================================
+       CTA
+       ===================================================== */
+
+    .cta {
+      display: block;
+
+      width: 100%;
+
+      min-height: 52px;
+
+      padding: 15px 16px;
+
+      margin: 0;
+
+      border-radius: 10px;
+
+      background: #ff3b30;
+
+      border: none;
+
+      color: white;
+
+      font-size: 18px;
+      font-weight: 500;
+
+      line-height: 1.2;
+
+      cursor: pointer;
+
+      transition:
+        opacity 0.2s ease,
+        transform 0.15s ease;
+    }
+
+    .cta:hover {
+      opacity: 0.9;
+    }
+
+    .cta:active {
+      transform: scale(0.99);
+    }
+
+    .cta:disabled {
+      opacity: 0.5;
+
+      cursor: not-allowed;
+    }
+
+
+    /* =====================================================
+       SECONDARY
+       ===================================================== */
+
+    .secondary-btn {
+      width: 100%;
+
+      margin-top: 8px;
+
+      padding: 12px;
+
+      background: transparent;
+
+      border: none;
+
+      color: #777;
+
+      font-size: 14px;
+
+      cursor: pointer;
+    }
+
+    .secondary-btn:hover {
+      color: #aaa;
+    }
+
+
+    /* =====================================================
+       BACK LINK
+       ===================================================== */
+
+    .back-link {
+      display: block;
+
+      margin-top: 20px;
+
+      text-align: center;
+
+      color: #888;
+
+      text-decoration: none;
+
+      font-size: 14px;
+    }
+
+    .back-link:hover {
+      color: #fff;
+    }
+
+
+    /* =====================================================
+       LOADING
+       ===================================================== */
+
+    .loading {
+      display: none;
+
+      align-items: center;
+      justify-content: center;
+
+      gap: 5px;
+    }
+
+    .loading.active {
+      display: flex;
+    }
+
+    .loading-dot {
+      width: 5px;
+      height: 5px;
+
+      background: currentColor;
+
+      border-radius: 50%;
+
+      animation: loading 0.8s infinite alternate;
+    }
+
+    .loading-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loading-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes loading {
+      from {
+        opacity: 0.25;
+        transform: translateY(0);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(-3px);
+      }
+    }
+
+
+    /* =====================================================
+       PASSWORD
+       ===================================================== */
+
+    #step-password label + label {
+      margin-top: 18px;
+    }
+
+    .password-hint {
+      margin-top: 7px;
+
+      color: #666;
+
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    #step-password .cta {
+      margin-top: 22px;
+    }
+
+
+    /* =====================================================
+       SUCCESS
+       ===================================================== */
+
+    .success {
+      text-align: center;
+    }
+
+    .success-icon {
+      width: 64px;
+      height: 64px;
+
+      margin: 0 auto 18px;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+
+      background: rgba(70, 180, 100, 0.08);
+
+      border: 1px solid rgba(70, 180, 100, 0.25);
+
+      color: #7bdc99;
+
+      font-size: 30px;
+    }
+
+
+    /* =====================================================
+       MOBILE
+       ===================================================== */
+
+    @media (max-width: 600px) {
+
+      body {
+        padding: 12px 0;
+      }
+
+      .panel {
+        width: calc(100% - 24px);
+
+        padding: 32px 22px !important;
+
+        border-radius: 16px;
+      }
+
+      h2 {
+        font-size: 27px;
+
+        margin-bottom: 9px;
+      }
+
+      .subtitle {
+        margin-bottom: 26px;
+      }
+
+    }
+
+  </style>
+</head>
+
+
+<body>
+
+<main class="panel">
+
+
+  <!-- =====================================================
+       ШАГ 1 — ТЕЛЕФОН
+       ===================================================== -->
+
+  <section
+    class="step active"
+    id="step-phone"
+  >
+
+    <h2>
+      Восстановление
+    </h2>
+
+    <div class="subtitle">
+      Введите номер телефона,
+      привязанный к вашему аккаунту.
+    </div>
+
+
+    <div
+      id="phone-message"
+      class="server-message"
+    ></div>
+
+
+    <label>
+
+      Телефон
+
+      <div class="input-wrapper">
+
+        <input
+          id="phone-input"
+          name="phone"
+          type="tel"
+          class="form-input"
+          placeholder="+7 (900) 123-45-67"
+          autocomplete="tel"
+        >
+
+        <button
+          type="button"
+          class="clear-btn"
+          onclick="clearInput(this)"
+        >
+          ×
+        </button>
+
+      </div>
+
+    </label>
+
+
+    <button
+      type="button"
+      class="cta"
+      id="send-code-button"
+      onclick="sendResetCode()"
+      style="margin-top: 22px;"
+    >
+
+      <span class="button-text">
+        Получить код
+      </span>
+
+      <span
+        class="loading"
+        id="send-loading"
+      >
+
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+
+      </span>
+
+    </button>
+
+
+    <a
+      href="/login"
+      class="back-link"
+    >
+      ← Вернуться ко входу
+    </a>
+
+  </section>
+
+
+
+  <!-- =====================================================
+       ШАГ 2 — КОД
+       ===================================================== -->
+
+  <section
+    class="step"
+    id="step-code"
+  >
+
+    <h2>
+      Код подтверждения
+    </h2>
+
+    <div class="subtitle">
+      Код восстановления отправлен
+      в Telegram на привязанный аккаунт.
+    </div>
+
+
+    <div class="telegram-info">
+
+      <div class="telegram-icon">
+        ✈
+      </div>
+
+      <div>
+        Проверьте сообщения от бота
+        <b>Теннисная Лавка</b>.
+        Код действует 10 минут.
+      </div>
+
+    </div>
+
+
+    <div
+      id="code-message"
+      class="server-message"
+    ></div>
+
+
+    <label>
+
+      Код из Telegram
+
+      <div class="input-wrapper">
+
+        <input
+          id="code-input"
+          type="text"
+          class="form-input code-input"
+          placeholder="000000"
+          inputmode="numeric"
+          maxlength="6"
+          autocomplete="one-time-code"
+        >
+
+      </div>
+
+    </label>
+
+
+    <button
+      type="button"
+      class="cta"
+      id="verify-code-button"
+      onclick="verifyResetCode()"
+      style="margin-top: 22px;"
+    >
+
+      <span class="button-text">
+        Проверить код
+      </span>
+
+      <span
+        class="loading"
+        id="verify-loading"
+      >
+
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+
+      </span>
+
+    </button>
+
+
+    <button
+      type="button"
+      class="secondary-btn"
+      onclick="backToPhone()"
+    >
+      Изменить номер
+    </button>
+
+  </section>
+
+
+
+  <!-- =====================================================
+       ШАГ 3 — ПАРОЛЬ
+       ===================================================== -->
+
+  <section
+    class="step"
+    id="step-password"
+  >
+
+    <h2>
+      Новый пароль
+    </h2>
+
+    <div class="subtitle">
+      Код подтверждён.
+      Придумайте новый пароль для аккаунта.
+    </div>
+
+
+    <div
+      id="password-message"
+      class="server-message"
+    ></div>
+
+
+    <label>
+
+      Новый пароль
+
+      <div class="input-wrapper">
+
+        <input
+          id="password-input"
+          type="password"
+          class="form-input"
+          placeholder="Введите новый пароль"
+          autocomplete="new-password"
+        >
+
+        <button
+          type="button"
+          class="clear-btn"
+          onclick="clearInput(this)"
+        >
+          ×
+        </button>
+
+      </div>
+
+    </label>
+
+
+    <label>
+
+      Повторите пароль
+
+      <div class="input-wrapper">
+
+        <input
+          id="password-confirm-input"
+          type="password"
+          class="form-input"
+          placeholder="Повторите новый пароль"
+          autocomplete="new-password"
+        >
+
+        <button
+          type="button"
+          class="clear-btn"
+          onclick="clearInput(this)"
+        >
+          ×
+        </button>
+
+      </div>
+
+    </label>
+
+
+    <div class="password-hint">
+      Минимум 6 символов
+    </div>
+
+
+    <button
+      type="button"
+      class="cta"
+      id="change-password-button"
+      onclick="changePassword()"
+    >
+
+      <span class="button-text">
+        Изменить пароль
+      </span>
+
+      <span
+        class="loading"
+        id="password-loading"
+      >
+
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+
+      </span>
+
+    </button>
+
+  </section>
+
+
+
+  <!-- =====================================================
+       ШАГ 4 — ГОТОВО
+       ===================================================== -->
+
+  <section
+    class="step"
+    id="step-success"
+  >
+
+    <div class="success">
+
+      <div class="success-icon">
+        ✓
+      </div>
+
+      <h2>
+        Пароль изменён
+      </h2>
+
+      <div class="subtitle">
+        Пароль вашего аккаунта успешно изменён.
+        Теперь можно войти с новым паролем.
+      </div>
+
+
+      <a
+        href="/login"
+        class="cta"
+        style="
+          text-decoration: none;
+          margin-top: 0;
+        "
+      >
+        Войти в аккаунт
+      </a>
+
+    </div>
+
+  </section>
+
+
+</main>
+
+
+<script>
+
+  let currentPhone = "";
+
+
+  // =========================================================
+  // ПЕРЕКЛЮЧЕНИЕ ШАГОВ
+  // =========================================================
+
+  function showStep(id) {
+
+    document
+      .querySelectorAll(".step")
+      .forEach(step => {
+        step.classList.remove("active");
+      });
+
+    document
+      .getElementById(id)
+      .classList.add("active");
+
+  }
+
+
+  // =========================================================
+  // СООБЩЕНИЯ
+  // =========================================================
+
+  function showMessage(id, text, type = "error") {
+
+    const element =
+      document.getElementById(id);
+
+    element.textContent = text;
+
+    element.className =
+      "server-message " + type;
+
+  }
+
+
+  function hideMessage(id) {
+
+    const element =
+      document.getElementById(id);
+
+    element.textContent = "";
+
+    element.className =
+      "server-message";
+
+  }
+
+
+  // =========================================================
+  // CLEAR INPUT
+  // =========================================================
+
+  function toggleClear(input) {
+
+    const button =
+      input.parentElement
+        .querySelector(".clear-btn");
+
+    if (!button) return;
+
+    button.style.display =
+      input.value.length > 0
+        ? "block"
+        : "none";
+
+  }
+
+
+  function clearInput(button) {
+
+    const input =
+      button.parentElement
+        .querySelector("input");
+
+    input.value = "";
+
+    button.style.display = "none";
+
+    input.focus();
+
+  }
+
+
+  // =========================================================
+  // LOADING
+  // =========================================================
+
+  function setLoading(
+    buttonId,
+    loadingId,
+    loading
+  ) {
+
+    const button =
+      document.getElementById(buttonId);
+
+    const text =
+      button.querySelector(".button-text");
+
+    const loader =
+      document.getElementById(loadingId);
+
+
+    button.disabled = loading;
+
+
+    if (loading) {
+
+      text.style.display = "none";
+
+      loader.classList.add("active");
+
+    } else {
+
+      text.style.display = "inline-block";
+
+      loader.classList.remove("active");
+
+    }
+
+  }
+
+
+  // =========================================================
+  // ОТПРАВИТЬ КОД
+  // =========================================================
+
+  async function sendResetCode() {
+
+    const input =
+      document.getElementById("phone-input");
+
+    const phone =
+      input.value.trim();
+
+
+    hideMessage("phone-message");
+
+
+    if (!phone) {
+
+      showMessage(
+        "phone-message",
+        "Введите номер телефона."
+      );
+
+      input.focus();
+
+      return;
+    }
+
+
+    currentPhone = phone;
+
+
+    setLoading(
+      "send-code-button",
+      "send-loading",
+      true
+    );
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/send-reset-code",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              phone: currentPhone
+            })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok || !data.success) {
+
+        showMessage(
+          "phone-message",
+          data.error ||
+          "Не удалось отправить код."
+        );
+
+        return;
+      }
+
+
+      showStep("step-code");
+
+      document
+        .getElementById("code-input")
+        .focus();
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      showMessage(
+        "phone-message",
+        "Ошибка соединения с сервером."
+      );
+
+    } finally {
+
+      setLoading(
+        "send-code-button",
+        "send-loading",
+        false
+      );
+
+    }
+
+  }
+
+
+  // =========================================================
+  // ПРОВЕРИТЬ КОД
+  // =========================================================
+
+  async function verifyResetCode() {
+
+    const input =
+      document.getElementById("code-input");
+
+    const code =
+      input.value.trim();
+
+
+    hideMessage("code-message");
+
+
+    if (!code) {
+
+      showMessage(
+        "code-message",
+        "Введите код из Telegram."
+      );
+
+      input.focus();
+
+      return;
+    }
+
+
+    if (!/^\d{6}$/.test(code)) {
+
+      showMessage(
+        "code-message",
+        "Код должен состоять из 6 цифр."
+      );
+
+      input.focus();
+
+      return;
+    }
+
+
+    setLoading(
+      "verify-code-button",
+      "verify-loading",
+      true
+    );
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/verify-reset-code",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              phone: currentPhone,
+              code: code
+            })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok || !data.success) {
+
+        showMessage(
+          "code-message",
+          data.error ||
+          "Неверный код."
+        );
+
+        return;
+      }
+
+
+      showStep("step-password");
+
+      document
+        .getElementById("password-input")
+        .focus();
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      showMessage(
+        "code-message",
+        "Ошибка соединения с сервером."
+      );
+
+    } finally {
+
+      setLoading(
+        "verify-code-button",
+        "verify-loading",
+        false
+      );
+
+    }
+
+  }
+
+
+  // =========================================================
+  // ИЗМЕНИТЬ ПАРОЛЬ
+  // =========================================================
+
+  async function changePassword() {
+
+    const password =
+      document
+        .getElementById("password-input")
+        .value;
+
+    const passwordConfirm =
+      document
+        .getElementById("password-confirm-input")
+        .value;
+
+
+    hideMessage("password-message");
+
+
+    if (!password) {
+
+      showMessage(
+        "password-message",
+        "Введите новый пароль."
+      );
+
+      return;
+    }
+
+
+    if (password.length < 6) {
+
+      showMessage(
+        "password-message",
+        "Пароль должен содержать минимум 6 символов."
+      );
+
+      return;
+    }
+
+
+    if (!passwordConfirm) {
+
+      showMessage(
+        "password-message",
+        "Повторите пароль."
+      );
+
+      return;
+    }
+
+
+    if (password !== passwordConfirm) {
+
+      showMessage(
+        "password-message",
+        "Пароли не совпадают."
+      );
+
+      return;
+    }
+
+
+    setLoading(
+      "change-password-button",
+      "password-loading",
+      true
+    );
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/change-reset-password",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+
+              password: password,
+
+              password_confirm:
+                passwordConfirm
+
+            })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok || !data.success) {
+
+        showMessage(
+          "password-message",
+          data.error ||
+          "Не удалось изменить пароль."
+        );
+
+        return;
+      }
+
+
+      showStep("step-success");
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      showMessage(
+        "password-message",
+        "Ошибка соединения с сервером."
+      );
+
+    } finally {
+
+      setLoading(
+        "change-password-button",
+        "password-loading",
+        false
+      );
+
+    }
+
+  }
+
+
+  // =========================================================
+  // НАЗАД К ТЕЛЕФОНУ
+  // =========================================================
+
+  function backToPhone() {
+
+    document
+      .getElementById("code-input")
+      .value = "";
+
+    hideMessage("code-message");
+
+    showStep("step-phone");
+
+    document
+      .getElementById("phone-input")
+      .focus();
+
+  }
+
+
+  // =========================================================
+  // ФОРМАТИРОВАНИЕ ТЕЛЕФОНА
+  // =========================================================
+
+  document
+    .getElementById("phone-input")
+    .addEventListener(
+      "input",
+      function(e) {
+
+        let value =
+          e.target.value
+            .replace(/\D/g, "");
+
+
+        if (!value) {
+
+          e.target.value = "";
+
+          toggleClear(e.target);
+
+          return;
+        }
+
+
+        if (value[0] === "8") {
+
+          value =
+            "7" +
+            value.substring(1);
+
+        }
+
+
+        if (value[0] !== "7") {
+
+          value =
+            "7" + value;
+
+        }
+
+
+        value =
+          value.substring(0, 11);
+
+
+        let x =
+          value.match(
+            /(\d{1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/
+          );
+
+
+        e.target.value =
+          "+7" +
+
+          (x[2]
+            ? " (" + x[2]
+            : "") +
+
+          (x[3]
+            ? ") " + x[3]
+            : "") +
+
+          (x[4]
+            ? "-" + x[4]
+            : "") +
+
+          (x[5]
+            ? "-" + x[5]
+            : "");
+
+
+        toggleClear(e.target);
+
+      }
+    );
+
+
+  // =========================================================
+  // CLEAR КНОПКИ
+  // =========================================================
+
+  document
+    .querySelectorAll(".form-input")
+    .forEach(input => {
+
+      input.addEventListener(
+        "input",
+        function() {
+          toggleClear(this);
+        }
+      );
+
+    });
+
+
+  // =========================================================
+  // КОД — ТОЛЬКО ЦИФРЫ
+  // =========================================================
+
+  document
+    .getElementById("code-input")
+    .addEventListener(
+      "input",
+      function() {
+
+        this.value =
+          this.value
+            .replace(/\D/g, "")
+            .slice(0, 6);
+
+      }
+    );
+
+
+  // =========================================================
+  // ENTER
+  // =========================================================
+
+  document
+    .getElementById("phone-input")
+    .addEventListener(
+      "keydown",
+      function(e) {
+
+        if (e.key === "Enter") {
+
+          e.preventDefault();
+
+          sendResetCode();
+
+        }
+
+      }
+    );
+
+
+  document
+    .getElementById("code-input")
+    .addEventListener(
+      "keydown",
+      function(e) {
+
+        if (e.key === "Enter") {
+
+          e.preventDefault();
+
+          verifyResetCode();
+
+        }
+
+      }
+    );
+
+
+  document
+    .getElementById("password-confirm-input")
+    .addEventListener(
+      "keydown",
+      function(e) {
+
+        if (e.key === "Enter") {
+
+          e.preventDefault();
+
+          changePassword();
+
+        }
+
+      }
+    );
+
+</script>
+
+</body>
+</html>

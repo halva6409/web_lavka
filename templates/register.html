@@ -67,7 +67,15 @@
       <div style="display: flex; gap: 16px;">
         <label style="flex: 1;">Телефон
           <div class="input-wrapper">
-            <input name="phone" type="tel" id="phone-input" placeholder="+7 (999) 999-99-99" class="form-input" oninput="toggleClear(this); hideError(this)" />
+            <input
+              name="phone"
+              type="tel"
+              id="phone-input"
+              placeholder="+7 (999) 999-99-99"
+              class="form-input"
+              autocomplete="tel"
+              oninput="toggleClear(this); hideError(this)"
+            />
             <button type="button" class="clear-btn" onclick="clearInput(this)">×</button>
             <div class="error-message">Введите телефон</div>
           </div>
@@ -98,7 +106,15 @@
 
   <script>
     function toggleClear(input) { input.nextElementSibling.style.display = input.value.length > 0 ? 'block' : 'none'; }
-    function clearInput(btn) { const input = btn.previousElementSibling; input.value = ''; btn.style.display = 'none'; hideError(input); }
+    function clearInput(btn) {
+      const input = btn.previousElementSibling;
+
+      input.value = '';
+
+      btn.style.display = 'none';
+      hideError(input);
+      input.focus();
+    }
     function hideError(input) { input.classList.remove('error'); input.parentElement.querySelector('.error-message').style.display = 'none'; }
 
     function togglePassword() {
@@ -124,12 +140,60 @@
       return isValid;
     }
 
-    document.getElementById('phone-input').addEventListener('input', function (e) {
-      let x = e.target.value.replace(/\D/g, '').match(/(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/);
-      if (!x[1]) { e.target.value = ''; toggleClear(e.target); return; }
-      if (x[1] !== '7' && x[1] !== '8') x[1] = '7';
-      e.target.value = '+7' + (x[2] ? ' (' + x[2] : '') + (x[3] ? ') ' + x[3] : '') + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '');
-      toggleClear(e.target);
+    const phoneInput = document.getElementById('phone-input');
+
+    phoneInput.addEventListener('input', function () {
+
+      let value = this.value.replace(/\D/g, '');
+
+      // Если пользователь начал вводить с 8
+      if (value.startsWith('8')) {
+        value = '7' + value.substring(1);
+      }
+
+      // Если начал вводить с любой другой цифры —
+      // автоматически добавляем 7
+      if (value.length > 0 && !value.startsWith('7')) {
+        value = '7' + value;
+      }
+
+      // Максимум 11 цифр: 7 + 10 цифр номера
+      value = value.substring(0, 11);
+
+      // Поле очищено
+      if (!value) {
+        this.value = '';
+        toggleClear(this);
+        return;
+      }
+
+      // Только +7
+      if (value === '7') {
+        this.value = '+7 ';
+        toggleClear(this);
+        return;
+      }
+
+      const x = value.match(
+        /(\d{1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/
+      );
+
+      this.value =
+        '+7' +
+        (x[2] ? ' (' + x[2] : '') +
+        (x[3] ? ') ' + x[3] : '') +
+        (x[4] ? '-' + x[4] : '') +
+        (x[5] ? '-' + x[5] : '');
+
+      toggleClear(this);
+
+      // Курсор всегда в конце
+      setTimeout(() => {
+        this.setSelectionRange(
+          this.value.length,
+          this.value.length
+        );
+      }, 0);
     });
   </script>
 </body>
