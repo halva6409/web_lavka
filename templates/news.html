@@ -12,17 +12,17 @@
 
     <title>Новости</title>
 
-
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='css/styles.css') }}"
     >
 
-
     <style>
+
         body {
             background: #171c2d;
         }
+
         /* =========================================================
            СТРАНИЦА НОВОСТЕЙ
            ========================================================= */
@@ -141,6 +141,8 @@
            ========================================================= */
 
         .news-card-image-wrap {
+
+            position: relative;
 
             width: 100%;
 
@@ -404,7 +406,7 @@
 
             right: 12px;
 
-            z-index: 10;
+            z-index: 100;
 
             width: 40px;
 
@@ -418,12 +420,6 @@
 
             background:
                 rgba(0, 0, 0, 0.72);
-
-            color: #ffffff;
-
-            font-size: 27px;
-
-            line-height: 1;
 
             cursor: pointer;
 
@@ -439,6 +435,39 @@
         }
 
 
+        /* =========================================================
+           КРЕСТИК — ТАКАЯ ЖЕ КОНСТРУКЦИЯ,
+           КАК В РАБОЧЕМ PRODUCT MODAL
+           ========================================================= */
+
+        .news-modal-close span {
+
+            position: absolute;
+
+            width: 20px;
+
+            height: 2px;
+
+            background: #ffffff;
+
+            border-radius: 2px;
+
+            display: block;
+        }
+
+
+        .news-modal-close span:nth-child(1) {
+
+            transform: rotate(45deg);
+        }
+
+
+        .news-modal-close span:nth-child(2) {
+
+            transform: rotate(-45deg);
+        }
+
+
         .news-modal-close:hover {
 
             background: #c92d24;
@@ -448,14 +477,72 @@
 
 
         /* =========================================================
-           БОЛЬШАЯ КАРТИНКА
+           ГАЛЕРЕЯ
            ========================================================= */
 
-        .news-modal-image-wrap {
+        .news-modal-gallery {
+
+            position: relative;
 
             width: 100%;
 
-            max-height: 550px;
+            height: 550px;
+
+            overflow: hidden;
+
+            background: #080808;
+        }
+
+
+        /* =========================================================
+           ЛЕНТА ФОТОГРАФИЙ
+           ========================================================= */
+
+        .news-gallery-track {
+
+            width: 100%;
+
+            height: 100%;
+
+            display: flex;
+
+            overflow-x: auto;
+
+            overflow-y: hidden;
+
+            scroll-snap-type: x mandatory;
+
+            scroll-behavior: smooth;
+
+            scrollbar-width: none;
+
+            -webkit-overflow-scrolling: touch;
+
+            overscroll-behavior-x: contain;
+        }
+
+
+        .news-gallery-track::-webkit-scrollbar {
+
+            display: none;
+        }
+
+
+        /* =========================================================
+           СЛАЙД
+           ========================================================= */
+
+        .news-gallery-slide {
+
+            position: relative;
+
+            flex: 0 0 100%;
+
+            width: 100%;
+
+            height: 100%;
+
+            scroll-snap-align: start;
 
             display: flex;
 
@@ -464,20 +551,139 @@
             justify-content: center;
 
             overflow: hidden;
-
-            background: #080808;
         }
 
 
-        .news-modal-image {
+        .news-gallery-slide img {
 
             width: 100%;
 
-            max-height: 550px;
+            height: 100%;
 
             display: block;
 
             object-fit: contain;
+
+            user-select: none;
+
+            -webkit-user-select: none;
+
+            -webkit-user-drag: none;
+
+            pointer-events: none;
+        }
+
+
+        /* =========================================================
+           ЗОНЫ ПЕРЕКЛЮЧЕНИЯ
+           ========================================================= */
+
+        .news-gallery-zone {
+
+            position: absolute;
+
+            top: 0;
+
+            bottom: 0;
+
+            width: 50%;
+
+            z-index: 5;
+
+            cursor: pointer;
+
+            -webkit-tap-highlight-color:
+                transparent;
+        }
+
+
+        .news-gallery-zone-left {
+
+            left: 0;
+        }
+
+
+        .news-gallery-zone-right {
+
+            right: 0;
+        }
+
+
+        /* =========================================================
+           ТОЧКИ
+           ========================================================= */
+
+        .news-gallery-dots {
+
+            position: absolute;
+
+            left: 50%;
+
+            bottom: 14px;
+
+            z-index: 10;
+
+            transform: translateX(-50%);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 7px;
+
+            padding: 7px 10px;
+
+            border-radius: 20px;
+
+            background:
+                rgba(0, 0, 0, 0.55);
+
+            backdrop-filter: blur(8px);
+
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+
+        .news-gallery-dot {
+
+            width: 7px;
+
+            height: 7px;
+
+            padding: 0;
+
+            border: none;
+
+            border-radius: 50%;
+
+            background: rgba(
+                255,
+                255,
+                255,
+                0.45
+            );
+
+            cursor: pointer;
+
+            transition:
+                transform 0.2s ease,
+                background 0.2s ease;
+        }
+
+
+        .news-gallery-dot.active {
+
+            background: #ffffff;
+
+            transform: scale(1.25);
+        }
+
+
+        .news-gallery-dots.single {
+
+            display: none;
         }
 
 
@@ -683,16 +889,9 @@
             }
 
 
-            .news-modal-image-wrap {
+            .news-modal-gallery {
 
-                max-height:
-                    350px;
-            }
-
-
-            .news-modal-image {
-
-                max-height:
+                height:
                     350px;
             }
 
@@ -728,6 +927,18 @@
 
                 line-height:
                     1.6;
+            }
+
+
+            .news-modal-close {
+
+                top: 9px;
+
+                right: 9px;
+
+                width: 38px;
+
+                height: 38px;
             }
 
         }
@@ -767,6 +978,13 @@
 
                 font-size:
                     12px;
+            }
+
+
+            .news-modal-gallery {
+
+                height:
+                    300px;
             }
 
 
@@ -820,18 +1038,12 @@
 
                         data-link="{{ news.links or '' }}"
 
-                        {% if news.images %}
-
-                            data-image="{{ url_for(
-                                'static',
-                                filename=news.images[0].image_url
-                            ) }}"
-
-                        {% else %}
-
-                            data-image=""
-
-                        {% endif %}
+                        data-images='[
+                            {% for image in news.images %}
+                                "{{ url_for("static", filename=image.image_url) | replace('"', '\\"') }}"
+                                {% if not loop.last %},{% endif %}
+                            {% endfor %}
+                        ]'
                     >
 
 
@@ -890,8 +1102,6 @@
                             </p>
 
 
-                            <!-- ДАТА ВНИЗУ -->
-
                             {% if news.date %}
 
                                 <p class="news-card-date">
@@ -938,7 +1148,7 @@
 
 
     <!-- =========================================================
-         МОДАЛЬНОЕ ОКНО
+         МОДАЛЬНОЕ ОКНО НОВОСТИ
          ========================================================= -->
 
     <div
@@ -947,10 +1157,15 @@
     >
 
 
-        <div class="news-modal-window">
+        <div
+            class="news-modal-window"
+            id="newsModalWindow"
+        >
 
 
-            <!-- КНОПКА ЗАКРЫТИЯ -->
+            <!-- =================================================
+                 КНОПКА ЗАКРЫТИЯ
+                 ================================================= -->
 
             <button
                 type="button"
@@ -959,27 +1174,55 @@
                 aria-label="Закрыть"
             >
 
-                ×
+                <span></span>
+                <span></span>
 
             </button>
 
 
             <!-- =================================================
-                 БОЛЬШОЕ ИЗОБРАЖЕНИЕ
+                 ГАЛЕРЕЯ
                  ================================================= -->
 
             <div
-                class="news-modal-image-wrap"
-                id="newsModalImageWrap"
-                style="display: none;"
+                class="news-modal-gallery"
+                id="newsModalGallery"
             >
 
-                <img
-                    class="news-modal-image"
-                    id="newsModalImage"
-                    src=""
-                    alt=""
-                >
+
+                <!-- ЛЕНТА -->
+
+                <div
+                    class="news-gallery-track"
+                    id="newsGalleryTrack"
+                ></div>
+
+
+                <!-- ЛЕВАЯ ЗОНА -->
+
+                <div
+                    class="news-gallery-zone news-gallery-zone-left"
+                    id="newsGalleryLeft"
+                    aria-label="Предыдущая фотография"
+                ></div>
+
+
+                <!-- ПРАВАЯ ЗОНА -->
+
+                <div
+                    class="news-gallery-zone news-gallery-zone-right"
+                    id="newsGalleryRight"
+                    aria-label="Следующая фотография"
+                ></div>
+
+
+                <!-- ТОЧКИ -->
+
+                <div
+                    class="news-gallery-dots"
+                    id="newsGalleryDots"
+                ></div>
+
 
             </div>
 
@@ -1036,10 +1279,14 @@
     </div>
 
 
+    <!-- =========================================================
+         JAVASCRIPT
+         ========================================================= -->
+
     <script>
 
         /* =========================================================
-           ЭЛЕМЕНТЫ МОДАЛЬНОГО ОКНА
+           DOM
            ========================================================= */
 
         const modal =
@@ -1054,15 +1301,27 @@
             );
 
 
-        const modalImageWrap =
+        const galleryTrack =
             document.getElementById(
-                "newsModalImageWrap"
+                "newsGalleryTrack"
             );
 
 
-        const modalImage =
+        const galleryLeft =
             document.getElementById(
-                "newsModalImage"
+                "newsGalleryLeft"
+            );
+
+
+        const galleryRight =
+            document.getElementById(
+                "newsGalleryRight"
+            );
+
+
+        const galleryDots =
+            document.getElementById(
+                "newsGalleryDots"
             );
 
 
@@ -1091,147 +1350,543 @@
 
 
         /* =========================================================
+           СОСТОЯНИЕ ГАЛЕРЕИ
+           ========================================================= */
+
+        let currentImages = [];
+
+        let currentImageIndex = 0;
+
+
+        /* =========================================================
+           СОЗДАНИЕ ГАЛЕРЕИ
+           ========================================================= */
+
+        function buildNewsGallery() {
+
+            galleryTrack.innerHTML = "";
+
+            galleryDots.innerHTML = "";
+
+
+            if (
+                !currentImages ||
+                currentImages.length === 0
+            ) {
+
+                galleryDots.classList.add("single");
+
+                return;
+
+            }
+
+
+            /* =====================================================
+               СОЗДАЁМ СЛАЙДЫ
+               ===================================================== */
+
+            currentImages.forEach(
+                function(imageUrl, index) {
+
+                    const slide =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    slide.className =
+                        "news-gallery-slide";
+
+
+                    const image =
+                        document.createElement(
+                            "img"
+                        );
+
+
+                    image.src =
+                        imageUrl;
+
+
+                    image.alt =
+                        modalTitle.textContent;
+
+
+                    image.draggable =
+                        false;
+
+
+                    slide.appendChild(
+                        image
+                    );
+
+
+                    galleryTrack.appendChild(
+                        slide
+                    );
+
+
+                    /* =============================================
+                       ТОЧКА
+                       ============================================= */
+
+                    const dot =
+                        document.createElement(
+                            "button"
+                        );
+
+
+                    dot.type =
+                        "button";
+
+
+                    dot.className =
+                        "news-gallery-dot";
+
+
+                    dot.setAttribute(
+                        "aria-label",
+                        "Фотография " +
+                        (index + 1)
+                    );
+
+
+                    dot.addEventListener(
+                        "click",
+                        function(event) {
+
+                            event.stopPropagation();
+
+                            showNewsImage(
+                                index
+                            );
+
+                        }
+                    );
+
+
+                    galleryDots.appendChild(
+                        dot
+                    );
+
+                }
+            );
+
+
+            if (
+                currentImages.length <= 1
+            ) {
+
+                galleryDots.classList.add(
+                    "single"
+                );
+
+            } else {
+
+                galleryDots.classList.remove(
+                    "single"
+                );
+
+            }
+
+
+            updateNewsDots();
+
+        }
+
+
+        /* =========================================================
+           ПОКАЗ ФОТОГРАФИИ
+           ========================================================= */
+
+        function showNewsImage(index) {
+
+            if (
+                !currentImages ||
+                currentImages.length === 0
+            ) {
+
+                return;
+
+            }
+
+
+            /* =====================================================
+               ЗАЦИКЛИВАНИЕ
+               ===================================================== */
+
+            if (
+                index >= currentImages.length
+            ) {
+
+                index = 0;
+
+            }
+
+
+            if (
+                index < 0
+            ) {
+
+                index =
+                    currentImages.length - 1;
+
+            }
+
+
+            currentImageIndex =
+                index;
+
+
+            /* =====================================================
+               РАЗМЕР ОДНОГО СЛАЙДА
+               ===================================================== */
+
+            const slideWidth =
+                galleryTrack.clientWidth;
+
+
+            if (
+                slideWidth <= 0
+            ) {
+
+                return;
+
+            }
+
+
+            /* =====================================================
+               ПРОКРУТКА
+               ===================================================== */
+
+            galleryTrack.scrollTo({
+
+                left:
+                    slideWidth *
+                    currentImageIndex,
+
+                behavior:
+                    "smooth"
+
+            });
+
+
+            updateNewsDots();
+
+        }
+
+
+        /* =========================================================
+           ТОЧКИ
+           ========================================================= */
+
+        function updateNewsDots() {
+
+            const dots =
+                galleryDots.querySelectorAll(
+                    ".news-gallery-dot"
+                );
+
+
+            dots.forEach(
+                function(dot, index) {
+
+                    if (
+                        index ===
+                        currentImageIndex
+                    ) {
+
+                        dot.classList.add(
+                            "active"
+                        );
+
+                    } else {
+
+                        dot.classList.remove(
+                            "active"
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =========================================================
            ОТКРЫТИЕ НОВОСТИ
            ========================================================= */
 
         document
             .querySelectorAll(".news-card")
-            .forEach(card => {
+            .forEach(
+                function(card) {
+
+                    card.addEventListener(
+                        "click",
+                        function() {
 
 
-                card.addEventListener(
-                    "click",
-                    function () {
+                            /* =====================================
+                               ДАННЫЕ
+                               ===================================== */
 
-
-                        /*
-                         * Получаем данные
-                         * непосредственно
-                         * из карточки
-                         */
-
-                        const title =
-                            this.dataset.title;
-
-
-                        const text =
-                            this.dataset.text;
-
-
-                        const date =
-                            this.dataset.date;
-
-
-                        const link =
-                            this.dataset.link;
-
-
-                        const image =
-                            this.dataset.image;
-
-
-                        /*
-                         * Заголовок
-                         */
-
-                        modalTitle.textContent =
-                            title;
-
-
-                        /*
-                         * Дата
-                         */
-
-                        modalDate.textContent =
-                            date;
-
-
-                        /*
-                         * Полный текст
-                         */
-
-                        modalText.textContent =
-                            text;
-
-
-                        /*
-                         * Изображение
-                         */
-
-                        if (image) {
-
-                            modalImage.src =
-                                image;
-
-                            modalImage.alt =
-                                title;
-
-                            modalImageWrap.style.display =
-                                "flex";
-
-                        }
-
-                        else {
-
-                            modalImage.src =
+                            const title =
+                                this.dataset.title ||
                                 "";
 
-                            modalImageWrap.style.display =
-                                "none";
+
+                            const text =
+                                this.dataset.text ||
+                                "";
+
+
+                            const date =
+                                this.dataset.date ||
+                                "";
+
+
+                            const link =
+                                this.dataset.link ||
+                                "";
+
+
+                            /* =====================================
+                               ФОТОГРАФИИ
+                               ===================================== */
+
+                            let images = [];
+
+
+                            try {
+
+                                images =
+                                    JSON.parse(
+                                        this.dataset.images ||
+                                        "[]"
+                                    );
+
+                            } catch (error) {
+
+                                console.error(
+                                    "Ошибка чтения фотографий новости:",
+                                    error
+                                );
+
+                                images = [];
+
+                            }
+
+
+                            currentImages =
+                                images;
+
+
+                            currentImageIndex =
+                                0;
+
+
+                            /* =====================================
+                               ТЕКСТ
+                               ===================================== */
+
+                            modalTitle.textContent =
+                                title;
+
+
+                            modalDate.textContent =
+                                date;
+
+
+                            modalText.textContent =
+                                text;
+
+
+                            /* =====================================
+                               ССЫЛКА
+                               ===================================== */
+
+                            if (link) {
+
+                                modalLink.href =
+                                    link;
+
+                                modalLink.style.display =
+                                    "inline-block";
+
+                            } else {
+
+                                modalLink.href =
+                                    "#";
+
+                                modalLink.style.display =
+                                    "none";
+
+                            }
+
+
+                            /* =====================================
+                               ГАЛЕРЕЯ
+                               ===================================== */
+
+                            buildNewsGallery();
+
+
+                            /* =====================================
+                               ОТКРЫВАЕМ
+                               ===================================== */
+
+                            modal.classList.add(
+                                "active"
+                            );
+
+
+                            document.body.style.overflow =
+                                "hidden";
+
+
+                            /* =====================================
+                               ПОКАЗЫВАЕМ ПЕРВУЮ
+                               ===================================== */
+
+                            requestAnimationFrame(
+                                function() {
+
+                                    showNewsImage(
+                                        0
+                                    );
+
+                                }
+                            );
 
                         }
+                    );
 
-
-                        /*
-                         * Ссылка
-                         */
-
-                        if (link) {
-
-                            modalLink.href =
-                                link;
-
-                            modalLink.style.display =
-                                "inline-block";
-
-                        }
-
-                        else {
-
-                            modalLink.href =
-                                "#";
-
-                            modalLink.style.display =
-                                "none";
-
-                        }
-
-
-                        /*
-                         * Открываем окно
-                         */
-
-                        modal.classList.add(
-                            "active"
-                        );
-
-
-                        /*
-                         * Запрещаем прокрутку
-                         * основной страницы
-                         */
-
-                        document.body.style.overflow =
-                            "hidden";
-
-                    }
-                );
-
-            });
+                }
+            );
 
 
         /* =========================================================
-           ЗАКРЫТИЕ МОДАЛЬНОГО ОКНА
+           ЛЕВАЯ ПОЛОВИНА
+           ========================================================= */
+
+        galleryLeft.addEventListener(
+            "click",
+            function(event) {
+
+                event.stopPropagation();
+
+
+                if (
+                    currentImages.length <= 1
+                ) {
+
+                    return;
+
+                }
+
+
+                showNewsImage(
+                    currentImageIndex - 1
+                );
+
+            }
+        );
+
+
+        /* =========================================================
+           ПРАВАЯ ПОЛОВИНА
+           ========================================================= */
+
+        galleryRight.addEventListener(
+            "click",
+            function(event) {
+
+                event.stopPropagation();
+
+
+                if (
+                    currentImages.length <= 1
+                ) {
+
+                    return;
+
+                }
+
+
+                showNewsImage(
+                    currentImageIndex + 1
+                );
+
+            }
+        );
+
+
+        /* =========================================================
+           СВАЙП / РУЧНОЙ СКРОЛЛ
+           ========================================================= */
+
+        galleryTrack.addEventListener(
+            "scroll",
+            function() {
+
+                if (
+                    !currentImages.length
+                ) {
+
+                    return;
+
+                }
+
+
+                const slideWidth =
+                    galleryTrack.clientWidth;
+
+
+                if (
+                    slideWidth <= 0
+                ) {
+
+                    return;
+
+                }
+
+
+                const index =
+                    Math.round(
+                        galleryTrack.scrollLeft /
+                        slideWidth
+                    );
+
+
+                if (
+                    index !== currentImageIndex
+                ) {
+
+                    currentImageIndex =
+                        Math.max(
+                            0,
+                            Math.min(
+                                index,
+                                currentImages.length - 1
+                            )
+                        );
+
+
+                    updateNewsDots();
+
+                }
+
+            },
+            {
+                passive: true
+            }
+        );
+
+
+        /* =========================================================
+           ЗАКРЫТИЕ
            ========================================================= */
 
         function closeNewsModal() {
@@ -1244,24 +1899,43 @@
             document.body.style.overflow =
                 "";
 
+
+            /* Останавливаем старую галерею */
+
+            galleryTrack.scrollLeft =
+                0;
+
+
+            currentImages = [];
+
+            currentImageIndex = 0;
+
         }
 
 
-        /* Кнопка × */
+        /* =========================================================
+           КРЕСТИК
+           ========================================================= */
 
         modalClose.addEventListener(
             "click",
-            closeNewsModal
+            function(event) {
+
+                event.stopPropagation();
+
+                closeNewsModal();
+
+            }
         );
 
 
         /* =========================================================
-           ЗАКРЫТИЕ КЛИКОМ ПО ФОНУ
+           КЛИК ПО ФОНУ
            ========================================================= */
 
         modal.addEventListener(
             "click",
-            function (event) {
+            function(event) {
 
                 if (
                     event.target === modal
@@ -1276,32 +1950,164 @@
 
 
         /* =========================================================
-           ЗАКРЫТИЕ ESC
+           ESC + СТРЕЛКИ
            ========================================================= */
 
         document.addEventListener(
             "keydown",
-            function (event) {
+            function(event) {
 
                 if (
-                    event.key === "Escape" &&
-                    modal.classList.contains("active")
+                    !modal.classList.contains(
+                        "active"
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
+                /* ESC */
+
+                if (
+                    event.key === "Escape"
                 ) {
 
                     closeNewsModal();
+
+                    return;
+
+                }
+
+
+                /* ВПРАВО */
+
+                if (
+                    event.key === "ArrowRight"
+                ) {
+
+                    event.preventDefault();
+
+
+                    if (
+                        currentImages.length > 1
+                    ) {
+
+                        showNewsImage(
+                            currentImageIndex + 1
+                        );
+
+                    }
+
+                    return;
+
+                }
+
+
+                /* ВЛЕВО */
+
+                if (
+                    event.key === "ArrowLeft"
+                ) {
+
+                    event.preventDefault();
+
+
+                    if (
+                        currentImages.length > 1
+                    ) {
+
+                        showNewsImage(
+                            currentImageIndex - 1
+                        );
+
+                    }
 
                 }
 
             }
         );
 
+
+        /* =========================================================
+           RESIZE
+           ========================================================= */
+
+        window.addEventListener(
+            "resize",
+            function() {
+
+                if (
+                    !modal.classList.contains(
+                        "active"
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
+                const slideWidth =
+                    galleryTrack.clientWidth;
+
+
+                if (
+                    slideWidth <= 0
+                ) {
+
+                    return;
+
+                }
+
+
+                galleryTrack.scrollLeft =
+                    slideWidth *
+                    currentImageIndex;
+
+            }
+        );
+
+
+        /* =========================================================
+           ЗАПРЕТ ПЕРЕТАСКИВАНИЯ КАРТИНОК
+           ========================================================= */
+
+        document
+            .querySelectorAll(
+                ".news-card-image"
+            )
+            .forEach(
+                function(image) {
+
+                    image.addEventListener(
+                        "dragstart",
+                        function(event) {
+
+                            event.preventDefault();
+
+                        }
+                    );
+
+                }
+            );
+
     </script>
 
 
-</body>
+    <!-- =========================================================
+         НАЗАД
+         ========================================================= -->
 
-<a href="/" class="back-home">
-    ← На главную
-</a>
+    <a
+        href="/"
+        class="back-home"
+    >
+        ← На главную
+    </a>
+
+
+</body>
 
 </html>

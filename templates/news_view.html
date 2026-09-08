@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+<title>Новости — Админ-панель</title>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    body {
+        margin: 0;
+        padding: 30px;
+        background: #0f0f0f;
+        color: white;
+        font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            Roboto,
+            sans-serif;
+    }
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+    h1 {
+        margin-bottom: 30px;
+    }
+    h2 {
+        margin-top: 0;
+    }
+    /* =========================================================
+       ПАНЕЛЬ
+       ========================================================= */
+    .panel {
+        background: #181818;
+        border: 1px solid #292929;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    /* =========================================================
+       КНОПКИ
+       ========================================================= */
+    button,
+    .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 8px;
+        background: #ff3b30;
+        color: white;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    button:hover,
+    .button:hover {
+        filter: brightness(1.1);
+    }
+    /* =========================================================
+       КНОПКИ АДМИН-ПАНЕЛИ
+       ========================================================= */
+    .change-btns {
+        display: grid;
+        grid-template-columns:
+            repeat(4, 1fr);
+        gap: 12px;
+        margin: 20px 0;
+        width: 100%;
+    }
+    .change {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-width: 0;
+        height: 40px;
+        padding: 7px 20px;
+        margin: 0;
+        border: 1px solid #333;
+        border-radius: 13px;
+        background: #263967;
+        color: #ffffff;
+        cursor: pointer;
+        font-family:
+            "Fira Sans Extra Condensed",
+            sans-serif;
+        font-size: 17px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        text-decoration: none;
+        box-sizing: border-box;
+        transition:
+            transform 0.2s ease,
+            filter 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+    .change:hover {
+        filter: brightness(1.12);
+        transform: translateY(-1px);
+    }
+    .change:active {
+        transform: scale(0.98);
+    }
+    /* =========================================================
+       НОВОСТИ
+       ========================================================= */
+    .news-list {
+        display: grid;
+        gap: 15px;
+    }
+    .news {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        width: 100%;
+        min-height: 150px;
+        padding: 18px;
+        background: #111;
+        border: 1px solid #292929;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    /* =========================================================
+       ИНФОРМАЦИЯ О НОВОСТИ
+       ========================================================= */
+    .news-info {
+        min-width: 0;
+        flex: 1;
+        overflow: hidden;
+    }
+    .news-title {
+        margin: 0 0 6px;
+        font-size: 18px;
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .news-text {
+        margin: 0 0 8px;
+        color: #888;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .news-status {
+        margin-top: 6px;
+        font-size: 13px;
+        color: #888;
+    }
+    .news-images {
+        margin-top: 6px;
+        font-size: 13px;
+        color: #888;
+    }
+    /* =========================================================
+       ДЕЙСТВИЯ
+       ========================================================= */
+    .news-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    .edit-button {
+        height: 38px;
+        font-size: 14px;
+        background: #333;
+    }
+    .delete-button {
+        height: 38px;
+        font-size: 14px;
+        background: #ff3b30;
+    }
+    .empty {
+        color: #888;
+    }
+    /* =========================================================
+       TOGGLE
+       ========================================================= */
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .toggle-label {
+        color: white;
+        font-size: 15px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .toggleWrapper {
+        position: relative;
+        width: 50px;
+        height: 30px;
+        flex-shrink: 0;
+    }
+    .toggleWrapper .mobileToggle {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+    }
+    .toggleWrapper .mobileToggle + label {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 50px;
+        height: 30px;
+        border-radius: 30px;
+        background: #e5e5ea;
+        border: 1px solid #d1d1d6;
+        cursor: pointer;
+        transition:
+            background 0.2s ease;
+    }
+    .toggleWrapper .mobileToggle + label::after {
+        content: "";
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        top: 1px;
+        left: 1px;
+        border-radius: 50%;
+        background: white;
+        box-shadow:
+            0 2px 5px rgba(0, 0, 0, 0.25);
+        transition:
+            transform 0.25s cubic-bezier(.54, 1.60, .5, 1);
+    }
+    .toggleWrapper .mobileToggle:checked + label {
+        background: #34c759;
+        border-color: #34c759;
+    }
+    .toggleWrapper .mobileToggle:checked + label::after {
+        transform: translateX(20px);
+    }
+    .toggleWrapper .mobileToggle + label:active::after {
+        transform: scale(0.92);
+    }
+    .toggleWrapper .mobileToggle:checked + label:active::after {
+        transform:
+            translateX(20px)
+            scale(0.92);
+    }
+    /* =========================================================
+       ССЫЛКА
+       ========================================================= */
+    .news-link {
+        display: inline-block;
+        max-width: 300px;
+        margin-top: 7px;
+        color: #6fa8ff;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-decoration: none;
+    }
+    .news-link:hover {
+        text-decoration: underline;
+    }
+    /* =========================================================
+       АДАПТИВ
+       ========================================================= */
+    @media (max-width: 800px) {
+        .news {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        .news-actions {
+            width: 100%;
+        }
+        .news-actions a,
+        .news-actions form,
+        .news-actions button {
+            flex: 1;
+        }
+    }
+    @media (max-width: 700px) {
+        body {
+            padding: 18px;
+        }
+        .panel {
+            padding: 18px;
+        }
+        .change-btns {
+            grid-template-columns:
+                repeat(2, 1fr);
+        }
+        .news {
+            min-height: auto;
+        }
+        .news-actions {
+            flex-wrap: wrap;
+        }
+        .toggle-row {
+            width: 100%;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+    }
+    @media (max-width: 400px) {
+        .change-btns {
+            grid-template-columns: 1fr;
+        }
+        .news-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .news-actions a,
+        .news-actions form,
+        .news-actions button {
+            width: 100%;
+        }
+        .edit-button,
+        .delete-button {
+            width: 100%;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>
+    Новости
+</h1>
+<!-- =========================================================
+     КНОПКИ АДМИН-ПАНЕЛИ
+     ========================================================= -->
+<div class="change-btns">
+    <a
+        href="{{ url_for('admin_news') }}"
+        class="change"
+    >
+        Добавить новость
+    </a>
+    <a
+        href="{{ url_for('admin') }}"
+        class="change"
+    >
+        Админ-панель
+    </a>
+    <a
+        href="{{ url_for('admin_chats') }}"
+        class="change"
+    >
+        Чаты
+    </a>
+    <a
+        href="{{ url_for('admin') }}"
+        class="change"
+    >
+        База данных
+    </a>
+</div>
+<!-- =========================================================
+     СПИСОК НОВОСТЕЙ
+     ========================================================= -->
+<section class="panel">
+    <h2>
+        Все новости
+    </h2>
+    <div class="news-list">
+        {% if news_list %}
+            {% for news in news_list %}
+                <div class="news">
+                    <!-- =================================================
+                         ИНФОРМАЦИЯ
+                         ================================================= -->
+                    <div class="news-info">
+                        <h3 class="news-title">
+                            {{ news.title }}
+                        </h3>
+                        {% if news.text_news %}
+                            <p class="news-text">
+                                {{ news.text_news }}
+                            </p>
+                        {% endif %}
+                        {% if news.date %}
+                            <div class="news-status">
+                                Дата:
+                                {{ news.date }}
+                            </div>
+                        {% endif %}
+                        <div class="news-images">
+                            Изображений:
+                            {{ news.images|length }}
+                        </div>
+                        {% if news.links %}
+                            <a
+                                href="{{ news.links }}"
+                                target="_blank"
+                                class="news-link"
+                            >
+                                {{ news.links }}
+                            </a>
+                        {% endif %}
+                        <div class="news-status">
+                            {% if news.is_active %}
+                                Опубликована
+                            {% else %}
+                                Скрыта
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!-- =================================================
+                         КНОПКИ
+                         ================================================= -->
+                    <div class="news-actions">
+                        <!-- Переключатель -->
+                        <div class="toggle-row">
+                            <span class="toggle-label">
+                                Опубликована
+                            </span>
+                            <div class="toggleWrapper">
+                                <input
+                                    type="checkbox"
+                                    class="mobileToggle"
+                                    id="news_active_{{ news.id }}"
+                                    {% if news.is_active %}
+                                        checked
+                                    {% endif %}
+                                    onchange="
+                                        toggleNews(
+                                            this,
+                                            {{ news.id }}
+                                        )
+                                    "
+                                >
+                                <label
+                                    for="news_active_{{ news.id }}"
+                                ></label>
+                            </div>
+                        </div>
+                        <!-- Изменить -->
+                        <a
+                            class="button edit-button"
+                            href="{{
+                                url_for(
+                                    'edit_news',
+                                    news_id=news.id
+                                )
+                            }}"
+                        >
+                            Изменить
+                        </a>
+                        <!-- Удалить -->
+                        <form
+                            method="POST"
+                            action="{{
+                                url_for(
+                                    'delete_news',
+                                    news_id=news.id
+                                )
+                            }}"
+                        >
+                            <button
+                                type="submit"
+                                class="delete-button"
+                                onclick="
+                                    return confirm(
+                                        'Удалить эту новость?'
+                                    );
+                                "
+                            >
+                                Удалить
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="empty">
+                Новостей пока нет.
+            </p>
+        {% endif %}
+    </div>
+</section>
+</div>
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+<script>
+async function toggleNews(checkbox, newsId) {
+    const oldState = !checkbox.checked;
+    try {
+        const response = await fetch(
+            `/admin/news/toggle-active/${newsId}`,
+            {
+                method: "POST"
+            }
+        );
+        if (!response.ok) {
+            throw new Error(
+                "HTTP " + response.status
+            );
+        }
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(
+                "Ошибка изменения статуса"
+            );
+        }
+        // Обновляем текст статуса
+        const newsCard =
+            checkbox.closest(".news");
+        const statusElements =
+            newsCard.querySelectorAll(
+                ".news-status"
+            );
+        const lastStatus =
+            statusElements[
+                statusElements.length - 1
+            ];
+        if (lastStatus) {
+            lastStatus.textContent =
+                checkbox.checked
+                    ? "Опубликована"
+                    : "Скрыта";
+        }
+    } catch (error) {
+        console.error(error);
+        // Возвращаем старое состояние
+        checkbox.checked = oldState;
+    }
+}
+</script>
+</body>
+</html>

@@ -577,36 +577,46 @@
 
 
         <a
-            href="{{ url_for('admin_add') }}"
-            class="change"
-        >
-            Добавить товар
-        </a>
+                href="{{ url_for('admin_add') }}"
+                class="change"
+            >
+                Добавить товар
+            </a>
+            <a
+                href="{{ url_for('admin_news') }}"
+                class="change"
+            >
+                Добавить новость
+            </a>
 
-
-        <a
-            href="{{ url_for('admin') }}"
-            class="change"
-        >
-            Админ-панель
-        </a>
-
-
-        <a
+            
+            
+            <a
             href="{{ url_for('admin_chats') }}"
             class="change"
-        >
+            >
             Чаты
-        </a>
-
-
-        <a
-            href="{{ url_for('admin') }}"
+            </a>
+            
+            
+            <a
+            href="{{ url_for('admin_bd') }}"
             class="change"
-        >
+            >
             База данных
-        </a>
-
+            </a>
+            <a
+                href="{{ url_for('admin_products') }}"
+                class="change"
+            >
+                Товары
+            </a>
+            <a
+                href="{{ url_for('admin_news_view') }}"
+                class="change"
+            >
+                Новости
+            </a>
 
     </div>
 

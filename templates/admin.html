@@ -163,29 +163,40 @@
             >
                 Добавить товар
             </a>
+            <a
+                href="{{ url_for('admin_news') }}"
+                class="admin-button"
+            >
+                Добавить новость
+            </a>
 
-
+            
+            
+            <a
+            href="{{ url_for('admin_chats') }}"
+            class="admin-button"
+            >
+            Чаты
+            </a>
+            
+            
+            <a
+            href="{{ url_for('admin_bd') }}"
+            class="admin-button"
+            >
+            База данных
+            </a>
             <a
                 href="{{ url_for('admin_products') }}"
                 class="admin-button"
             >
                 Товары
             </a>
-
-
             <a
-                href="{{ url_for('admin_chats') }}"
+                href="{{ url_for('admin_news_view') }}"
                 class="admin-button"
             >
-                Чаты
-            </a>
-
-
-            <a
-                href="{{ url_for('admin_bd') }}"
-                class="admin-button"
-            >
-                База данных
+                Новости
             </a>
 
         </div>

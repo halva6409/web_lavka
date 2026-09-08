@@ -213,40 +213,13 @@ class Verification(db.Model):
 
 class PasswordRecovery(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(
-        db.String,
-        db.ForeignKey("user.id"),
-        nullable=False
-    )
-    code = db.Column(
-        db.String(128),
-        nullable=False
-    )
-    created_at = db.Column(
-        db.DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        nullable=False
-    )
-    expires_at = db.Column(
-        db.DateTime(timezone=True),
-        nullable=False
-    )
-    attempts = db.Column(
-        db.Integer,
-        default=0,
-        nullable=False
-    )
-    verified = db.Column(
-        db.Boolean,
-        default=False,
-        nullable=False
-    )
-    used = db.Column(
-        db.Boolean,
-        default=False,
-        nullable=False
-    )
-
+    user_id = db.Column(db.String, db.ForeignKey("user.id"), nullable=False)
+    code = db.Column(db.String(128), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True),default=lambda: datetime.now(timezone.utc), nullable=False)
+    expires_at = db.Column( db.DateTime(timezone=True), nullable=False)
+    attempts = db.Column(db.Integer,default=0,nullable=False )
+    verified = db.Column(db.Boolean,default=False, nullable=False )
+    used = db.Column(db.Boolean, default=False,nullable=False)
 
 #########################################################################################################################################################
 #########################################################################################################################################################
@@ -803,6 +776,65 @@ def admin_add():
     
     return redirect(url_for("admin_add"))
 
+#########################################################################################################################################################
+
+@app.route("/admin_news/add", methods=['POST','GET'])
+@admin_required
+def admin_news():
+    if request.method == "GET":
+        return render_template("admin_news.html")
+    title = request.form.get("title")
+    text_news = request.form.get("text_news")
+    links = request.form.get("link")
+
+    news = News(
+        title = title,
+        text_news = text_news,
+        links = links,
+        date = datetime.now(timezone.utc).isoformat()
+    )
+    db.session.add(news)
+    db.session.commit()
+    images = request.files.getlist("images")
+    for image_file in images:
+        if not image_file:
+            continue
+        if not image_file.filename:
+            continue
+        filename = secure_filename(
+            image_file.filename
+        )
+        image_file.save(
+            os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                filename
+            )
+        )
+        image_url = f"uploads/{filename}"
+
+        image = Image(
+            news_id=news.id,
+            image_url=image_url
+        )
+        db.session.add(image)
+    db.session.commit()
+    return redirect(
+        url_for("admin_news")
+    )
+
+#########################################################################################################################################################
+@app.route("/admin_news_view")
+@admin_required
+def admin_news_view():
+
+    news_list = News.query.order_by(
+        News.id.desc()
+    ).all()
+
+    return render_template(
+        "news_view.html",
+        news_list=news_list
+    )
 #########################################################################################################################################################
 
 @app.route('/admin/edit/<int:product_id>', methods=['GET', 'POST'])

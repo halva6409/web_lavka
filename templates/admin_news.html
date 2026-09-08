@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Добавить новость</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+            padding: 30px;
+
+            background: #0f0f0f;
+            color: white;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                sans-serif;
+        }
+
+
+        .container {
+
+            width: 100%;
+            max-width: 1100px;
+
+            margin: 0 auto;
+        }
+
+
+        h1 {
+
+            margin: 0 0 30px 0;
+
+            font-size: 32px;
+        }
+
+
+        h2 {
+
+            margin-top: 0;
+            margin-bottom: 22px;
+        }
+
+
+        /* =========================================================
+           ПАНЕЛЬ
+           ========================================================= */
+
+        .panel {
+
+            background: #181818;
+
+            border: 1px solid #292929;
+            border-radius: 16px;
+
+            padding: 25px;
+
+            margin-bottom: 30px;
+        }
+
+
+        /* =========================================================
+           КНОПКИ АДМИН-ПАНЕЛИ
+           ========================================================= */
+
+        .change-btns {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 12px;
+
+            margin: 20px 0 30px 0;
+
+            width: 100%;
+        }
+
+
+        .change {
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            width: 100%;
+            min-width: 0;
+
+            height: 40px;
+
+            padding: 7px 20px;
+
+            border: 1px solid #333;
+            border-radius: 13px;
+
+            background: #263967;
+            color: #ffffff;
+
+            cursor: pointer;
+
+            font-family:
+                "Fira Sans Extra Condensed",
+                sans-serif;
+
+            font-size: 17px;
+            font-weight: 500;
+
+            letter-spacing: 0.02em;
+
+            text-decoration: none;
+
+            transition:
+                transform 0.2s ease,
+                filter 0.2s ease;
+        }
+
+
+        .change:hover {
+
+            filter: brightness(1.12);
+
+            transform: translateY(-1px);
+        }
+
+
+        .change:active {
+
+            transform: scale(0.98);
+        }
+
+
+        /* =========================================================
+           ФОРМА
+           ========================================================= */
+
+        .form {
+
+            display: grid;
+
+            gap: 18px;
+        }
+
+
+        .field {
+
+            display: grid;
+
+            gap: 8px;
+        }
+
+
+        .field-label {
+
+            font-size: 14px;
+
+            color: #aaa;
+        }
+
+
+        input,
+        textarea {
+
+            width: 100%;
+
+            padding: 12px 14px;
+
+            background: #101010;
+            color: white;
+
+            border: 1px solid #333;
+            border-radius: 8px;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                sans-serif;
+
+            font-size: 15px;
+
+            transition:
+                border-color 0.2s ease,
+                background 0.2s ease;
+        }
+
+
+        input {
+
+            min-height: 46px;
+        }
+
+
+        textarea {
+
+            min-height: 220px;
+
+            resize: vertical;
+
+            line-height: 1.5;
+        }
+
+
+        input::placeholder,
+        textarea::placeholder {
+
+            color: #777;
+        }
+
+
+        input:focus,
+        textarea:focus {
+
+            outline: none;
+
+            border-color: #666;
+
+            background: #121212;
+        }
+
+
+        /* =========================================================
+           ЗАГРУЗКА ФОТО
+           ========================================================= */
+
+        .file-input {
+
+            padding: 10px;
+
+            cursor: pointer;
+        }
+
+
+        .file-input::file-selector-button {
+
+            margin-right: 12px;
+
+            padding: 9px 14px;
+
+            border: 1px solid #444;
+            border-radius: 7px;
+
+            background: #263967;
+            color: white;
+
+            cursor: pointer;
+
+            font-weight: 600;
+        }
+
+
+        .file-input::file-selector-button:hover {
+
+            filter: brightness(1.15);
+        }
+
+
+        .hint {
+
+            color: #777;
+
+            font-size: 13px;
+
+            line-height: 1.4;
+        }
+
+
+        /* =========================================================
+           КНОПКА ДОБАВЛЕНИЯ
+           ========================================================= */
+
+        .submit-button {
+
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            width: 100%;
+
+            min-height: 46px;
+
+            padding: 10px 16px;
+
+            margin-top: 3px;
+
+            border: none;
+            border-radius: 8px;
+
+            background: #ff3b30;
+            color: white;
+
+            font-size: 15px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition:
+                filter 0.2s ease,
+                transform 0.2s ease;
+        }
+
+
+        .submit-button:hover {
+
+            filter: brightness(1.1);
+
+            transform: translateY(-1px);
+        }
+
+
+        .submit-button:active {
+
+            transform: scale(0.99);
+        }
+
+
+        /* =========================================================
+           АДАПТИВ
+           ========================================================= */
+
+        @media (max-width: 700px) {
+
+            body {
+
+                padding: 18px;
+            }
+
+
+            .panel {
+
+                padding: 18px;
+
+                border-radius: 14px;
+            }
+
+
+            h1 {
+
+                font-size: 27px;
+
+                margin-bottom: 22px;
+            }
+
+
+            .change-btns {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 400px) {
+
+            .change-btns {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            input,
+            textarea {
+
+                font-size: 14px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- =========================================================
+         ЗАГОЛОВОК
+         ========================================================= -->
+
+    <h1>
+        Админ-панель
+    </h1>
+
+
+    <!-- =========================================================
+         НАВИГАЦИЯ
+         ========================================================= -->
+
+    <div class="change-btns">
+
+
+        <a
+                href="{{ url_for('admin_add') }}"
+                class="change"
+            >
+                Добавить товар
+            </a>
+            <a
+                href="{{ url_for('admin_news') }}"
+                class="change"
+            >
+                Добавить новость
+            </a>
+
+            
+            
+            <a
+            href="{{ url_for('admin_chats') }}"
+            class="change"
+            >
+            Чаты
+            </a>
+            
+            
+            <a
+            href="{{ url_for('admin_bd') }}"
+            class="change"
+            >
+            База данных
+            </a>
+            <a
+                href="{{ url_for('admin_products') }}"
+                class="change"
+            >
+                Товары
+            </a>
+            <a
+                href="{{ url_for('admin_news_view') }}"
+                class="change"
+            >
+                Новости
+            </a>
+
+    </div>
+
+
+    <!-- =========================================================
+         ДОБАВЛЕНИЕ НОВОСТИ
+         ========================================================= -->
+
+    <section class="panel">
+
+
+        <h2>
+            Добавить новость
+        </h2>
+
+
+        <form
+            class="form"
+            method="POST"
+            action="{{ url_for('admin_news') }}"
+            enctype="multipart/form-data"
+        >
+
+
+            <!-- =================================================
+                 ЗАГОЛОВОК
+                 ================================================= -->
+
+            <div class="field">
+
+                <label class="field-label">
+                    Заголовок новости
+                </label>
+
+                <input
+                    type="text"
+                    name="title"
+                    placeholder="Введите заголовок новости"
+                    maxlength="200"
+                    required
+                >
+
+            </div>
+
+
+            <!-- =================================================
+                 ТЕКСТ
+                 ================================================= -->
+
+            <div class="field">
+
+                <label class="field-label">
+                    Текст новости
+                </label>
+
+                <textarea
+                    name="text_news"
+                    placeholder="Введите текст новости..."
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <!-- =================================================
+                 ССЫЛКА
+                 ================================================= -->
+
+            <div class="field">
+
+                <label class="field-label">
+                    Ссылка
+                </label>
+
+                <input
+                    type="url"
+                    name="link"
+                    placeholder="https://example.com"
+                >
+
+                <div class="hint">
+                    Необязательное поле.
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 ИЗОБРАЖЕНИЯ
+                 ================================================= -->
+
+            <div class="field">
+
+                <label class="field-label">
+                    Изображения новости
+                </label>
+
+                <input
+                    class="file-input"
+                    type="file"
+                    name="images"
+                    accept="image/*"
+                    multiple
+                >
+
+                <div class="hint">
+                    Можно выбрать несколько изображений.
+                    Они будут привязаны к созданной новости.
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 КНОПКА
+                 ================================================= -->
+
+            <button
+                type="submit"
+                class="submit-button"
+            >
+                Добавить новость
+            </button>
+
+
+        </form>
+
+
+    </section>
+
+
+</div>
+
+
+</body>
+
+</html>
